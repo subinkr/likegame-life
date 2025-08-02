@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Link from "next/link";
-import AppBar from "./components/AppBar";
-import BottomNavigation from "./components/BottomNavigation";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ClientLayout from "./ClientLayout";
 
 export const metadata: Metadata = {
   title: "likegame.life",
@@ -17,11 +16,11 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body>
-        <AppBar />
-        <div style={{ paddingTop: '56px', paddingBottom: '60px' }}>
-          {children}
-        </div>
-        <BottomNavigation />
+        <AuthProvider>
+          <ClientLayout>
+            {children}
+          </ClientLayout>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -1,6 +1,9 @@
 'use client';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSkills } from '@/hooks/useSkills';
+import Link from 'next/link';
 
 interface Stats {
   strength: number;
@@ -10,6 +13,7 @@ interface Stats {
 
 export default function AppBar() {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
   const [stats, setStats] = useState<Stats>({ strength: 0, agility: 0, wisdom: 0 });
 
   // 스탯 데이터 로드
@@ -42,23 +46,10 @@ export default function AppBar() {
     return 'F';
   };
 
-  const getGradeColor = (grade: string) => {
-    switch (grade) {
-      case 'S': return '#ffd700';
-      case 'A': return '#ff6b6b';
-      case 'B': return '#4ecdc4';
-      case 'C': return '#45b7d1';
-      case 'D': return '#96ceb4';
-      case 'E': return '#feca57';
-      case 'F': return '#ff9ff3';
-      default: return '#9ca3af';
-    }
-  };
-
   const getPageTitle = () => {
     switch (pathname) {
       case '/':
-        return '스탯 대시보드';
+        return '스탯';
       case '/skills':
         return '스킬';
       case '/achievements':
@@ -68,14 +59,14 @@ export default function AppBar() {
       case '/shop':
         return '상점';
       default:
-        return 'LikeGame';
+        return '라이크게임';
     }
   };
 
   const getPageIcon = () => {
     switch (pathname) {
       case '/':
-        return '⚔️';
+        return '⚡';
       case '/skills':
         return '📜';
       case '/achievements':
@@ -89,115 +80,87 @@ export default function AppBar() {
     }
   };
 
-  // 메인화면일 때 스탯 정보 표시
-  const isMainPage = pathname === '/';
-
   return (
     <div style={{
       position: 'fixed',
       top: 0,
       left: 0,
       right: 0,
-      height: '56px',
-      background: 'rgba(34,40,60,0.98)',
+      height: '60px',
+      background: 'rgba(0,255,255,0.05)',
       backdropFilter: 'blur(20px)',
-      borderBottom: '1px solid rgba(79,140,255,0.2)',
+      borderBottom: '2px solid rgba(0,255,255,0.3)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
       padding: '0 12px',
-      zIndex: 1000,
-      boxShadow: '0 2px 20px rgba(0,0,0,0.3)'
+      zIndex: 10000
     }}>
-      {/* 왼쪽: 로고 및 페이지 정보 */}
-      <div style={{display: 'flex', alignItems: 'center', gap: 8}}>
+      {/* 왼쪽: 페이지 정보 */}
+      <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
         <div style={{
-          width: 32,
-          height: 32,
-          borderRadius: '50%',
-          background: 'linear-gradient(135deg,#4f8cff 0%,#ffd700 100%)',
+          width: '32px',
+          height: '32px',
+          borderRadius: '8px',
+          background: 'rgba(0,255,255,0.2)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           fontSize: '1rem',
-          boxShadow: '0 2px 8px rgba(79,140,255,0.3)',
-          flexShrink: 0
+          border: '1px solid rgba(0,255,255,0.3)'
         }}>
           {getPageIcon()}
         </div>
-        <div style={{minWidth: 0}}>
-          <div style={{
-            fontWeight: 700, 
-            fontSize: '0.9rem', 
-            color: '#fff',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
-          }}>
-            {getPageTitle()}
-          </div>
-          <div style={{
-            fontSize: '0.7rem', 
-            color: '#bfc9d9',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
-          }}>
-            LikeGame
-          </div>
+        <div style={{
+          fontSize: '0.8rem',
+          fontWeight: 600,
+          color: '#ffffff',
+          fontFamily: 'Press Start 2P, cursive'
+        }}>
+          {getPageTitle()}
         </div>
       </div>
 
       {/* 오른쪽: 액션 버튼들 */}
-      <div style={{display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0}}>
-        <button style={{
-          width: 28,
-          height: 28,
-          borderRadius: '50%',
-          border: 'none',
-          background: 'rgba(79,140,255,0.1)',
-          color: '#4f8cff',
-          fontSize: '0.8rem',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'all 0.2s ease'
-        }}>
-          🔔
-        </button>
-        <button style={{
-          width: 28,
-          height: 28,
-          borderRadius: '50%',
-          border: 'none',
-          background: 'rgba(167,139,250,0.1)',
-          color: '#a78bfa',
-          fontSize: '0.8rem',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'all 0.2s ease'
-        }}>
-          ⚙️
-        </button>
-        <button style={{
-          width: 28,
-          height: 28,
-          borderRadius: '50%',
-          border: 'none',
-          background: 'rgba(52,211,153,0.1)',
-          color: '#34d399',
-          fontSize: '0.8rem',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'all 0.2s ease'
-        }}>
-          👤
-        </button>
+      <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
+        {user ? (
+          <button 
+            onClick={logout}
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '6px',
+              border: '1px solid rgba(255,0,102,0.3)',
+              background: 'rgba(255,0,102,0.1)',
+              color: '#ff0066',
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            🚪
+          </button>
+        ) : (
+          <Link href="/auth/login">
+            <button style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '6px',
+              border: '1px solid rgba(0,255,0,0.3)',
+              background: 'rgba(0,255,0,0.1)',
+              color: '#00ff00',
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              👤
+            </button>
+          </Link>
+        )}
       </div>
     </div>
   );

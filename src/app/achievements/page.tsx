@@ -1,13 +1,9 @@
 'use client';
 import { useState, useEffect } from "react";
-
-interface Achievement {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  category: string;
-}
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { useAchievements } from '@/hooks/useAchievements';
+import Link from 'next/link';
 
 interface Title {
   id: string;
@@ -15,7 +11,6 @@ interface Title {
   description: string;
   category: 'personal' | 'career' | 'education' | 'hobby' | 'social' | 'challenge' | 'milestone' | 'creative';
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
-  requirement: string;
   achieved: boolean;
   achievedDate?: string;
   selected?: boolean;
@@ -28,175 +23,73 @@ interface Badge {
   description: string;
   category: 'donation' | 'visit' | 'exercise' | 'study' | 'creative' | 'social' | 'special';
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
-  requirement: string;
   achieved: boolean;
   achievedDate?: string;
   icon: string;
 }
 
 export default function AchievementsPage() {
-  const [activeTab, setActiveTab] = useState<'titles' | 'badges'>('titles');
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
-  const [titles, setTitles] = useState<Title[]>([]);
-  const [badges, setBadges] = useState<Badge[]>([]);
-  const [newAchievement, setNewAchievement] = useState<Achievement>({
-    id: '',
-    title: '',
-    description: '',
-    date: '',
-    category: 'personal'
-  });
+  const { user } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { badges, titles, loading, error: achievementsError, toggleBadge, selectTitle } = useAchievements();
+  
+  // URL 파라미터에서 탭 상태 읽기
+  const tabParam = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState<'titles' | 'badges'>(
+    tabParam === 'badges' ? 'badges' : 'titles'
+  );
   const [error, setError] = useState("");
 
-  // 저장/불러오기
+  // URL 파라미터가 변경될 때 탭 상태 업데이트
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedAchievements = localStorage.getItem('likegame-achievements');
-      const savedTitles = localStorage.getItem('likegame-titles');
-      const savedBadges = localStorage.getItem('likegame-badges');
-      if (savedAchievements) {
-        try {
-          setAchievements(JSON.parse(savedAchievements));
-        } catch {}
-      }
-      if (savedTitles) {
-        try {
-          setTitles(JSON.parse(savedTitles));
-        } catch {}
-      }
-      if (savedBadges) {
-        try {
-          setBadges(JSON.parse(savedBadges));
-        } catch {}
-      }
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'badges') {
+      setActiveTab('badges');
+    } else {
+      setActiveTab('titles');
     }
-  }, []);
+  }, [searchParams]);
 
-  // 초기 뱃지 데이터 생성 (localStorage에 데이터가 없을 때만)
-  useEffect(() => {
-    if (typeof window !== 'undefined' && badges.length === 0) {
-      const savedBadges = localStorage.getItem('likegame-badges');
-      if (!savedBadges) {
-        const initialBadges: Badge[] = [
-          // 통일감 있는 "첫 ~" 패턴의 뱃지들
-          { id: '1', name: '첫 기부', description: '첫 기부를 완료했습니다', category: 'donation', rarity: 'common', requirement: '기부 1만원', achieved: false, icon: '💝' },
-          { id: '2', name: '첫 봉사', description: '첫 봉사를 했습니다', category: 'donation', rarity: 'common', requirement: '자원봉사 1시간', achieved: false, icon: '🤝' },
-          { id: '3', name: '첫 여행', description: '첫 여행을 떠났습니다', category: 'visit', rarity: 'common', requirement: '여행 1회', achieved: false, icon: '✈️' },
-          { id: '4', name: '첫 산책', description: '첫 산책을 했습니다', category: 'visit', rarity: 'common', requirement: '산책 1회', achieved: false, icon: '🚶' },
-          { id: '5', name: '첫 운동', description: '첫 운동을 시작했습니다', category: 'exercise', rarity: 'common', requirement: '운동 30분', achieved: false, icon: '💪' },
-          { id: '6', name: '첫 작품', description: '첫 창작물을 만들었습니다', category: 'creative', rarity: 'common', requirement: '창작물 1개', achieved: false, icon: '🎨' },
-          { id: '7', name: '첫 독서', description: '첫 책을 읽었습니다', category: 'study', rarity: 'common', requirement: '독서 1권', achieved: false, icon: '📚' },
-          { id: '8', name: '첫 생일', description: 'LikeGame에서 첫 생일을 맞았습니다', category: 'special', rarity: 'common', requirement: '첫 생일', achieved: false, icon: '🎂' },
-        ];
-        setBadges(initialBadges);
-      }
+  // 탭 변경 시 URL 업데이트
+  const handleTabChange = (tab: 'titles' | 'badges') => {
+    setActiveTab(tab);
+    const params = new URLSearchParams();
+    if (tab === 'badges') {
+      params.set('tab', 'badges');
     }
-  }, [badges.length]);
+    router.push(`/achievements?${params.toString()}`);
+  };
 
-  // 초기 칭호 데이터 생성 (localStorage에 데이터가 없을 때만)
-  useEffect(() => {
-    if (typeof window !== 'undefined' && titles.length === 0) {
-      const savedTitles = localStorage.getItem('likegame-titles');
-      if (!savedTitles) {
-        const initialTitles: Title[] = [
-          // 뱃지 조합으로만 획득하는 칭호들 (2개 이상 조합)
-          { id: '1', name: '마음의 기부자', description: '기부와 봉사를 모두 완료했습니다', category: 'social', rarity: 'rare', requirement: '첫 기부 + 첫 봉사 뱃지 획득', achieved: false, requiredBadges: ['1', '2'] },
-          { id: '2', name: '여행의 시작', description: '여행과 산책을 모두 완료했습니다', category: 'hobby', rarity: 'rare', requirement: '첫 여행 + 첫 산책 뱃지 획득', achieved: false, requiredBadges: ['3', '4'] },
-          { id: '3', name: '지식의 탐험가', description: '독서와 창작을 모두 완료했습니다', category: 'education', rarity: 'rare', requirement: '첫 독서 + 첫 작품 뱃지 획득', achieved: false, requiredBadges: ['7', '6'] },
-          { id: '4', name: '건강한 생활가', description: '운동과 산책을 모두 완료했습니다', category: 'personal', rarity: 'rare', requirement: '첫 운동 + 첫 산책 뱃지 획득', achieved: false, requiredBadges: ['5', '4'] },
-          { id: '5', name: '인생의 첫걸음', description: '모든 기본 활동을 완료했습니다', category: 'milestone', rarity: 'legendary', requirement: '모든 첫 뱃지 획득', achieved: false, requiredBadges: ['1', '2', '3', '4', '5', '6', '7', '8'] }
-        ];
-        setTitles(initialTitles);
-      }
-    }
-  }, [titles.length]);
-
-  // 뱃지 수집에 따른 칭호 자동 획득/비활성화 체크
-  useEffect(() => {
-    if (titles.length > 0 && badges.length > 0) {
-      setTitles(prev => prev.map(title => {
-        const hasRequiredBadges = title.requiredBadges.every(badgeId => {
-          const badge = badges.find(b => b.id === badgeId);
-          return badge && badge.achieved;
-        });
-
-        // 필요한 뱃지를 모두 가지고 있으면 획득, 아니면 비활성화
-        if (hasRequiredBadges && !title.achieved) {
-          return {
-            ...title,
-            achieved: true,
-            achievedDate: new Date().toISOString().split('T')[0]
-          };
-        } else if (!hasRequiredBadges && title.achieved) {
-          return {
-            ...title,
-            achieved: false,
-            achievedDate: undefined,
-            selected: false // 비활성화되면 선택도 해제
-          };
-        } else if (!hasRequiredBadges && title.selected) {
-          // 뱃지가 없는데 선택된 상태라면 선택 해제
-          return {
-            ...title,
-            selected: false
-          };
-        }
-        return title;
-      }));
-    }
-  }, [badges, titles.length]);
-
-  const toggleBadgeAchievement = (id: string) => {
-    const updatedBadges = badges.map(badge => 
-      badge.id === id 
-        ? { 
-            ...badge, 
-            achieved: !badge.achieved,
-            achievedDate: !badge.achieved ? new Date().toISOString().split('T')[0] : undefined
-          }
-        : badge
-    );
-    setBadges(updatedBadges);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('likegame-badges', JSON.stringify(updatedBadges));
+  const toggleBadgeAchievement = async (id: string) => {
+    try {
+      await toggleBadge(id);
+    } catch (err: any) {
+      setError(err.message || '뱃지 토글에 실패했습니다.');
     }
   };
 
-  const selectTitle = (id: string) => {
-    const updatedTitles = titles.map(title => ({
-      ...title,
-      selected: title.id === id
-    }));
-    setTitles(updatedTitles);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('likegame-titles', JSON.stringify(updatedTitles));
-    }
-  };
+  const selectTitleForDisplay = async (id: string) => {
+    try {
+      const response = await fetch(`/api/titles/${id}/select`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
 
-  const addAchievement = () => {
-    if (!newAchievement.title.trim()) {
-      setError("업적 제목을 입력하세요.");
-      return;
+      const result = await response.json();
+      
+      if (response.ok) {
+        // 선택 성공 시 페이지 새로고침
+        window.location.reload();
+      } else {
+        alert(result.error || '칭호 선택에 실패했습니다.');
+      }
+    } catch (err: any) {
+      setError(err.message || '칭호 선택에 실패했습니다.');
     }
-    if (!newAchievement.date) {
-      setError("달성일을 입력하세요.");
-      return;
-    }
-
-    const achievement: Achievement = {
-      ...newAchievement,
-      id: Date.now().toString()
-    };
-
-    setAchievements(prev => [achievement, ...prev]);
-    setNewAchievement({
-      id: '',
-      title: '',
-      description: '',
-      date: '',
-      category: 'personal'
-    });
-    setError("");
   };
 
   const getCategoryText = (category: string) => {
@@ -207,310 +100,635 @@ export default function AchievementsPage() {
       case 'hobby': return '취미';
       case 'social': return '사회';
       case 'challenge': return '도전';
-      case 'milestone': return '여정';
+      case 'milestone': return '이정표';
+      case 'creative': return '창작';
       case 'donation': return '기부';
       case 'visit': return '방문';
       case 'exercise': return '운동';
       case 'study': return '학습';
-      case 'creative': return '창작';
       case 'special': return '특별';
-      default: return '기타';
+      default: return category;
     }
   };
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'personal': return '#ffd700';
-      case 'career': return '#4f8cff';
-      case 'education': return '#a78bfa';
-      case 'hobby': return '#34d399';
-      case 'social': return '#fbbf24';
-      case 'challenge': return '#f87171';
-      case 'milestone': return '#9ca3af';
-      case 'donation': return '#f87171';
-      case 'visit': return '#4f8cff';
-      case 'exercise': return '#34d399';
-      case 'study': return '#a78bfa';
-      case 'creative': return '#ffd700';
-      case 'special': return '#9ca3af';
-      default: return '#9ca3af';
+      case 'personal': return '#ff0066';
+      case 'career': return '#00ffff';
+      case 'education': return '#00ff00';
+      case 'hobby': return '#ffff00';
+      case 'social': return '#9900ff';
+      case 'challenge': return '#ff6600';
+      case 'milestone': return '#ff00ff';
+      case 'creative': return '#00ffff';
+      case 'donation': return '#00ff00';
+      case 'visit': return '#ffff00';
+      case 'exercise': return '#ff0066';
+      case 'study': return '#00ffff';
+      case 'special': return '#ff00ff';
+      default: return '#666666';
     }
   };
 
   const getRarityColor = (rarity: string) => {
     switch (rarity) {
-      case 'common': return '#9ca3af';
-      case 'rare': return '#4f8cff';
-      case 'epic': return '#a78bfa';
-      case 'legendary': return '#ffd700';
-      default: return '#9ca3af';
+      case 'legendary': return '#ff00ff';
+      case 'epic': return '#9900ff';
+      case 'rare': return '#00ffff';
+      case 'common': return '#00ff00';
+      default: return '#666666';
     }
   };
 
   const getRarityText = (rarity: string) => {
     switch (rarity) {
-      case 'common': return '일반';
-      case 'rare': return '희귀';
-      case 'epic': return '영웅';
       case 'legendary': return '전설';
-      default: return '일반';
+      case 'epic': return '희귀';
+      case 'rare': return '레어';
+      case 'common': return '일반';
+      default: return rarity;
     }
   };
 
   const getTitleStats = () => {
-    return {
-      total: titles.length,
-      achieved: titles.filter(t => t.achieved).length,
-      selected: titles.filter(t => t.selected).length,
-      common: titles.filter(t => t.rarity === 'common').length,
-      rare: titles.filter(t => t.rarity === 'rare').length,
-      epic: titles.filter(t => t.rarity === 'epic').length,
-      legendary: titles.filter(t => t.rarity === 'legendary').length
-    };
+    const total = titles.length;
+    const achieved = titles.filter(t => t.achieved).length;
+    const selected = titles.filter(t => t.selected).length;
+    return { total, achieved, selected };
   };
 
   const getBadgeStats = () => {
-    return {
-      total: badges.length,
-      achieved: badges.filter(b => b.achieved).length,
-      common: badges.filter(b => b.rarity === 'common').length,
-      rare: badges.filter(b => b.rarity === 'rare').length,
-      epic: badges.filter(b => b.rarity === 'epic').length,
-      legendary: badges.filter(b => b.rarity === 'legendary').length
-    };
+    const total = badges.length;
+    const achieved = badges.filter(b => b.achieved).length;
+    return { total, achieved };
   };
+
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 'calc(100vh - 130px)',
+        flexDirection: 'column',
+        gap: '24px',
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)'
+      }}>
+        <div style={{ 
+          fontSize: '3rem',
+          animation: 'pulse 2s ease-in-out infinite',
+          filter: 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.8))'
+        }}>⚡</div>
+        <div style={{ 
+          color: '#00ffff', 
+          fontSize: '1rem',
+          fontFamily: 'Press Start 2P, cursive',
+          textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
+          textAlign: 'center'
+        }}>
+          시스템 로딩 중...
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   const titleStats = getTitleStats();
   const badgeStats = getBadgeStats();
-  const selectedTitle = titles.find(t => t.selected);
 
   return (
-    <main style={{maxWidth: '100%', margin: '0 auto', padding: '8px', display: 'flex', flexDirection: 'column', gap: 16}}>
-      {/* 업적 대시보드 */}
-      <section className="section-card" style={{textAlign: 'center', padding:'16px 12px', borderRadius:12, boxShadow:'0 4px 16px #4f8cff22, 0 0 0 1px #2e3650 inset', background:'rgba(34,40,60,0.96)', width: '100%'}}>
-        <div style={{display:'flex', flexDirection:'column', alignItems:'center', gap:12}}>
-          <div style={{width:60, height:60, borderRadius: '50%', background: 'linear-gradient(135deg,#4f8cff 0%,#ffd700 100%)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 0 0 2px #23294644'}}>
-            <div style={{fontSize: '2rem'}}>🏆</div>
+    <div style={{
+      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
+      padding: '16px',
+      color: '#ffffff',
+      minHeight: 'calc(100vh - 130px)'
+    }}>
+      {/* 뒤로가기 버튼 */}
+      <div style={{
+        background: 'rgba(255,215,0,0.05)',
+        borderRadius: '8px',
+        padding: '12px',
+        marginBottom: '12px'
+      }}>
+        <button
+          onClick={() => router.push('/')}
+          style={{
+            background: 'rgba(255,215,0,0.1)',
+            border: '1px solid rgba(255,215,0,0.3)',
+            color: '#ffff00',
+            padding: '8px 12px',
+            borderRadius: '6px',
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            fontFamily: 'Press Start 2P, cursive',
+            transition: 'all 0.3s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(255,215,0,0.2)';
+            e.currentTarget.style.boxShadow = '0 0 10px rgba(255,215,0,0.5)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(255,215,0,0.1)';
+            e.currentTarget.style.boxShadow = 'none';
+          }}
+        >
+          ← 뒤로
+        </button>
+      </div>
+      
+      {/* 업적 요약 */}
+      <div style={{
+        background: 'rgba(255,215,0,0.05)',
+        borderRadius: '8px',
+        padding: '12px',
+        marginBottom: '12px'
+      }}>
+        <div style={{
+          fontSize: '0.9rem',
+          color: '#ffff00',
+          marginBottom: '8px',
+          textAlign: 'center',
+          fontWeight: 600,
+          fontFamily: 'Press Start 2P, cursive'
+        }}>
+          🏆 업적
+        </div>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-around',
+          gap: '4px'
+        }}>
+          <div style={{
+            textAlign: 'center',
+            padding: '6px',
+            background: 'rgba(255,215,0,0.1)',
+            borderRadius: '4px',
+            flex: 1
+          }}>
+            <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>👑</div>
+            <div style={{
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              color: '#ffffff',
+              fontFamily: 'Press Start 2P, cursive'
+            }}>칭호</div>
+            <div style={{
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              color: '#ffff00',
+              fontFamily: 'Press Start 2P, cursive'
+            }}>{titleStats.total}</div>
           </div>
-          <div style={{fontWeight:800, fontSize:'1rem', color:'#fff', marginTop:2}}>업적 관리</div>
-          <div style={{fontSize:'0.8rem', color:'#bfc9d9', marginTop:4}}>뱃지를 수집하고 칭호를 획득하세요</div>
           
-          {/* 선택된 칭호 표시 */}
-          {selectedTitle && (
-            <div style={{marginTop: 16, padding: '12px', background: 'rgba(255,215,0,0.1)', borderRadius: 8, border: '2px solid #ffd700'}}>
-              <div style={{fontSize: '0.8rem', color: '#ffd700', marginBottom: 4}}>현재 칭호</div>
-              <div style={{fontWeight: 700, color: '#fff', fontSize: '1rem'}}>{selectedTitle.name}</div>
-            </div>
-          )}
-          
-          <div style={{display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:8, marginTop:16, width:'100%'}}>
-            <div style={{textAlign:'center'}}>
-              <div style={{fontSize:'1.2rem', fontWeight:700, color:'#ffd700'}}>{titleStats.achieved}</div>
-              <div style={{fontSize:'0.7rem', color:'#bfc9d9'}}>획득한 칭호</div>
-            </div>
-            <div style={{textAlign:'center'}}>
-              <div style={{fontSize:'1.2rem', fontWeight:700, color:'#34d399'}}>{badgeStats.achieved}</div>
-              <div style={{fontSize:'0.7rem', color:'#bfc9d9'}}>수집한 뱃지</div>
-            </div>
+          <div style={{
+            textAlign: 'center',
+            padding: '6px',
+            background: 'rgba(255,0,102,0.1)',
+            borderRadius: '4px',
+            flex: 1
+          }}>
+            <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>🏅</div>
+            <div style={{
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              color: '#ffffff',
+              fontFamily: 'Press Start 2P, cursive'
+            }}>뱃지</div>
+            <div style={{
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              color: '#ff0066',
+              fontFamily: 'Press Start 2P, cursive'
+            }}>{badgeStats.total}</div>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* 탭 네비게이션 */}
-      <section className="section-card" style={{padding:'12px', borderRadius:12, boxShadow:'0 4px 16px #4f8cff22, 0 0 0 1px #2e3650 inset', background:'rgba(34,40,60,0.96)', width: '100%'}}>
-        <div style={{display:'flex', gap:8, justifyContent:'center'}}>
-          <button
-            onClick={() => setActiveTab('titles')}
-            style={{
-              padding: '8px 12px',
-              borderRadius: '8px',
-              border: 'none',
-              background: activeTab === 'titles' ? '#4f8cff' : 'rgba(79,140,255,0.1)',
-              color: activeTab === 'titles' ? '#fff' : '#bfc9d9',
-              fontWeight: 700,
-              cursor: 'pointer',
-              fontSize: '0.8rem'
-            }}
-          >
-            칭호 ({titleStats.achieved}/{titleStats.total})
-          </button>
-          <button
-            onClick={() => setActiveTab('badges')}
-            style={{
-              padding: '8px 12px',
-              borderRadius: '8px',
-              border: 'none',
-              background: activeTab === 'badges' ? '#4f8cff' : 'rgba(79,140,255,0.1)',
-              color: activeTab === 'badges' ? '#fff' : '#bfc9d9',
-              fontWeight: 700,
-              cursor: 'pointer',
-              fontSize: '0.8rem'
-            }}
-          >
-            뱃지 ({badgeStats.achieved}/{badgeStats.total})
-          </button>
+      {/* 탭 선택 */}
+      <div style={{
+        background: 'rgba(0,255,255,0.05)',
+        borderRadius: '8px',
+        padding: '12px',
+        marginBottom: '12px'
+      }}>
+        <div style={{
+          fontSize: '0.9rem',
+          color: '#00ffff',
+          marginBottom: '8px',
+          textAlign: 'center',
+          fontWeight: 600,
+          fontFamily: 'Press Start 2P, cursive'
+        }}>
+          📋 탭 선택
         </div>
-      </section>
+        <div style={{
+          display: 'flex',
+          gap: '8px'
+        }}>
+          <div 
+            style={{
+              flex: 1,
+              padding: '8px',
+              background: activeTab === 'titles' ? 'rgba(255,215,0,0.2)' : 'rgba(255,215,0,0.1)',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '0.8rem',
+              color: '#ffff00',
+              fontWeight: 600,
+              fontFamily: 'Press Start 2P, cursive',
+              textAlign: 'center',
+              transition: 'all 0.3s ease',
+              border: activeTab === 'titles' ? '2px solid #ffff00' : '1px solid rgba(255,215,0,0.3)'
+            }}
+            onClick={() => handleTabChange('titles')}
+            onMouseEnter={(e) => {
+              if (activeTab !== 'titles') {
+                e.currentTarget.style.background = 'rgba(255,215,0,0.2)';
+                e.currentTarget.style.boxShadow = '0 0 10px rgba(255,215,0,0.5)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== 'titles') {
+                e.currentTarget.style.background = 'rgba(255,215,0,0.1)';
+                e.currentTarget.style.boxShadow = 'none';
+              }
+            }}
+          >
+            👑 칭호 ({titleStats.achieved}/{titleStats.total})
+          </div>
+          <div 
+            style={{
+              flex: 1,
+              padding: '8px',
+              background: activeTab === 'badges' ? 'rgba(255,0,102,0.2)' : 'rgba(255,0,102,0.1)',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '0.8rem',
+              color: '#ff0066',
+              fontWeight: 600,
+              fontFamily: 'Press Start 2P, cursive',
+              textAlign: 'center',
+              transition: 'all 0.3s ease',
+              border: activeTab === 'badges' ? '2px solid #ff0066' : '1px solid rgba(255,0,102,0.3)'
+            }}
+            onClick={() => handleTabChange('badges')}
+            onMouseEnter={(e) => {
+              if (activeTab !== 'badges') {
+                e.currentTarget.style.background = 'rgba(255,0,102,0.2)';
+                e.currentTarget.style.boxShadow = '0 0 10px rgba(255,0,102,0.5)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== 'badges') {
+                e.currentTarget.style.background = 'rgba(255,0,102,0.1)';
+                e.currentTarget.style.boxShadow = 'none';
+              }
+            }}
+          >
+            🏅 뱃지 ({badgeStats.achieved}/{badgeStats.total})
+          </div>
+        </div>
+      </div>
 
-      {activeTab === 'titles' ? (
-        <>
-          {/* 칭호 목록 */}
-          <section className="section-card" style={{padding:'16px 12px', borderRadius:12, boxShadow:'0 4px 16px #ffd70022, 0 0 0 1px #2e3650 inset', background:'rgba(34,40,60,0.96)', width: '100%'}}>
-            <div className="title-section" style={{fontSize:'1rem', color:'#ffd700', marginBottom:16}}>획득한 칭호 ({titleStats.achieved}/{titleStats.total})</div>
-            
-            <div style={{display:'flex', flexDirection:'column', gap:12}}>
+      {/* 칭호 목록 */}
+      {activeTab === 'titles' && (
+        <div style={{
+          background: 'rgba(255,215,0,0.05)',
+          borderRadius: '8px',
+          padding: '12px'
+        }}>
+          <div style={{
+            fontSize: '0.9rem',
+            color: '#ffff00',
+            marginBottom: '8px',
+            textAlign: 'center',
+            fontWeight: 600,
+            fontFamily: 'Press Start 2P, cursive'
+          }}>
+            👑 칭호 목록
+          </div>
+          
+          {titles.length === 0 ? (
+            <div style={{
+              textAlign: 'center',
+              color: '#666',
+              fontSize: '0.7rem',
+              padding: '12px',
+              fontFamily: 'Orbitron, monospace'
+            }}>
+              칭호가 없습니다
+            </div>
+          ) : (
+            <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
               {titles.map(title => {
-                const isSelected = title.selected;
-                
+                const categoryColor = getCategoryColor(title.category);
+                const rarityColor = getRarityColor(title.rarity);
                 return (
-                  <div 
-                    key={title.id} 
-                    className="section-card" 
-                    onClick={() => title.achieved && selectTitle(title.id)}
-                    style={{
-                      background: title.achieved ? 'rgba(255,215,0,0.1)' : 'rgba(255,215,0,0.05)', 
-                      boxShadow: isSelected ? '0 2px 8px #ffd70044' : '0 2px 8px #ffd70022', 
-                      padding:'12px', 
-                      marginBottom:0, 
-                      borderRadius:8, 
-                      position:'relative', 
-                      opacity: title.achieved ? 1 : 0.6,
-                      border: isSelected ? '2px solid #ffd700' : '1px solid rgba(255,215,0,0.3)',
-                      cursor: title.achieved ? 'pointer' : 'default',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (title.achieved) {
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = '0 4px 12px #ffd70044';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (title.achieved) {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = isSelected ? '0 2px 8px #ffd70044' : '0 2px 8px #ffd70022';
-                      }
-                    }}
-                  >
-                    <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:8}}>
-                      <div style={{flex:1, display:'flex', alignItems:'flex-start', gap:8}}>
-                        <div style={{width:32, height:32, borderRadius:'50%', background: title.achieved ? 'linear-gradient(135deg,#ffd700 0%,#ffed4e 100%)' : 'rgba(255,215,0,0.3)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1rem'}}>
-                          👑
+                                  <div key={title.id} style={{
+                  background: title.achieved ? 'rgba(255,215,0,0.15)' : 'rgba(255,215,0,0.05)',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  border: title.achieved ? '2px solid rgba(255,215,0,0.5)' : '1px solid rgba(255,215,0,0.2)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  position: 'relative'
+                }}
+                  onClick={() => {
+                    if (title.achieved) {
+                      selectTitleForDisplay(title.id);
+                    } else {
+                      // 조건을 만족하지 않는 경우 안내창
+                      const requiredBadges = title.requiredBadges || [];
+                      alert(`이 칭호를 획득하려면 다음 뱃지가 필요합니다:\n${requiredBadges.join(', ')}`);
+                    }
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = title.achieved ? 'rgba(255,215,0,0.25)' : 'rgba(255,215,0,0.1)';
+                    e.currentTarget.style.boxShadow = '0 0 10px rgba(255,215,0,0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = title.achieved ? 'rgba(255,215,0,0.15)' : 'rgba(255,215,0,0.05)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                    {/* 선택된 칭호 표시 */}
+                    {title.selected && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '-8px',
+                        right: '-8px',
+                        background: '#00ff00',
+                        color: '#000',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        padding: '2px 6px',
+                        borderRadius: '12px',
+                        fontFamily: 'Press Start 2P, cursive',
+                        boxShadow: '0 0 8px rgba(0,255,0,0.5)',
+                        zIndex: 1
+                      }}>
+                        선택됨
+                      </div>
+                    )}
+                    
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      marginBottom: '8px'
+                    }}>
+                      <div style={{flex: 1}}>
+                        <div style={{
+                          fontWeight: 700,
+                          color: '#ffff00',
+                          fontSize: '0.7rem',
+                          marginBottom: '4px',
+                          fontFamily: 'Press Start 2P, cursive'
+                        }}>
+                          {title.name}
                         </div>
-                        <div style={{flex:1}}>
-                          <div style={{fontWeight:700, color: title.achieved ? '#ffd700' : '#9ca3af', fontSize:'0.9rem', marginBottom:4}}>{title.name}</div>
-                          <div style={{fontSize:11, color:'#bfc9d9', marginBottom:4, lineHeight:1.3}}>{title.description}</div>
-                          <div style={{fontSize:10, color:'#94a3b8'}}>요구사항: {title.requirement}</div>
-                          {title.achieved && title.achievedDate && (
-                            <div style={{fontSize:10, color:'#34d399'}}>획득일: {title.achievedDate}</div>
-                          )}
-                          {!title.achieved && (
-                            <div style={{fontSize:10, color:'#f87171'}}>필요한 뱃지를 수집하세요</div>
-                          )}
-                          {title.achieved && isSelected && (
-                            <div style={{fontSize:10, color:'#ffd700', fontWeight: 700}}>✓ 현재 선택됨</div>
-                          )}
+                        <div style={{
+                          fontSize: '0.75rem',
+                          color: '#999',
+                          marginBottom: '4px',
+                          fontFamily: 'Orbitron, monospace'
+                        }}>
+                          {title.description}
+                        </div>
+                      </div>
+                      
+                      <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '4px',
+                        alignItems: 'flex-end'
+                      }}>
+
+                        <div style={{
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          padding: '2px 4px',
+                          background: `rgba(${rarityColor === '#ff00ff' ? '255,0,255' : rarityColor === '#9900ff' ? '153,0,255' : rarityColor === '#00ffff' ? '0,255,255' : rarityColor === '#00ff00' ? '0,255,0' : '102,102,102'},0.3)`,
+                          color: rarityColor,
+                          borderRadius: '4px',
+                          fontFamily: 'Press Start 2P, cursive'
+                        }}>
+                          {getRarityText(title.rarity)}
                         </div>
                       </div>
                     </div>
+                    
+                    {/* 상태 표시 */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginTop: '6px'
+                    }}>
+                      <div style={{
+                        display: 'inline-block',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        padding: '2px 6px',
+                        background: title.achieved ? 'rgba(0,255,0,0.3)' : 'rgba(255,0,102,0.3)',
+                        color: title.achieved ? '#00ff00' : '#ff0066',
+                        borderRadius: '4px',
+                        fontFamily: 'Press Start 2P, cursive'
+                      }}>
+                        {title.achieved ? '획득' : '미획득'}
+                      </div>
+                      
+                      {title.achieved && (
+                        <div style={{
+                          fontSize: '0.75rem',
+                          color: '#666',
+                          fontFamily: 'Orbitron, monospace'
+                        }}>
+                          📅 {title.achievedDate ? new Date(title.achievedDate).toLocaleDateString('ko-KR') : '날짜 없음'}
+                        </div>
+                      )}
+                    </div>
+                    
+
                   </div>
                 );
               })}
             </div>
-          </section>
-        </>
-      ) : (
-        <>
-          {/* 뱃지 목록 */}
-          <section className="section-card" style={{padding:'16px 12px', borderRadius:12, boxShadow:'0 4px 16px #a78bfa22, 0 0 0 1px #2e3650 inset', background:'rgba(34,40,60,0.96)', width: '100%'}}>
-            <div className="title-section" style={{fontSize:'1rem', color:'#a78bfa', marginBottom:16}}>수집한 뱃지 ({badgeStats.achieved}/{badgeStats.total})</div>
-            
+          )}
+        </div>
+      )}
+
+      {/* 뱃지 목록 */}
+      {activeTab === 'badges' && (
+        <div style={{
+          background: 'rgba(255,0,102,0.05)',
+          borderRadius: '8px',
+          padding: '12px'
+        }}>
+          <div style={{
+            fontSize: '0.9rem',
+            color: '#ff0066',
+            marginBottom: '8px',
+            textAlign: 'center',
+            fontWeight: 600,
+            fontFamily: 'Press Start 2P, cursive'
+          }}>
+            🏅 뱃지 목록
+          </div>
+          
+          {badges.length === 0 ? (
             <div style={{
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', 
-              gap: 12
+              textAlign: 'center',
+              color: '#666',
+              fontSize: '0.7rem',
+              padding: '12px',
+              fontFamily: 'Orbitron, monospace'
             }}>
-              {badges.map(badge => (
-                <div 
-                  key={badge.id} 
-                  className="section-card" 
-                  onClick={() => toggleBadgeAchievement(badge.id)}
-                  style={{
-                    background: badge.achieved ? 'rgba(167,139,250,0.1)' : 'rgba(167,139,250,0.05)', 
-                    boxShadow:'0 2px 8px #a78bfa22', 
-                    padding:'12px', 
-                    marginBottom:0, 
-                    borderRadius:8, 
-                    position:'relative', 
-                    opacity: badge.achieved ? 1 : 0.6,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    textAlign: 'center',
+              뱃지가 없습니다
+            </div>
+          ) : (
+            <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+              {badges.map(badge => {
+                const categoryColor = getCategoryColor(badge.category);
+                const rarityColor = getRarityColor(badge.rarity);
+                return (
+                  <div key={badge.id} style={{
+                    background: badge.achieved ? 'rgba(255,0,102,0.15)' : 'rgba(255,0,102,0.05)',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    border: badge.achieved ? '2px solid rgba(255,0,102,0.5)' : '1px solid rgba(255,0,102,0.2)',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    border: badge.achieved ? '2px solid #a78bfa' : '1px solid transparent'
+                    transition: 'all 0.3s ease'
                   }}
+                  onClick={() => toggleBadgeAchievement(badge.id)}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 4px 12px #a78bfa44';
+                    e.currentTarget.style.background = badge.achieved ? 'rgba(255,0,102,0.25)' : 'rgba(255,0,102,0.1)';
+                    e.currentTarget.style.boxShadow = '0 0 10px rgba(255,0,102,0.3)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 2px 8px #a78bfa22';
+                    e.currentTarget.style.background = badge.achieved ? 'rgba(255,0,102,0.15)' : 'rgba(255,0,102,0.05)';
+                    e.currentTarget.style.boxShadow = 'none';
                   }}
                 >
-                  <div style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: '50%',
-                    background: badge.achieved ? 'linear-gradient(135deg,#a78bfa 0%,#ffd700 100%)' : 'rgba(167,139,250,0.3)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '1.5rem',
-                    marginBottom: 8
-                  }}>
-                    {badge.icon}
-                  </div>
-                  
-                  <div style={{fontWeight: 700, color: badge.achieved ? '#a78bfa' : '#9ca3af', fontSize: '0.8rem', marginBottom: 4}}>
-                    {badge.name}
-                  </div>
-                  
-                  <div style={{fontSize: 10, color: '#bfc9d9', marginBottom: 8, lineHeight: 1.3}}>
-                    {badge.description}
-                  </div>
-                  
-                  <div style={{fontSize: 9, color: '#94a3b8', marginBottom: 8}}>
-                    {badge.requirement}
-                  </div>
-                  
-                  {badge.achieved && badge.achievedDate && (
-                    <div style={{fontSize: 9, color: '#34d399', marginBottom: 8}}>
-                      {badge.achievedDate}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      marginBottom: '8px'
+                    }}>
+                      <div style={{flex: 1}}>
+                        <div style={{
+                          fontWeight: 700,
+                          color: '#ff0066',
+                          fontSize: '0.7rem',
+                          marginBottom: '4px',
+                          fontFamily: 'Press Start 2P, cursive'
+                        }}>
+                          {badge.icon} {badge.name}
+                        </div>
+                        <div style={{
+                          fontSize: '0.75rem',
+                          color: '#999',
+                          marginBottom: '4px',
+                          fontFamily: 'Orbitron, monospace'
+                        }}>
+                          {badge.description}
+                        </div>
+                      </div>
+                      
+                      <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '4px',
+                        alignItems: 'flex-end'
+                      }}>
+                        <div style={{
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          padding: '2px 4px',
+                          background: `rgba(${categoryColor === '#ff0066' ? '255,0,102' : categoryColor === '#00ffff' ? '0,255,255' : categoryColor === '#00ff00' ? '0,255,0' : categoryColor === '#ffff00' ? '255,255,0' : categoryColor === '#9900ff' ? '153,0,255' : categoryColor === '#ff6600' ? '255,102,0' : categoryColor === '#ff00ff' ? '255,0,255' : '102,102,102'},0.3)`,
+                          color: categoryColor,
+                          borderRadius: '4px',
+                          fontFamily: 'Press Start 2P, cursive'
+                        }}>
+                          {getCategoryText(badge.category)}
+                        </div>
+                        <div style={{
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          padding: '2px 4px',
+                          background: `rgba(${rarityColor === '#ff00ff' ? '255,0,255' : rarityColor === '#9900ff' ? '153,0,255' : rarityColor === '#00ffff' ? '0,255,255' : rarityColor === '#00ff00' ? '0,255,0' : '102,102,102'},0.3)`,
+                          color: rarityColor,
+                          borderRadius: '4px',
+                          fontFamily: 'Press Start 2P, cursive'
+                        }}>
+                          {getRarityText(badge.rarity)}
+                        </div>
+                      </div>
                     </div>
-                  )}
-                  
-                                     <div style={{display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'center'}}>
-                     <span style={{
-                       padding: '2px 6px',
-                       borderRadius: '8px',
-                       fontSize: '0.6rem',
-                       fontWeight: 700,
-                       color: '#fff',
-                       background: getRarityColor(badge.rarity),
-                       boxShadow: '0 1px 2px rgba(0,0,0,0.2)'
-                     }}>
-                       {getRarityText(badge.rarity)}
-                     </span>
-                   </div>
-                </div>
-              ))}
+                    
+                    {/* 상태 표시 */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginTop: '6px'
+                    }}>
+                      <div style={{
+                        display: 'inline-block',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        padding: '2px 6px',
+                        background: badge.achieved ? 'rgba(0,255,0,0.3)' : 'rgba(255,0,102,0.3)',
+                        color: badge.achieved ? '#00ff00' : '#ff0066',
+                        borderRadius: '4px',
+                        fontFamily: 'Press Start 2P, cursive'
+                      }}>
+                        {badge.achieved ? '획득' : '미획득'}
+                      </div>
+                      
+                      {badge.achieved && (
+                        <div style={{
+                          fontSize: '0.75rem',
+                          color: '#666',
+                          fontFamily: 'Orbitron, monospace'
+                        }}>
+                          📅 {badge.achievedDate ? new Date(badge.achievedDate).toLocaleDateString('ko-KR') : '날짜 없음'}
+                        </div>
+                      )}
+                    </div>
+                    
+
+                  </div>
+                );
+              })}
             </div>
-          </section>
-        </>
+          )}
+        </div>
       )}
-    </main>
+
+      {/* 에러 메시지 */}
+      {error && (
+        <div style={{
+          background: 'rgba(255,0,102,0.1)',
+          borderRadius: '8px',
+          padding: '12px',
+          marginTop: '12px',
+          color: '#ff0066',
+          fontSize: '0.7rem',
+          textAlign: 'center',
+          fontFamily: 'Press Start 2P, cursive'
+        }}>
+          {error}
+        </div>
+      )}
+    </div>
   );
 } 
