@@ -36,7 +36,7 @@ export default function RegisterPage() {
         router.push('/auth/login');
       } else {
         const data = await response.json();
-        setError(data.message || '회원가입에 실패했습니다.');
+        setError(data.error || '회원가입에 실패했습니다.');
       }
     } catch (error) {
       setError('서버 오류가 발생했습니다.');
@@ -161,8 +161,15 @@ export default function RegisterPage() {
                 border: '1px solid #334155',
                 color: '#ffffff'
               }}
-              placeholder="비밀번호를 입력하세요"
+              placeholder="영문 대문자, 소문자, 숫자 포함 8자 이상"
             />
+            <div style={{
+              fontSize: '0.7rem',
+              color: '#64748b',
+              marginTop: '4px'
+            }}>
+              ⚠️ 비밀번호는 영문 대문자, 소문자, 숫자를 모두 포함하여 8자 이상이어야 합니다.
+            </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

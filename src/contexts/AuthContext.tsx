@@ -8,12 +8,13 @@ interface User {
   id: string
   email: string
   nickname?: string
+  role?: string
 }
 
 interface AuthContextType {
   user: User | null
   loading: boolean
-  login: (token: string, userData: User) => void
+  login: (userData: { email: string; password: string }) => Promise<void>
   logout: () => void
 }
 
@@ -24,54 +25,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // 토큰 검증 함수
     const validateToken = async () => {
-      console.log('AuthContext: 토큰 검증 시작')
-      
       try {
-        // 서버에 토큰 검증 요청 (쿠키는 자동으로 전송됨)
         const response = await fetch('/api/auth/validate', {
+          method: 'GET',
           credentials: 'include'
         })
         
-        console.log('AuthContext: 서버 응답 상태', response.status)
-        
         if (response.ok) {
-          const userData = await response.json()
-          setUser(userData)
-          console.log('AuthContext: 토큰 검증 성공, 사용자 정보 설정됨', userData)
-        } else {
-          // 401 에러인 경우 로그인 페이지로 리다이렉트
-          if (response.status === 401) {
-            if (typeof window !== 'undefined') {
-              // 이미 로그인 페이지에 있으면 리다이렉트하지 않음
-              if (window.location.pathname !== '/auth/login') {
-                console.log('AuthContext: 401 에러 감지, 로그인 페이지로 리다이렉트')
-                window.location.href = '/auth/login'
-                return
-              } else {
-                console.log('AuthContext: 401 에러 감지, 이미 로그인 페이지에 있음, 리다이렉트 건너뜀')
-              }
-            }
+          const data = await response.json()
+          setUser(data.user)
+        } else if (response.status === 401) {
+          // 401 에러 처리 - 로그인 페이지가 아닐 때만 리다이렉트
+          if (typeof window !== 'undefined' && 
+              window.location.pathname !== '/auth/login' && 
+              window.location.pathname !== '/auth/register') {
+            window.location.href = '/auth/login'
           }
-          console.log('AuthContext: 토큰 검증 실패')
+          setUser(null)
+        } else {
           setUser(null)
         }
       } catch (error) {
-        console.error('AuthContext: 토큰 검증 중 에러', error)
         setUser(null)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
 
     validateToken()
   }, [])
 
-  const login = (token: string, userData: User) => {
-    console.log('AuthContext: 로그인 시도', { userData })
-    setUser(userData)
-    setLoading(false)
-    console.log('AuthContext: 사용자 정보 설정됨')
-    console.log('AuthContext: 로그인 완료 (토큰은 서버에서 관리)')
+  // 로그인 함수
+  const login = async (userData: { email: string; password: string }) => {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+        credentials: 'include'
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setUser(data.user)
+      } else {
+        const errorData = await response.json()
+        throw new Error(errorData.error || '로그인에 실패했습니다.')
+      }
+    } catch (error: any) {
+      throw error
+    }
   }
 
   const logout = () => {

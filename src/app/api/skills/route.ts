@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/lib/server-auth'
 // 스킬 목록 조회
 export async function GET(request: NextRequest) {
   try {
-    const user = await getCurrentUser()
+    const user = await getCurrentUser(request)
     if (!user) {
       return NextResponse.json(
         { error: '인증이 필요합니다.' },
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
 // 스킬 생성
 export async function POST(request: NextRequest) {
   try {
-    const user = await getCurrentUser()
+    const user = await getCurrentUser(request)
     if (!user) {
       return NextResponse.json(
         { error: '인증이 필요합니다.' },

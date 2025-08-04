@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Quest" ADD COLUMN "rewardPaid" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN "paidAt" TIMESTAMP(3); 

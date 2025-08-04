@@ -3,11 +3,11 @@ import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/server-auth';
 
 // 지혜 스탯 조회 (초서 개수)
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     console.log('Wisdom stats API called');
     
-    const user = await getCurrentUser();
+    const user = await getCurrentUser(request);
     console.log('User found:', user ? 'yes' : 'no');
     
     if (!user) {

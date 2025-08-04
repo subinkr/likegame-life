@@ -5,10 +5,10 @@ import { getCurrentUser } from '@/lib/server-auth'
 // 퀘스트 수락
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getCurrentUser()
+    const user = await getCurrentUser(request)
     if (!user) {
       return NextResponse.json(
         { error: '인증이 필요합니다.' },
@@ -16,11 +16,20 @@ export async function POST(
       )
     }
 
-    const questId = params.id
+    const { id: questId } = await params
 
     // 퀘스트 존재 확인
     const quest = await prisma.quest.findUnique({
-      where: { id: questId }
+      where: { id: questId },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            email: true,
+            nickname: true
+          }
+        }
+      }
     })
 
     if (!quest) {
@@ -54,33 +63,71 @@ export async function POST(
       )
     }
 
-    const updatedQuest = await prisma.quest.update({
-      where: { id: questId },
-      data: {
-        acceptedBy: user.id,
-        status: 'IN_PROGRESS'
-      },
-      include: {
-        creator: {
-          select: {
-            id: true,
-            email: true,
-            nickname: true
-          }
+    // 트랜잭션으로 퀘스트 수락과 채팅방 생성을 함께 처리
+    const result = await prisma.$transaction(async (tx) => {
+      // 퀘스트 상태 업데이트
+      const updatedQuest = await tx.quest.update({
+        where: { id: questId },
+        data: {
+          acceptedBy: user.id,
+          status: 'IN_PROGRESS'
         },
-        acceptedByUser: {
-          select: {
-            id: true,
-            email: true,
-            nickname: true
+        include: {
+          creator: {
+            select: {
+              id: true,
+              email: true,
+              nickname: true
+            }
+          },
+          acceptedByUser: {
+            select: {
+              id: true,
+              email: true,
+              nickname: true
+            }
           }
         }
-      }
+      })
+
+      // 1대1 채팅방 생성
+      const chatRoom = await (tx as any).chatRoom.create({
+        data: {
+          name: quest.title,
+          type: 'DIRECT',
+          questId: questId,
+        },
+      })
+
+      // 퀘스트 생성자와 수락자를 채팅방에 추가
+      await (tx as any).chatParticipant.createMany({
+        data: [
+          {
+            chatRoomId: chatRoom.id,
+            userId: quest.creatorId,
+          },
+          {
+            chatRoomId: chatRoom.id,
+            userId: user.id,
+          },
+        ],
+      });
+
+      // 시스템 메시지 생성 (수락자가 참가)
+      await (tx as any).chatMessage.create({
+        data: {
+          chatRoomId: chatRoom.id,
+          userId: user.id,
+          content: 'SYSTEM_JOIN',
+        },
+      });
+
+      return { updatedQuest, chatRoom }
     })
 
     return NextResponse.json({
       message: '퀘스트를 수락했습니다.',
-      quest: updatedQuest
+      quest: result.updatedQuest
     })
 
   } catch (error) {

@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/lib/server-auth'
 // 퀘스트 목록 조회
 export async function GET(request: NextRequest) {
   try {
-    const user = await getCurrentUser()
+    const user = await getCurrentUser(request)
     if (!user) {
       return NextResponse.json(
         { error: '인증이 필요합니다.' },
@@ -14,12 +14,6 @@ export async function GET(request: NextRequest) {
     }
 
     const quests = await prisma.quest.findMany({
-      where: {
-        OR: [
-          { creatorId: user.id },
-          { acceptedBy: user.id }
-        ]
-      },
       orderBy: { createdAt: 'desc' },
       include: {
         creator: {
@@ -39,7 +33,7 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({ quests })
+    return NextResponse.json(quests)
 
   } catch (error) {
     console.error('퀘스트 조회 에러:', error)
@@ -53,7 +47,7 @@ export async function GET(request: NextRequest) {
 // 퀘스트 생성
 export async function POST(request: NextRequest) {
   try {
-    const user = await getCurrentUser()
+    const user = await getCurrentUser(request)
     if (!user) {
       return NextResponse.json(
         { error: '인증이 필요합니다.' },
@@ -66,7 +60,16 @@ export async function POST(request: NextRequest) {
     // 필수 필드 검증
     if (!title || !description || !location || !reward) {
       return NextResponse.json(
-        { error: '제목, 내용, 위치, 사례금은 필수입니다.' },
+        { error: '제목, 내용, 위치, 원화 보상은 필수입니다.' },
+        { status: 400 }
+      )
+    }
+
+    // 보상 금액 검증 (최소 1000원)
+    const rewardAmount = parseInt(reward)
+    if (rewardAmount < 1000) {
+      return NextResponse.json(
+        { error: '보상 금액은 1,000원 이상이어야 합니다.' },
         { status: 400 }
       )
     }

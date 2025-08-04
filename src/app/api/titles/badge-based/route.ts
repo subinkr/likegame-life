@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/lib/server-auth'
 // 뱃지 기반 칭호 생성
 export async function POST(request: NextRequest) {
   try {
-    const user = await getCurrentUser()
+    const user = await getCurrentUser(request)
     if (!user) {
       return NextResponse.json(
         { error: '인증이 필요합니다.' },

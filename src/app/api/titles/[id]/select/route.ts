@@ -7,7 +7,7 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await getCurrentUser()
+    const user = await getCurrentUser(request)
     if (!user) {
       return NextResponse.json(
         { error: '인증이 필요합니다.' },
@@ -39,7 +39,7 @@ export async function POST(
     })
 
     // 뱃지 기반 칭호인 경우에만 뱃지 조건 확인
-    if (title.category === 'badge-based') {
+    if (title.category && title.category === 'badge-based') {
       const requiredBadgeNames = title.requiredBadges || []
       const hasRequiredBadges = requiredBadgeNames.length > 0 && requiredBadgeNames.every(badgeName => {
         return userBadges.some(ub => ub.badge.name === badgeName)

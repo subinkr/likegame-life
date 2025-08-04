@@ -1,25 +1,18 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
-    console.log('Testing database connection...');
+    const userCount = await prisma.user.count()
     
-    // 간단한 쿼리로 데이터베이스 연결 테스트
-    const userCount = await prisma.user.count();
-    console.log('User count:', userCount);
-    
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
       message: 'Database connection successful',
-      userCount 
-    });
+      userCount
+    })
   } catch (error) {
-    console.error('Database connection error:', error);
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Database connection failed',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Database connection failed' },
+      { status: 500 }
+    )
   }
 } 

@@ -64,7 +64,7 @@ export default function AdminPage() {
         setTitles(titlesData.titles || []);
       }
     } catch (error) {
-      console.error('데이터 로드 에러:', error);
+      // 데이터 로드 에러
     } finally {
       setLoading(false);
     }
@@ -75,6 +75,24 @@ export default function AdminPage() {
       fetchData();
     }
   }, [user]);
+
+  // 관리자 권한 검증
+  if (!user || user.role !== 'ADMIN') {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 'calc(100vh - 130px)',
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
+        color: '#ff4444',
+        fontSize: '1.2rem',
+        fontFamily: 'Press Start 2P, cursive'
+      }}>
+        ⚠️ 접근 권한이 없습니다.
+      </div>
+    );
+  }
 
   // 뱃지 제출
   const handleBadgeSubmit = async (e: React.FormEvent) => {
@@ -96,7 +114,7 @@ export default function AdminPage() {
         fetchData();
       }
     } catch (error) {
-      console.error('뱃지 저장 에러:', error);
+      // 뱃지 저장 에러
     }
   };
 
@@ -120,7 +138,7 @@ export default function AdminPage() {
         fetchData();
       }
     } catch (error) {
-      console.error('칭호 저장 에러:', error);
+      // 칭호 저장 에러
     }
   };
 
@@ -158,7 +176,7 @@ export default function AdminPage() {
         fetchData();
       }
     } catch (error) {
-      console.error('뱃지 삭제 에러:', error);
+      // 뱃지 삭제 에러
     }
   };
 
@@ -172,7 +190,7 @@ export default function AdminPage() {
         fetchData();
       }
     } catch (error) {
-      console.error('칭호 삭제 에러:', error);
+      // 칭호 삭제 에러
     }
   };
 

@@ -31,19 +31,9 @@ export function useStats() {
         const data = await response.json()
         setStats(data.stats)
       } else {
-        // 401 에러인 경우 로그인 페이지로 리다이렉트
+        // 401 에러는 AuthContext에서 처리하므로 여기서는 무시
         if (response.status === 401) {
-          if (typeof window !== 'undefined') {
-            // 이미 로그인 페이지에 있으면 리다이렉트하지 않음
-            if (window.location.pathname !== '/auth/login') {
-              console.log('401 에러 감지: 로그인 페이지로 리다이렉트')
-              window.location.href = '/auth/login'
-              // 401 에러는 특별 처리하므로 여기서 종료
-              throw new Error('인증이 필요합니다. 로그인 페이지로 이동합니다.')
-            } else {
-              console.log('401 에러 감지: 이미 로그인 페이지에 있음, 리다이렉트 건너뜀')
-            }
-          }
+          return
         }
         console.error('Main stats API error:', response.status, response.statusText)
         setStats({ strength: 0, agility: 0, wisdom: 0 })

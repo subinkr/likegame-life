@@ -39,15 +39,13 @@ export default function StrengthPage() {
 
   const fetchStrengthRecords = async () => {
     try {
-      const response = await fetch('/api/stats/strength', {
-        credentials: 'include',
-      });
+      const response = await fetch('/api/stats/strength');
       if (response.ok) {
         const data = await response.json();
-        setRecords(data);
+        setRecords(data.records || []);
       }
     } catch (error) {
-      console.error('Error fetching strength records:', error);
+      // 힘 기록 로드 실패
     } finally {
       setIsLoading(false);
     }
@@ -71,7 +69,7 @@ export default function StrengthPage() {
         fetchStrengthRecords();
       }
     } catch (error) {
-      console.error('Error creating strength record:', error);
+      // 힘 기록 생성 실패
     }
   };
 
@@ -102,7 +100,7 @@ export default function StrengthPage() {
         alert('기록 삭제에 실패했습니다.');
       }
     } catch (error) {
-      console.error('Error deleting strength record:', error);
+      // 힘 기록 삭제 실패
       alert('기록 삭제 중 오류가 발생했습니다.');
     }
   };

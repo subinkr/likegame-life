@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/lib/server-auth'
 // 메인 페이지용 스탯 조회 (힘: 최고 기록, 민첩: 누적 기록, 지혜: 월 합계)
 export async function GET(request: NextRequest) {
   try {
-    const user = await getCurrentUser()
+    const user = await getCurrentUser(request)
     if (!user) {
       return NextResponse.json(
         { error: '인증이 필요합니다.' },

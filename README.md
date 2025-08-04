@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LikeGame.life
 
-## Getting Started
+게임화된 라이프스타일 관리 플랫폼
 
-First, run the development server:
+## 🚀 시작하기
+
+### 필수 환경변수 설정
+
+프로젝트 루트에 `.env.local` 파일을 생성하고 다음 환경변수들을 설정하세요:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# JWT 보안 키 (프로덕션에서는 반드시 강력한 키를 사용하세요)
+JWT_SECRET=your-super-secure-jwt-secret-key-here
+
+# 환경 설정
+NODE_ENV=development
+
+# 데이터베이스 설정
+DATABASE_URL="postgresql://username:password@localhost:5432/likegame_life"
+
+# CORS 설정 (필요시)
+ALLOWED_ORIGINS=http://localhost:3000,https://yourdomain.com
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 설치 및 실행
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🔒 보안 설정
 
-## Learn More
+### 프로덕션 환경 보안 체크리스트
 
-To learn more about Next.js, take a look at the following resources:
+- [ ] JWT_SECRET 환경변수 설정 (강력한 랜덤 키 사용)
+- [ ] NODE_ENV=production 설정
+- [ ] 데이터베이스 연결 보안 설정
+- [ ] CORS 설정 (필요한 도메인만 허용)
+- [ ] 관리자 계정 생성 및 권한 설정
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 관리자 계정 생성
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+데이터베이스에서 직접 관리자 권한을 부여할 수 있습니다:
 
-## Deploy on Vercel
+```sql
+UPDATE "User" SET role = 'ADMIN' WHERE email = 'admin@example.com';
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📚 기술 스택
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Next.js 15
+- Prisma (PostgreSQL)
+- TypeScript
+- Styled Components
+
+## 🛠️ 개발
+
+```bash
+# 데이터베이스 마이그레이션
+npx prisma migrate dev
+
+# Prisma 클라이언트 생성
+npx prisma generate
+
+# 개발 서버 실행
+npm run dev
+```

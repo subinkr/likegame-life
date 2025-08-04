@@ -18,24 +18,10 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        login(data.token, data.user);
-        router.push('/');
-      } else {
-        const data = await response.json();
-        setError(data.message || '로그인에 실패했습니다.');
-      }
-    } catch (error) {
-      setError('서버 오류가 발생했습니다.');
+      await login({ email, password });
+      router.push('/');
+    } catch (error: any) {
+      setError(error.message || '로그인에 실패했습니다.');
     } finally {
       setLoading(false);
     }

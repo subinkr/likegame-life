@@ -13,11 +13,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  USER
+  ADMIN
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
   password  String
   nickname  String?
+  role      UserRole @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -34,6 +40,8 @@ model User {
   wisdomBooks WisdomBook[]
   books     Book[]
   wisdomNotes WisdomNote[]
+  chatParticipants ChatParticipant[]
+  chatMessages ChatMessage[]
 }
 
 model Stat {
@@ -83,9 +91,7 @@ model Badge {
   id          String   @id @default(cuid())
   name        String   @unique
   description String
-  category    String?
   rarity      String
-  requirement String?
   icon        String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -145,7 +151,9 @@ model Quest {
   title       String
   description String
   location    String
-  reward      Int
+  reward      Int      // 원화 보상 (예: 50000 = 5만원)
+  rewardPaid  Boolean  @default(false)  // 보상 지급 여부
+  paidAt      DateTime? // 보상 지급 일시
   status      String   // OPEN, IN_PROGRESS, COMPLETED
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -155,6 +163,8 @@ model Quest {
   acceptedBy  String?
   creator     User     @relation("QuestCreator", fields: [creatorId], references: [id], onDelete: Cascade)
   acceptedByUser User? @relation("QuestHelper", fields: [acceptedBy], references: [id])
+  chatRoom    ChatRoom?
+  chatRoomId  String?  @unique
 }
 
 model Party {
@@ -169,6 +179,8 @@ model Party {
   leaderId    String
   leader      User     @relation("PartyLeader", fields: [leaderId], references: [id], onDelete: Cascade)
   members     PartyMember[]
+  chatRoom    ChatRoom?
+  chatRoomId  String?  @unique
 }
 
 model PartyMember {
@@ -223,4 +235,46 @@ model WisdomNote {
 
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   book       Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+}
+
+// 채팅 관련 모델들
+model ChatRoom {
+  id          String   @id @default(cuid())
+  name        String?
+  type        String   // DIRECT, PARTY
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 관계
+  messages    ChatMessage[]
+  participants ChatParticipant[]
+  quest       Quest?   @relation(fields: [questId], references: [id])
+  questId     String?  @unique
+  party       Party?   @relation(fields: [partyId], references: [id])
+  partyId     String?  @unique
+}
+
+model ChatParticipant {
+  id        String   @id @default(cuid())
+  chatRoomId String
+  userId    String
+  joinedAt  DateTime @default(now())
+
+  chatRoom  ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([chatRoomId, userId])
+}
+
+model ChatMessage {
+  id         String   @id @default(cuid())
+  chatRoomId String
+  userId     String
+  content    String
+  isSystemMessage Boolean @default(false)
+  systemMessageType String? // user_joined, user_left
+  createdAt  DateTime @default(now())
+
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

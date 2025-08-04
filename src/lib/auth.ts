@@ -1,26 +1,32 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key-for-development'
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export interface JWTPayload {
   userId: string
   email: string
   nickname?: string
+  role?: string
   exp?: number
 }
 
 export const generateToken = (payload: JWTPayload): string => {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' })
+  if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET 환경변수가 설정되지 않았습니다. 프로덕션 환경에서 반드시 설정해야 합니다.');
+  }
+  
+  return jwt.sign(payload, JWT_SECRET, { 
+    expiresIn: '7d',
+    issuer: 'likegame-life',
+    audience: 'likegame-users'
+  })
 }
 
 // 클라이언트 사이드에서는 토큰을 파싱만 하고, 실제 검증은 서버에서 수행
 export const parseToken = (token: string): JWTPayload | null => {
   try {
-    console.log('JWT 토큰 파싱 시도:', token ? '토큰 있음' : '토큰 없음')
-    
     if (!token || token.split('.').length !== 3) {
-      console.error('유효하지 않은 JWT 토큰 형식')
       return null
     }
     
@@ -36,7 +42,6 @@ export const parseToken = (token: string): JWTPayload | null => {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
       }).join(''))
     } catch (decodeError) {
-      console.error('Base64 디코딩 실패:', decodeError)
       return null
     }
     
@@ -44,14 +49,11 @@ export const parseToken = (token: string): JWTPayload | null => {
     
     // 만료 시간 확인
     if (payload.exp && payload.exp * 1000 < Date.now()) {
-      console.error('JWT 토큰이 만료됨')
       return null
     }
     
-    console.log('JWT 토큰 파싱 성공:', payload)
     return payload
   } catch (error) {
-    console.error('JWT 토큰 파싱 실패:', error)
     return null
   }
 }
@@ -59,19 +61,13 @@ export const parseToken = (token: string): JWTPayload | null => {
 // 서버 사이드에서만 사용하는 검증 함수
 export const verifyToken = (token: string): JWTPayload | null => {
   try {
-    console.log('JWT 토큰 검증 시도:', token ? '토큰 있음' : '토큰 없음')
-    console.log('JWT_SECRET 확인:', JWT_SECRET ? '시크릿 있음' : '시크릿 없음')
-    
     if (!JWT_SECRET) {
-      console.error('JWT_SECRET이 설정되지 않음')
       return null
     }
     
     const payload = jwt.verify(token, JWT_SECRET) as JWTPayload
-    console.log('JWT 토큰 검증 성공:', payload)
     return payload
   } catch (error) {
-    console.error('JWT 토큰 검증 실패:', error)
     return null
   }
 }

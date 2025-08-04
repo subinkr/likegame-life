@@ -1,84 +1,84 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getCurrentUser } from '@/lib/server-auth'
+import { NextRequest, NextResponse } from 'next/server';
+import { getCurrentUser } from '@/lib/server-auth';
+import { prisma } from '@/lib/prisma';
 
-// 퀘스트 완료 (생성자만 가능)
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getCurrentUser()
+    const user = await getCurrentUser(request);
     if (!user) {
-      return NextResponse.json(
-        { error: '인증이 필요합니다.' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
     }
 
-    const questId = params.id
+    const { id: questId } = await params;
 
     // 퀘스트 존재 확인
     const quest = await prisma.quest.findUnique({
-      where: { id: questId }
-    })
-
-    if (!quest) {
-      return NextResponse.json(
-        { error: '존재하지 않는 퀘스트입니다.' },
-        { status: 404 }
-      )
-    }
-
-    // 생성자만 완료할 수 있음
-    if (quest.creatorId !== user.id) {
-      return NextResponse.json(
-        { error: '퀘스트 생성자만 완료할 수 있습니다.' },
-        { status: 403 }
-      )
-    }
-
-    // 진행 중인 퀘스트만 완료 가능
-    if (quest.status !== 'IN_PROGRESS') {
-      return NextResponse.json(
-        { error: '완료할 수 없는 퀘스트입니다.' },
-        { status: 400 }
-      )
-    }
-
-    const updatedQuest = await prisma.quest.update({
       where: { id: questId },
-      data: {
-        status: 'COMPLETED'
-      },
       include: {
         creator: {
           select: {
             id: true,
-            email: true,
-            nickname: true
-          }
+            nickname: true,
+          },
         },
         acceptedByUser: {
           select: {
             id: true,
-            email: true,
-            nickname: true
-          }
-        }
+            nickname: true,
+          },
+        },
+      },
+    });
+
+    if (!quest) {
+      return NextResponse.json({ error: '퀘스트를 찾을 수 없습니다' }, { status: 404 });
+    }
+
+    // 퀘스트 생성자만 완료할 수 있음
+    if (quest.creatorId !== user.id) {
+      return NextResponse.json({ error: '퀘스트 생성자만 완료할 수 있습니다' }, { status: 403 });
+    }
+
+    // 수락된 퀘스트만 완료할 수 있음
+    if (!quest.acceptedBy) {
+      return NextResponse.json({ error: '수락되지 않은 퀘스트는 완료할 수 없습니다' }, { status: 400 });
+    }
+
+    // 이미 완료된 퀘스트는 다시 완료할 수 없음
+    if (quest.status === 'COMPLETED') {
+      return NextResponse.json({ error: '이미 완료된 퀘스트입니다' }, { status: 400 });
+    }
+
+    // 퀘스트 완료
+    await prisma.quest.update({
+      where: { id: questId },
+      data: {
+        status: 'COMPLETED',
+        rewardPaid: true,
+        paidAt: new Date(),
+      },
+    });
+
+    return NextResponse.json({ 
+      message: `퀘스트가 완료되었습니다. ${quest.reward.toLocaleString()}원이 지급되었습니다.`,
+      quest: {
+        ...quest,
+        status: 'COMPLETED',
+        rewardPaid: true,
+        paidAt: new Date(),
       }
-    })
-
-    return NextResponse.json({
-      message: '퀘스트가 완료되었습니다.',
-      quest: updatedQuest
-    })
-
+    });
   } catch (error) {
-    console.error('퀘스트 완료 에러:', error)
-    return NextResponse.json(
-      { error: '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
+    console.error('퀘스트 완료 실패:', error);
+    console.error('에러 상세:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      questId,
+      userId: user?.id
+    });
+    return NextResponse.json({ error: '퀘스트 완료에 실패했습니다' }, { status: 500 });
   }
 } 

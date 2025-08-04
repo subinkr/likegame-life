@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ChatProvider } from "@/contexts/ChatContext";
 import ClientLayout from "./ClientLayout";
 
 export const metadata: Metadata = {
@@ -17,9 +18,11 @@ export default function RootLayout({
     <html lang="ko">
       <body>
         <AuthProvider>
-          <ClientLayout>
-            {children}
-          </ClientLayout>
+          <ChatProvider>
+            <ClientLayout>
+              {children}
+            </ClientLayout>
+          </ChatProvider>
         </AuthProvider>
       </body>
     </html>
