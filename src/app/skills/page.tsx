@@ -122,7 +122,7 @@ export default function SkillsPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: 'calc(100vh - 120px)',
+        minHeight: 'calc(100vh - 130px)',
         flexDirection: 'column',
         gap: '24px',
         background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)'
@@ -131,7 +131,7 @@ export default function SkillsPage() {
           fontSize: '3rem',
           animation: 'pulse 2s ease-in-out infinite',
           filter: 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.8))'
-        }}>⚡</div>
+        }}>📜</div>
         <div style={{ 
           color: '#00ffff', 
           fontSize: '1rem',
@@ -175,16 +175,6 @@ export default function SkillsPage() {
         borderRadius: '8px',
         padding: '12px'
       }}>
-        <div style={{
-          fontSize: '0.9rem',
-          color: '#00ffff',
-          marginBottom: '8px',
-          textAlign: 'center',
-          fontWeight: 600,
-          fontFamily: 'Press Start 2P, cursive'
-        }}>
-                             스킬
-        </div>
         <div style={{
           display: 'flex',
           justifyContent: 'space-around',
@@ -262,7 +252,8 @@ export default function SkillsPage() {
             color: '#00ffff',
             fontWeight: 600,
             fontFamily: 'Press Start 2P, cursive',
-            textAlign: 'center'
+            textAlign: 'center',
+            border: '2px solid rgba(0,255,255,0.3)'
           }}
           onClick={() => {
             setShowSkillModal(true);
@@ -294,7 +285,7 @@ export default function SkillsPage() {
           <div style={{
             textAlign: 'center',
             color: '#666',
-            fontSize: '0.7rem',
+            fontSize: '0.75rem',
             padding: '12px',
             fontFamily: 'Orbitron, monospace'
           }}>LOADING...</div>
@@ -447,162 +438,121 @@ export default function SkillsPage() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 10000,
-          padding: '20px'
+          zIndex: 1000
         }}>
-
           <div style={{
-            background: 'rgba(34,40,60,0.98)',
-            borderRadius: '16px',
-            padding: '24px',
-            maxWidth: '500px',
-            width: '100%',
-            maxHeight: '80vh',
-            overflow: 'auto',
-            border: '1px solid #2e3650',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+            background: '#1a1a1a',
+            padding: '12px',
+            borderRadius: '15px',
+            border: '2px solid rgba(0,255,255,0.3)',
+            width: '90%',
+            maxWidth: '500px'
           }}>
-            {/* 모달 헤더 */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '20px'
+            <h2 style={{ 
+              color: '#00ffff', 
+              marginTop: '16px',
+              marginBottom: '16px',
+              textAlign: 'center'
             }}>
-              <div style={{
-                fontSize: '1.1rem',
-                fontWeight: 700,
-                color: '#ffffff'
-              }}>📜 새 스킬</div>
-              <button
-                onClick={() => setShowSkillModal(false)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#bfc9d9',
-                  fontSize: '1.2rem',
-                  cursor: 'pointer',
-                  padding: '4px'
-                }}
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* 자격증 입력 폼 */}
-            <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
-              <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                <label style={{
-                  fontSize: '0.9rem',
-                  color: '#ffffff',
-                  fontWeight: 600
-                }}>📜 이름</label>
+              새 스킬
+            </h2>
+            
+            <form onSubmit={(e) => { e.preventDefault(); addSkill(); }}>
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', color: '#ffffff' }}>
+                  이름
+                </label>
                 <input 
                   ref={nameRef}
                   type="text" 
                   value={newSkill.name} 
                   onChange={e => setNewSkill(prev => ({...prev, name: e.target.value}))}
+                  required
                   placeholder="스킬 이름"
                   style={{
-                    height: 40,
-                    borderRadius: 8,
-                    fontSize: '0.9rem',
-                    padding: '0 12px',
-                    boxSizing: 'border-box',
-                    background: 'rgba(15,23,42,0.8)',
-                    border: '1px solid #334155',
+                    width: '100%',
+                    padding: '10px',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '2px solid rgba(0,255,255,0.3)',
+                    borderRadius: '6px',
                     color: '#ffffff'
                   }}
                 />
               </div>
               
-              <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                <label style={{
-                  fontSize: '0.9rem',
-                  color: '#ffffff',
-                  fontWeight: 600
-                }}>📝 설명</label>
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', color: '#ffffff' }}>
+                  설명
+                </label>
                 <input 
                   type="text" 
                   value={newSkill.description} 
                   onChange={e => setNewSkill(prev => ({...prev, description: e.target.value}))}
+                  required
                   placeholder="스킬 설명"
                   style={{
-                    height: 40,
-                    borderRadius: 8,
-                    fontSize: '0.9rem',
-                    padding: '0 12px',
-                    boxSizing: 'border-box',
-                    background: 'rgba(15,23,42,0.8)',
-                    border: '1px solid #334155',
+                    width: '100%',
+                    padding: '10px',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '2px solid rgba(0,255,255,0.3)',
+                    borderRadius: '6px',
                     color: '#ffffff'
                   }}
                 />
               </div>
               
-              <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                <label style={{
-                  fontSize: '0.9rem',
-                  color: '#ffffff',
-                  fontWeight: 600
-                }}>📅 취득일</label>
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', color: '#ffffff' }}>
+                  취득일
+                </label>
                 <input 
                   type="date" 
                   value={newSkill.acquiredDate} 
                   onChange={e => setNewSkill(prev => ({...prev, acquiredDate: e.target.value}))}
+                  required
                   style={{
-                    height: 40,
-                    borderRadius: 8,
-                    fontSize: '0.9rem',
-                    padding: '0 12px',
-                    boxSizing: 'border-box',
-                    background: 'rgba(15,23,42,0.8)',
-                    border: '1px solid #334155',
+                    width: '100%',
+                    padding: '10px',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '2px solid rgba(0,255,255,0.3)',
+                    borderRadius: '6px',
                     color: '#ffffff'
                   }}
                 />
               </div>
               
-              <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                <label style={{
-                  fontSize: '0.9rem',
-                  color: '#ffffff',
-                  fontWeight: 600
-                }}>⏰ 만료일 (선택)</label>
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', color: '#ffffff' }}>
+                  만료일 (선택)
+                </label>
                 <input 
                   type="date" 
                   value={newSkill.expiryDate || ''} 
                   onChange={e => setNewSkill(prev => ({...prev, expiryDate: e.target.value}))}
                   style={{
-                    height: 40,
-                    borderRadius: 8,
-                    fontSize: '0.9rem',
-                    padding: '0 12px',
-                    boxSizing: 'border-box',
-                    background: 'rgba(15,23,42,0.8)',
-                    border: '1px solid #334155',
+                    width: '100%',
+                    padding: '10px',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '2px solid rgba(0,255,255,0.3)',
+                    borderRadius: '6px',
                     color: '#ffffff'
                   }}
                 />
               </div>
               
-              <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                <label style={{
-                  fontSize: '0.9rem',
-                  color: '#ffffff',
-                  fontWeight: 600
-                }}>🔗 선행 스킬 (선택)</label>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', color: '#ffffff' }}>
+                  선행 스킬 (선택)
+                </label>
                 <select 
                   value={newSkill.parentSkill || ''} 
                   onChange={e => setNewSkill(prev => ({...prev, parentSkill: e.target.value}))}
                   style={{
-                    height: 40,
-                    borderRadius: 8,
-                    fontSize: '0.9rem',
-                    padding: '0 12px',
-                    boxSizing: 'border-box',
-                    background: 'rgba(15,23,42,0.8)',
-                    border: '1px solid #334155',
+                    width: '100%',
+                    padding: '10px',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '2px solid rgba(0,255,255,0.3)',
+                    borderRadius: '6px',
                     color: '#ffffff'
                   }}
                 >
@@ -622,48 +572,46 @@ export default function SkillsPage() {
                   padding: '12px', 
                   background: 'rgba(248,113,113,0.1)', 
                   borderRadius: '8px',
-                  border: '1px solid rgba(248,113,113,0.3)'
+                  border: '1px solid rgba(248,113,113,0.3)',
+                  marginBottom: '20px'
                 }}>
                   {modalError}
                 </div>
               )}
               
-              {/* 버튼들 */}
-              <div style={{display: 'flex', gap: '12px', marginTop: '8px'}}>
+              <div style={{ display: 'flex', gap: '10px' }}>
                 <button
-                  onClick={() => setShowSkillModal(false)}
+                  type="submit"
                   style={{
                     flex: 1,
                     padding: '12px',
-                    borderRadius: '8px',
-                    border: '1px solid #334155',
-                    background: 'transparent',
-                    color: '#bfc9d9',
-                    fontWeight: 600,
+                    background: 'rgba(0,255,255,0.2)',
+                    border: '2px solid rgba(0,255,255,0.5)',
+                    color: '#00ffff',
+                    borderRadius: '6px',
                     cursor: 'pointer',
-                    fontSize: '0.9rem'
-                  }}
-                >
-                  취소
-                </button>
-                <button
-                  onClick={addSkill}
-                  style={{
-                    flex: 1,
-                    background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '12px',
-                    borderRadius: '8px',
-                    fontWeight: 600,
-                    fontSize: '0.9rem',
-                    cursor: 'pointer'
+                    fontWeight: 'bold'
                   }}
                 >
                   저장
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setShowSkillModal(false)}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '2px solid rgba(255,255,255,0.3)',
+                    color: '#ffffff',
+                    borderRadius: '6px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  취소
+                </button>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       )}

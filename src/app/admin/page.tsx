@@ -384,7 +384,7 @@ export default function AdminPage() {
                       {badge.description}
                     </div>
                     <div style={{
-                      fontSize: '0.7rem',
+                      fontSize: '0.75rem',
                       color: '#64748b'
                     }}>
                       희귀도: {getRarityText(badge.rarity)}
@@ -404,7 +404,7 @@ export default function AdminPage() {
                       border: '1px solid rgba(59,130,246,0.3)',
                       color: '#3b82f6',
                       fontWeight: 600,
-                      fontSize: '0.7rem',
+                      fontSize: '0.75rem',
                       cursor: 'pointer',
                       padding: '4px 8px',
                       borderRadius: '6px'
@@ -419,7 +419,7 @@ export default function AdminPage() {
                       border: '1px solid rgba(248,113,113,0.3)',
                       color: '#f87171',
                       fontWeight: 600,
-                      fontSize: '0.7rem',
+                      fontSize: '0.75rem',
                       cursor: 'pointer',
                       padding: '4px 8px',
                       borderRadius: '6px'
@@ -506,14 +506,14 @@ export default function AdminPage() {
                     {title.description}
                   </div>
                   <div style={{
-                    fontSize: '0.7rem',
+                    fontSize: '0.75rem',
                     color: '#64748b'
                   }}>
                     희귀도: {getRarityText(title.rarity)}
                   </div>
                   {title.requiredBadges.length > 0 && (
                     <div style={{
-                      fontSize: '0.7rem',
+                      fontSize: '0.75rem',
                       color: '#64748b',
                       marginTop: '4px'
                     }}>
@@ -534,7 +534,7 @@ export default function AdminPage() {
                       border: '1px solid rgba(139,92,246,0.3)',
                       color: '#8b5cf6',
                       fontWeight: 600,
-                      fontSize: '0.7rem',
+                      fontSize: '0.75rem',
                       cursor: 'pointer',
                       padding: '4px 8px',
                       borderRadius: '6px'
@@ -549,7 +549,7 @@ export default function AdminPage() {
                       border: '1px solid rgba(248,113,113,0.3)',
                       color: '#f87171',
                       fontWeight: 600,
-                      fontSize: '0.7rem',
+                      fontSize: '0.75rem',
                       cursor: 'pointer',
                       padding: '4px 8px',
                       borderRadius: '6px'

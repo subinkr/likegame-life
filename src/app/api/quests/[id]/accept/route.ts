@@ -99,6 +99,12 @@ export async function POST(
         },
       })
 
+      console.log('채팅방 생성 완료:', {
+        chatRoomId: chatRoom.id,
+        questId: questId,
+        questTitle: quest.title
+      });
+
       // 퀘스트 생성자와 수락자를 채팅방에 추가
       await (tx as any).chatParticipant.createMany({
         data: [

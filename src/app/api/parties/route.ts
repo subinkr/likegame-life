@@ -120,7 +120,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log('채팅방 생성 완료:', chatRoom.id);
+    console.log('채팅방 생성 완료:', {
+      chatRoomId: chatRoom.id,
+      partyId: party.id,
+      partyName: party.name
+    });
 
     // 파티장을 채팅방 참가자로 추가
     await (prisma as any).chatParticipant.create({

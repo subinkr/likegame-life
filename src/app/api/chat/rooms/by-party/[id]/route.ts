@@ -12,18 +12,17 @@ export async function GET(
       return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
     }
 
-    const { id: chatRoomId } = await params;
+    const { id: partyId } = await params;
     
-    console.log('채팅방 조회 요청:', {
-      chatRoomId,
-      userId: user.id,
-      userNickname: user.nickname
+    console.log('파티 ID로 채팅방 조회:', {
+      partyId,
+      userId: user.id
     });
 
-    // 채팅방 정보 조회 (사용자가 참여한 채팅방인지 확인)
+    // 파티 ID로 채팅방 찾기
     const chatRoom = await (prisma as any).chatRoom.findFirst({
       where: {
-        id: chatRoomId,
+        partyId: partyId,
         participants: {
           some: {
             userId: user.id,
@@ -45,8 +44,8 @@ export async function GET(
     });
 
     if (!chatRoom) {
-      console.log('채팅방을 찾을 수 없음:', {
-        chatRoomId,
+      console.log('파티 채팅방을 찾을 수 없음:', {
+        partyId,
         userId: user.id
       });
       return NextResponse.json({ error: '채팅방을 찾을 수 없습니다' }, { status: 404 });
@@ -59,9 +58,14 @@ export async function GET(
       participants: chatRoom.participants.map((p: any) => p.user),
     };
 
+    console.log('파티 채팅방 찾음:', {
+      chatRoomId: chatRoom.id,
+      partyId
+    });
+
     return NextResponse.json(formattedChatRoom);
   } catch (error) {
-    console.error('채팅방 정보 조회 실패:', error);
+    console.error('파티 채팅방 조회 실패:', error);
     return NextResponse.json({ error: '채팅방 정보를 불러오는데 실패했습니다' }, { status: 500 });
   }
 } 

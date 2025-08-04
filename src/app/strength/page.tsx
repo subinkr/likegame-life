@@ -142,7 +142,7 @@ export default function StrengthPage() {
           fontSize: '3rem',
           animation: 'pulse 2s ease-in-out infinite',
           filter: 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.8))'
-        }}>⚡</div>
+        }}>💪</div>
         <div style={{ 
           color: '#00ffff', 
           fontSize: '1rem',
@@ -167,43 +167,6 @@ export default function StrengthPage() {
       color: '#ffffff',
       minHeight: 'calc(100vh - 130px)'
     }}>
-      {/* 뒤로가기 버튼 */}
-      <div style={{
-        background: 'rgba(255,0,102,0.05)',
-        borderRadius: '8px',
-        padding: '12px',
-        marginBottom: '12px'
-      }}>
-        <button
-          onClick={() => router.push('/')}
-          style={{
-            background: 'rgba(255,0,102,0.1)',
-            border: '1px solid rgba(255,0,102,0.3)',
-            color: '#ff0066',
-            padding: '8px 12px',
-            borderRadius: '6px',
-            fontSize: '0.75rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            fontFamily: 'Press Start 2P, cursive',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255,0,102,0.2)';
-            e.currentTarget.style.boxShadow = '0 0 10px rgba(255,0,102,0.5)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255,0,102,0.1)';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
-        >
-          ← 뒤로
-        </button>
-      </div>
-      
       {/* 힘 요약 */}
       <div style={{
         background: 'rgba(255,0,102,0.05)',
@@ -211,16 +174,6 @@ export default function StrengthPage() {
         padding: '12px',
         marginBottom: '12px'
       }}>
-        <div style={{
-          fontSize: '0.9rem',
-          color: '#ff0066',
-          marginBottom: '8px',
-          textAlign: 'center',
-          fontWeight: 600,
-          fontFamily: 'Press Start 2P, cursive'
-        }}>
-          💪 힘
-        </div>
         <div style={{
           display: 'flex',
           justifyContent: 'space-around',
@@ -235,7 +188,7 @@ export default function StrengthPage() {
           }}>
             <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>📊</div>
             <div style={{
-              fontSize: '0.6rem',
+              fontSize: '0.75rem',
               fontWeight: 600,
               color: '#ffffff',
               fontFamily: 'Press Start 2P, cursive'
@@ -257,7 +210,7 @@ export default function StrengthPage() {
           }}>
             <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>🏆</div>
             <div style={{
-              fontSize: '0.6rem',
+              fontSize: '0.75rem',
               fontWeight: 600,
               color: '#ffffff',
               fontFamily: 'Press Start 2P, cursive'
@@ -274,41 +227,42 @@ export default function StrengthPage() {
 
       {/* 힘 기록 추가 */}
       <div style={{
-        background: 'rgba(0,255,255,0.05)',
+        background: 'rgba(255,0,102,0.05)',
         borderRadius: '8px',
         padding: '12px',
         marginBottom: '12px'
       }}>
         <div style={{
           fontSize: '0.9rem',
-          color: '#00ffff',
+          color: '#ffffff',
           marginBottom: '8px',
           textAlign: 'center',
           fontWeight: 600,
           fontFamily: 'Press Start 2P, cursive'
         }}>
-          📝 기록 추가
+          기록 추가
         </div>
         <div 
           style={{
             padding: '8px',
-            background: 'rgba(0,255,255,0.1)',
+            background: 'rgba(255,0,102,0.1)',
             borderRadius: '6px',
             cursor: 'pointer',
             fontSize: '0.8rem',
-            color: '#00ffff',
+            color: '#ffffff',
             fontWeight: 600,
             fontFamily: 'Press Start 2P, cursive',
             textAlign: 'center',
-            transition: 'all 0.3s ease'
+            transition: 'all 0.3s ease',
+            border: '2px solid rgba(255,0,102,0.3)'
           }}
           onClick={() => setShowAddForm(true)}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(0,255,255,0.2)';
-            e.currentTarget.style.boxShadow = '0 0 10px rgba(0,255,255,0.5)';
+            e.currentTarget.style.background = 'rgba(255,0,102,0.2)';
+            e.currentTarget.style.boxShadow = '0 0 10px rgba(255,0,102,0.5)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(0,255,255,0.1)';
+            e.currentTarget.style.background = 'rgba(255,0,102,0.1)';
             e.currentTarget.style.boxShadow = 'none';
           }}
         >
@@ -324,20 +278,20 @@ export default function StrengthPage() {
       }}>
         <div style={{
           fontSize: '0.9rem',
-          color: '#ffff00',
+          color: '#ffffff',
           marginBottom: '8px',
           textAlign: 'center',
           fontWeight: 600,
           fontFamily: 'Press Start 2P, cursive'
         }}>
-          📋 기록 목록
+          기록 목록
         </div>
         
         {records.length === 0 ? (
           <div style={{
             textAlign: 'center',
             color: '#666',
-            fontSize: '0.7rem',
+            fontSize: '0.75rem',
             padding: '12px',
             fontFamily: 'Orbitron, monospace'
           }}>
@@ -362,14 +316,14 @@ export default function StrengthPage() {
                       <div style={{
                         fontWeight: 700,
                         color: '#ff0066',
-                        fontSize: '0.7rem',
+                        fontSize: '0.75rem',
                         marginBottom: '2px',
                         fontFamily: 'Press Start 2P, cursive'
                       }}>
                         {record.isBestRecord ? `🏆 ${record.total}kg` : `${record.total}kg`}
                       </div>
                       <div style={{
-                        fontSize: '0.6rem',
+                        fontSize: '0.75rem',
                         color: '#666',
                         marginBottom: '4px',
                         fontFamily: 'Orbitron, monospace'
@@ -474,147 +428,118 @@ export default function StrengthPage() {
           bottom: 0,
           background: 'rgba(0,0,0,0.8)',
           display: 'flex',
-          justifyContent: 'center',
           alignItems: 'center',
-          zIndex: 1000,
-          padding: '16px',
-          backdropFilter: 'blur(8px)'
+          justifyContent: 'center',
+          zIndex: 1000
         }}>
           <div style={{
-            background: 'rgba(34,40,60,0.98)',
-            borderRadius: '12px',
-            padding: '20px',
+            background: '#1a1a1a',
+            padding: '12px',
+            borderRadius: '15px',
+            border: '2px solid rgba(0,255,255,0.3)',
             width: '90%',
-            maxWidth: '400px',
-            border: '1px solid #64748b',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+            maxWidth: '500px'
           }}>
-            <div style={{
-              fontSize: '1rem',
-              color: '#ffffff',
+            <h2 style={{ 
+              color: '#00ffff', 
+              marginTop: '16px',
               marginBottom: '16px',
-              textAlign: 'center',
-              fontWeight: 600
+              textAlign: 'center'
             }}>
-              💪 힘 기록 추가
-            </div>
+              힘 기록 추가
+            </h2>
             
-            <form onSubmit={handleSubmit} style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
-              <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: '0.8rem',
-                  color: '#bfc9d9',
-                  marginBottom: '4px'
-                }}>
+            <form onSubmit={handleSubmit}>
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', color: '#ffffff' }}>
                   벤치프레스 (kg)
                 </label>
                 <input
                   type="number"
                   value={formData.bench}
                   onChange={(e) => setFormData({...formData, bench: Number(e.target.value)})}
+                  required
                   style={{
                     width: '100%',
-                    padding: '8px 12px',
-                    background: 'rgba(59,130,246,0.05)',
-                    border: '1px solid #64748b',
+                    padding: '10px',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '2px solid rgba(0,255,255,0.3)',
                     borderRadius: '6px',
-                    color: '#ffffff',
-                    fontSize: '0.9rem',
-                    boxSizing: 'border-box'
+                    color: '#ffffff'
                   }}
                 />
               </div>
               
-              <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: '0.8rem',
-                  color: '#bfc9d9',
-                  marginBottom: '4px'
-                }}>
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', color: '#ffffff' }}>
                   스쿼트 (kg)
                 </label>
                 <input
                   type="number"
                   value={formData.squat}
                   onChange={(e) => setFormData({...formData, squat: Number(e.target.value)})}
+                  required
                   style={{
                     width: '100%',
-                    padding: '8px 12px',
-                    background: 'rgba(59,130,246,0.05)',
-                    border: '1px solid #64748b',
+                    padding: '10px',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '2px solid rgba(0,255,255,0.3)',
                     borderRadius: '6px',
-                    color: '#ffffff',
-                    fontSize: '0.9rem',
-                    boxSizing: 'border-box'
+                    color: '#ffffff'
                   }}
                 />
               </div>
               
-              <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: '0.8rem',
-                  color: '#bfc9d9',
-                  marginBottom: '4px'
-                }}>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', color: '#ffffff' }}>
                   데드리프트 (kg)
                 </label>
                 <input
                   type="number"
                   value={formData.deadlift}
                   onChange={(e) => setFormData({...formData, deadlift: Number(e.target.value)})}
+                  required
                   style={{
                     width: '100%',
-                    padding: '8px 12px',
-                    background: 'rgba(59,130,246,0.05)',
-                    border: '1px solid #64748b',
+                    padding: '10px',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '2px solid rgba(0,255,255,0.3)',
                     borderRadius: '6px',
-                    color: '#ffffff',
-                    fontSize: '0.9rem',
-                    boxSizing: 'border-box'
+                    color: '#ffffff'
                   }}
                 />
               </div>
               
-              <div style={{
-                display: 'flex',
-                gap: '8px',
-                marginTop: '8px'
-              }}>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  type="submit"
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    background: 'rgba(0,255,255,0.2)',
+                    border: '2px solid rgba(0,255,255,0.5)',
+                    color: '#00ffff',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  저장
+                </button>
                 <button
                   type="button"
                   onClick={() => setShowAddForm(false)}
                   style={{
                     flex: 1,
-                    background: 'transparent',
-                    border: '1px solid #64748b',
-                    color: '#bfc9d9',
-                    padding: '10px',
+                    padding: '12px',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '2px solid rgba(255,255,255,0.3)',
+                    color: '#ffffff',
                     borderRadius: '6px',
-                    fontWeight: 600,
-                    fontSize: '0.8rem',
                     cursor: 'pointer'
                   }}
                 >
                   취소
-                </button>
-                <button
-                  type="submit"
-                  style={{
-                    flex: 1,
-                    background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '10px',
-                    borderRadius: '6px',
-                    fontWeight: 600,
-                    fontSize: '0.8rem',
-                    cursor: 'pointer'
-                  }}
-                >
-                  저장
                 </button>
               </div>
             </form>

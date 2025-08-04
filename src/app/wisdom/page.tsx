@@ -225,7 +225,7 @@ export default function WisdomNotesPage() {
           fontSize: '3rem',
           animation: 'pulse 2s ease-in-out infinite',
           filter: 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.8))'
-        }}>⚡</div>
+        }}>🧠</div>
         <div style={{ 
           color: '#00ffff', 
           fontSize: '1rem',
@@ -250,43 +250,6 @@ export default function WisdomNotesPage() {
       color: '#ffffff',
       minHeight: 'calc(100vh - 130px)'
     }}>
-      {/* 뒤로가기 버튼 */}
-      <div style={{
-        background: 'rgba(153,0,255,0.05)',
-        borderRadius: '8px',
-        padding: '12px',
-        marginBottom: '12px'
-      }}>
-        <button
-          onClick={() => router.push('/')}
-          style={{
-            background: 'rgba(153,0,255,0.1)',
-            border: '1px solid rgba(153,0,255,0.3)',
-            color: '#9900ff',
-            padding: '8px 12px',
-            borderRadius: '6px',
-            fontSize: '0.75rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            fontFamily: 'Press Start 2P, cursive',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(153,0,255,0.2)';
-            e.currentTarget.style.boxShadow = '0 0 10px rgba(153,0,255,0.5)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(153,0,255,0.1)';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
-        >
-          ← 뒤로
-        </button>
-      </div>
-      
       {/* 지혜 요약 */}
       <div style={{
         background: 'rgba(153,0,255,0.05)',
@@ -294,16 +257,6 @@ export default function WisdomNotesPage() {
         padding: '12px',
         marginBottom: '12px'
       }}>
-        <div style={{
-          fontSize: '0.9rem',
-          color: '#9900ff',
-          marginBottom: '8px',
-          textAlign: 'center',
-          fontWeight: 600,
-          fontFamily: 'Press Start 2P, cursive'
-        }}>
-          🧠 지혜
-        </div>
         <div style={{
           display: 'flex',
           justifyContent: 'space-around',
@@ -318,7 +271,7 @@ export default function WisdomNotesPage() {
           }}>
             <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>📝</div>
             <div style={{
-              fontSize: '0.6rem',
+              fontSize: '0.75rem',
               fontWeight: 600,
               color: '#ffffff',
               fontFamily: 'Press Start 2P, cursive'
@@ -340,7 +293,7 @@ export default function WisdomNotesPage() {
           }}>
             <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>📚</div>
             <div style={{
-              fontSize: '0.6rem',
+              fontSize: '0.75rem',
               fontWeight: 600,
               color: '#ffffff',
               fontFamily: 'Press Start 2P, cursive'
@@ -380,7 +333,7 @@ export default function WisdomNotesPage() {
             textAlign: 'center'
           }}>
             <div style={{
-              fontSize: '0.7rem',
+              fontSize: '0.75rem',
               fontWeight: 700,
               color: '#ffff00',
               marginBottom: '4px',
@@ -389,7 +342,7 @@ export default function WisdomNotesPage() {
               {selectedBook.title}
             </div>
             <div style={{
-              fontSize: '0.6rem',
+              fontSize: '0.75rem',
               color: '#666',
               fontFamily: 'Orbitron, monospace'
             }}>
@@ -408,13 +361,13 @@ export default function WisdomNotesPage() {
       }}>
         <div style={{
           fontSize: '0.9rem',
-          color: '#00ffff',
+          color: '#ffffff',
           marginBottom: '8px',
           textAlign: 'center',
           fontWeight: 600,
           fontFamily: 'Press Start 2P, cursive'
         }}>
-          📚 책 선택
+          책 선택
         </div>
         <select
           value={selectedBook?.id || ''}
@@ -430,7 +383,7 @@ export default function WisdomNotesPage() {
             borderRadius: '6px',
             color: '#ffffff',
             fontFamily: 'Orbitron, monospace',
-            fontSize: '0.7rem'
+            fontSize: '0.75rem'
           }}
         >
           <option value="">전체 책</option>
@@ -444,20 +397,20 @@ export default function WisdomNotesPage() {
 
       {/* 초서 추가 */}
       <div style={{
-        background: 'rgba(255,0,102,0.05)',
+        background: 'rgba(153,0,255,0.05)',
         borderRadius: '8px',
         padding: '12px',
         marginBottom: '12px'
       }}>
         <div style={{
           fontSize: '0.9rem',
-          color: '#ff0066',
+          color: '#ffffff',
           marginBottom: '8px',
           textAlign: 'center',
           fontWeight: 600,
           fontFamily: 'Press Start 2P, cursive'
         }}>
-          📝 초서 추가
+          초서 추가
         </div>
         <div style={{
           display: 'flex',
@@ -467,23 +420,24 @@ export default function WisdomNotesPage() {
             style={{
               flex: 1,
               padding: '8px',
-              background: 'rgba(255,0,102,0.1)',
+              background: 'rgba(153,0,255,0.1)',
               borderRadius: '6px',
               cursor: 'pointer',
               fontSize: '0.8rem',
-              color: '#ff0066',
+              color: '#ffffff',
               fontWeight: 600,
               fontFamily: 'Press Start 2P, cursive',
               textAlign: 'center',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.3s ease',
+              border: '2px solid rgba(153,0,255,0.3)'
             }}
             onClick={() => setShowAddForm(true)}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255,0,102,0.2)';
-              e.currentTarget.style.boxShadow = '0 0 10px rgba(255,0,102,0.5)';
+              e.currentTarget.style.background = 'rgba(153,0,255,0.2)';
+              e.currentTarget.style.boxShadow = '0 0 10px rgba(153,0,255,0.5)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255,0,102,0.1)';
+              e.currentTarget.style.background = 'rgba(153,0,255,0.1)';
               e.currentTarget.style.boxShadow = 'none';
             }}
           >
@@ -493,23 +447,24 @@ export default function WisdomNotesPage() {
             style={{
               flex: 1,
               padding: '8px',
-              background: 'rgba(0,255,255,0.1)',
+              background: 'rgba(255,215,0,0.1)',
               borderRadius: '6px',
               cursor: 'pointer',
               fontSize: '0.8rem',
-              color: '#00ffff',
+              color: '#ffffff',
               fontWeight: 600,
               fontFamily: 'Press Start 2P, cursive',
               textAlign: 'center',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.3s ease',
+              border: '2px solid rgba(255,215,0,0.3)'
             }}
             onClick={() => setShowAddBookForm(true)}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(0,255,255,0.2)';
-              e.currentTarget.style.boxShadow = '0 0 10px rgba(0,255,255,0.5)';
+              e.currentTarget.style.background = 'rgba(255,215,0,0.2)';
+              e.currentTarget.style.boxShadow = '0 0 10px rgba(255,215,0,0.5)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(0,255,255,0.1)';
+              e.currentTarget.style.background = 'rgba(255,215,0,0.1)';
               e.currentTarget.style.boxShadow = 'none';
             }}
           >
@@ -526,20 +481,20 @@ export default function WisdomNotesPage() {
       }}>
         <div style={{
           fontSize: '0.9rem',
-          color: '#ffff00',
+          color: '#ffffff',
           marginBottom: '8px',
           textAlign: 'center',
           fontWeight: 600,
           fontFamily: 'Press Start 2P, cursive'
         }}>
-          📋 초서 목록
+          초서 목록
         </div>
         
         {filteredNotes.length === 0 ? (
           <div style={{
             textAlign: 'center',
             color: '#666',
-            fontSize: '0.7rem',
+            fontSize: '0.75rem',
             padding: '12px',
             fontFamily: 'Orbitron, monospace'
           }}>
@@ -563,7 +518,7 @@ export default function WisdomNotesPage() {
                 }}>
                   <div style={{flex: 1}}>
                     <div style={{
-                      fontSize: '0.6rem',
+                      fontSize: '0.75rem',
                       color: '#666',
                       marginBottom: '4px',
                       fontFamily: 'Orbitron, monospace'
@@ -571,7 +526,7 @@ export default function WisdomNotesPage() {
                       📖 {note.book.title} - {note.book.author}
                     </div>
                     <div style={{
-                      fontSize: '0.5rem',
+                      fontSize: '0.75rem',
                       color: '#666',
                       marginBottom: '6px',
                       fontFamily: 'Orbitron, monospace'
@@ -586,7 +541,7 @@ export default function WisdomNotesPage() {
                       border: '1px solid rgba(153,0,255,0.3)',
                       color: '#9900ff',
                       fontWeight: 600,
-                      fontSize: '0.5rem',
+                      fontSize: '0.75rem',
                       cursor: 'pointer',
                       padding: '2px 4px',
                       borderRadius: '4px',
@@ -617,7 +572,7 @@ export default function WisdomNotesPage() {
                   marginBottom: '6px'
                 }}>
                   <div style={{
-                    fontSize: '0.6rem',
+                    fontSize: '0.75rem',
                     color: '#9900ff',
                     fontWeight: 600,
                     marginBottom: '4px',
@@ -626,7 +581,7 @@ export default function WisdomNotesPage() {
                     💬 인용
                   </div>
                   <div style={{
-                    fontSize: '0.7rem',
+                    fontSize: '0.75rem',
                     color: '#ffffff',
                     fontFamily: 'Orbitron, monospace',
                     lineHeight: '1.4'
@@ -641,7 +596,7 @@ export default function WisdomNotesPage() {
                   padding: '8px'
                 }}>
                   <div style={{
-                    fontSize: '0.6rem',
+                    fontSize: '0.75rem',
                     color: '#ffff00',
                     fontWeight: 600,
                     marginBottom: '4px',
@@ -650,7 +605,7 @@ export default function WisdomNotesPage() {
                     💭 감상
                   </div>
                   <div style={{
-                    fontSize: '0.7rem',
+                    fontSize: '0.75rem',
                     color: '#ffffff',
                     fontFamily: 'Orbitron, monospace',
                     lineHeight: '1.4'
@@ -671,7 +626,7 @@ export default function WisdomNotesPage() {
               }}>
                 {isLoadingMore && (
                   <div style={{
-                    fontSize: '0.6rem',
+                    fontSize: '0.75rem',
                     color: '#666',
                     fontFamily: 'Orbitron, monospace'
                   }}>
@@ -694,53 +649,43 @@ export default function WisdomNotesPage() {
           bottom: 0,
           background: 'rgba(0,0,0,0.8)',
           display: 'flex',
-          justifyContent: 'center',
           alignItems: 'center',
-          zIndex: 1000,
-          padding: '16px',
-          backdropFilter: 'blur(8px)'
+          justifyContent: 'center',
+          zIndex: 1000
         }}>
           <div style={{
-            background: 'rgba(34,40,60,0.98)',
-            borderRadius: '12px',
-            padding: '20px',
+            background: '#1a1a1a',
+            padding: '12px',
+            borderRadius: '15px',
+            border: '2px solid rgba(0,255,255,0.3)',
             width: '90%',
-            maxWidth: '500px',
-            border: '1px solid #64748b',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+            maxWidth: '500px'
           }}>
-            <div style={{
-              fontSize: '1rem',
-              color: '#ffffff',
+            <h2 style={{ 
+              color: '#00ffff', 
+              marginTop: '16px',
               marginBottom: '16px',
-              textAlign: 'center',
-              fontWeight: 600
+              textAlign: 'center'
             }}>
-              📝 초서 추가
-            </div>
+              초서 추가
+            </h2>
             
-            <form onSubmit={handleSubmit} style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
-              <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: '0.8rem',
-                  color: '#bfc9d9',
-                  marginBottom: '4px'
-                }}>
+            <form onSubmit={handleSubmit}>
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', color: '#ffffff' }}>
                   책 선택
                 </label>
                 <select
                   value={formData.bookId}
                   onChange={(e) => setFormData({...formData, bookId: e.target.value})}
+                  required
                   style={{
                     width: '100%',
-                    padding: '8px 12px',
-                    background: 'rgba(153,0,255,0.05)',
-                    border: '1px solid #64748b',
+                    padding: '10px',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '2px solid rgba(0,255,255,0.3)',
                     borderRadius: '6px',
-                    color: '#ffffff',
-                    fontSize: '0.9rem',
-                    boxSizing: 'border-box'
+                    color: '#ffffff'
                   }}
                 >
                   <option value="">책을 선택하세요</option>
@@ -752,99 +697,80 @@ export default function WisdomNotesPage() {
                 </select>
               </div>
               
-              <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: '0.8rem',
-                  color: '#bfc9d9',
-                  marginBottom: '4px'
-                }}>
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', color: '#ffffff' }}>
                   인용문
                 </label>
                 <textarea
                   value={formData.quote}
                   onChange={(e) => setFormData({...formData, quote: e.target.value})}
+                  required
+                  rows={3}
+                  placeholder="인상 깊은 문장을 입력하세요"
                   style={{
                     width: '100%',
-                    padding: '8px 12px',
-                    background: 'rgba(153,0,255,0.05)',
-                    border: '1px solid #64748b',
+                    padding: '10px',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '2px solid rgba(0,255,255,0.3)',
                     borderRadius: '6px',
                     color: '#ffffff',
-                    fontSize: '0.9rem',
-                    minHeight: '80px',
-                    resize: 'vertical',
-                    boxSizing: 'border-box'
+                    resize: 'vertical'
                   }}
-                  placeholder="인상 깊은 문장을 입력하세요"
                 />
               </div>
               
-              <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: '0.8rem',
-                  color: '#bfc9d9',
-                  marginBottom: '4px'
-                }}>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', color: '#ffffff' }}>
                   감상
                 </label>
                 <textarea
                   value={formData.impression}
                   onChange={(e) => setFormData({...formData, impression: e.target.value})}
+                  required
+                  rows={4}
+                  placeholder="이 문장에 대한 생각을 적어보세요"
                   style={{
                     width: '100%',
-                    padding: '8px 12px',
-                    background: 'rgba(153,0,255,0.05)',
-                    border: '1px solid #64748b',
+                    padding: '10px',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '2px solid rgba(0,255,255,0.3)',
                     borderRadius: '6px',
                     color: '#ffffff',
-                    fontSize: '0.9rem',
-                    minHeight: '100px',
-                    resize: 'vertical',
-                    boxSizing: 'border-box'
+                    resize: 'vertical'
                   }}
-                  placeholder="이 문장에 대한 생각을 적어보세요"
                 />
               </div>
               
-              <div style={{
-                display: 'flex',
-                gap: '8px',
-                marginTop: '8px'
-              }}>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  type="submit"
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    background: 'rgba(0,255,255,0.2)',
+                    border: '2px solid rgba(0,255,255,0.5)',
+                    color: '#00ffff',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  저장
+                </button>
                 <button
                   type="button"
                   onClick={() => setShowAddForm(false)}
                   style={{
                     flex: 1,
-                    background: 'transparent',
-                    border: '1px solid #64748b',
-                    color: '#bfc9d9',
-                    padding: '10px',
+                    padding: '12px',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '2px solid rgba(255,255,255,0.3)',
+                    color: '#ffffff',
                     borderRadius: '6px',
-                    fontWeight: 600,
-                    fontSize: '0.8rem',
                     cursor: 'pointer'
                   }}
                 >
                   취소
-                </button>
-                <button
-                  type="submit"
-                  style={{
-                    flex: 1,
-                    background: 'linear-gradient(135deg, #9900ff 0%, #ff0066 100%)',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '10px',
-                    borderRadius: '6px',
-                    fontWeight: 600,
-                    fontSize: '0.8rem',
-                    cursor: 'pointer'
-                  }}
-                >
-                  저장
                 </button>
               </div>
             </form>
@@ -862,121 +788,98 @@ export default function WisdomNotesPage() {
           bottom: 0,
           background: 'rgba(0,0,0,0.8)',
           display: 'flex',
-          justifyContent: 'center',
           alignItems: 'center',
-          zIndex: 1000,
-          padding: '16px',
-          backdropFilter: 'blur(8px)'
+          justifyContent: 'center',
+          zIndex: 1000
         }}>
           <div style={{
-            background: 'rgba(34,40,60,0.98)',
-            borderRadius: '12px',
-            padding: '20px',
+            background: '#1a1a1a',
+            padding: '12px',
+            borderRadius: '15px',
+            border: '2px solid rgba(0,255,255,0.3)',
             width: '90%',
-            maxWidth: '400px',
-            border: '1px solid #64748b',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+            maxWidth: '500px'
           }}>
-            <div style={{
-              fontSize: '1rem',
-              color: '#ffffff',
+            <h2 style={{ 
+              color: '#00ffff', 
+              marginTop: '16px',
               marginBottom: '16px',
-              textAlign: 'center',
-              fontWeight: 600
+              textAlign: 'center'
             }}>
-              📚 새 책 추가
-            </div>
+              새 책 추가
+            </h2>
             
-            <form onSubmit={handleAddBook} style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
-              <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: '0.8rem',
-                  color: '#bfc9d9',
-                  marginBottom: '4px'
-                }}>
+            <form onSubmit={handleAddBook}>
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', color: '#ffffff' }}>
                   책 제목
                 </label>
                 <input
                   type="text"
                   value={bookFormData.title}
                   onChange={(e) => setBookFormData({...bookFormData, title: e.target.value})}
+                  required
                   style={{
                     width: '100%',
-                    padding: '8px 12px',
-                    background: 'rgba(0,255,255,0.05)',
-                    border: '1px solid #64748b',
+                    padding: '10px',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '2px solid rgba(0,255,255,0.3)',
                     borderRadius: '6px',
-                    color: '#ffffff',
-                    fontSize: '0.9rem',
-                    boxSizing: 'border-box'
+                    color: '#ffffff'
                   }}
                 />
               </div>
               
-              <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: '0.8rem',
-                  color: '#bfc9d9',
-                  marginBottom: '4px'
-                }}>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', color: '#ffffff' }}>
                   저자
                 </label>
                 <input
                   type="text"
                   value={bookFormData.author}
                   onChange={(e) => setBookFormData({...bookFormData, author: e.target.value})}
+                  required
                   style={{
                     width: '100%',
-                    padding: '8px 12px',
-                    background: 'rgba(0,255,255,0.05)',
-                    border: '1px solid #64748b',
+                    padding: '10px',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '2px solid rgba(0,255,255,0.3)',
                     borderRadius: '6px',
-                    color: '#ffffff',
-                    fontSize: '0.9rem',
-                    boxSizing: 'border-box'
+                    color: '#ffffff'
                   }}
                 />
               </div>
               
-              <div style={{
-                display: 'flex',
-                gap: '8px',
-                marginTop: '8px'
-              }}>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  type="submit"
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    background: 'rgba(0,255,255,0.2)',
+                    border: '2px solid rgba(0,255,255,0.5)',
+                    color: '#00ffff',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  저장
+                </button>
                 <button
                   type="button"
                   onClick={() => setShowAddBookForm(false)}
                   style={{
                     flex: 1,
-                    background: 'transparent',
-                    border: '1px solid #64748b',
-                    color: '#bfc9d9',
-                    padding: '10px',
+                    padding: '12px',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '2px solid rgba(255,255,255,0.3)',
+                    color: '#ffffff',
                     borderRadius: '6px',
-                    fontWeight: 600,
-                    fontSize: '0.8rem',
                     cursor: 'pointer'
                   }}
                 >
                   취소
-                </button>
-                <button
-                  type="submit"
-                  style={{
-                    flex: 1,
-                    background: 'linear-gradient(135deg, #00ffff 0%, #8b5cf6 100%)',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '10px',
-                    borderRadius: '6px',
-                    fontWeight: 600,
-                    fontSize: '0.8rem',
-                    cursor: 'pointer'
-                  }}
-                >
-                  저장
                 </button>
               </div>
             </form>

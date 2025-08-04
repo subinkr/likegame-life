@@ -74,14 +74,32 @@ export function useAchievements() {
       }
 
       const response = await titlesAPI.get()
-      setTitles(response.titles)
+      
+      // 비활성화된 칭호의 선택 상태를 자동으로 해제
+      const updatedTitles = response.titles.map((title: Title) => {
+        if (!title.achieved && title.selected) {
+          // 비활성화된 칭호가 선택된 상태라면 선택 해제
+          return { ...title, selected: false }
+        }
+        return title
+      })
+      
+      setTitles(updatedTitles)
     } catch (err: any) {
       setError(err.message || '칭호를 불러오는데 실패했습니다.')
       // API 실패 시 localStorage에서 로드
       if (typeof window !== 'undefined') {
         const savedTitles = localStorage.getItem('likegame-titles')
         if (savedTitles) {
-          setTitles(JSON.parse(savedTitles))
+          const parsedTitles = JSON.parse(savedTitles)
+          // localStorage에서도 비활성화된 칭호의 선택 상태 해제
+          const updatedTitles = parsedTitles.map((title: Title) => {
+            if (!title.achieved && title.selected) {
+              return { ...title, selected: false }
+            }
+            return title
+          })
+          setTitles(updatedTitles)
         }
       }
     } finally {

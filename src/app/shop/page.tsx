@@ -9,15 +9,28 @@ export default function ShopPage() {
   if (!user) {
     return (
       <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
         display: 'flex',
-        justifyContent: 'center',
         alignItems: 'center',
-        color: '#ffffff',
-        fontFamily: 'Press Start 2P, cursive'
+        justifyContent: 'center',
+        minHeight: 'calc(100vh - 130px)',
+        flexDirection: 'column',
+        gap: '24px',
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)'
       }}>
-        로딩 중...
+        <div style={{ 
+          fontSize: '3rem',
+          animation: 'pulse 2s ease-in-out infinite',
+          filter: 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.8))'
+        }}>🛒</div>
+        <div style={{ 
+          color: '#00ffff', 
+          fontSize: '1rem',
+          fontFamily: 'Press Start 2P, cursive',
+          textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
+          textAlign: 'center'
+        }}>
+          시스템 로딩 중...
+        </div>
       </div>
     );
   }
@@ -29,43 +42,6 @@ export default function ShopPage() {
       padding: '16px',
       color: '#ffffff'
     }}>
-      {/* 뒤로가기 버튼 */}
-      <div style={{
-        background: 'rgba(255,215,0,0.05)',
-        borderRadius: '8px',
-        padding: '12px',
-        marginBottom: '12px'
-      }}>
-        <button
-          onClick={() => router.push('/')}
-          style={{
-            background: 'rgba(255,215,0,0.1)',
-            border: '1px solid rgba(255,215,0,0.3)',
-            color: '#ffff00',
-            padding: '8px 12px',
-            borderRadius: '6px',
-            fontSize: '0.75rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            fontFamily: 'Press Start 2P, cursive',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255,215,0,0.2)';
-            e.currentTarget.style.boxShadow = '0 0 10px rgba(255,215,0,0.5)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255,215,0,0.1)';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
-        >
-          ← 뒤로
-        </button>
-      </div>
-      
       {/* 상점 요약 */}
       <div style={{
         background: 'rgba(255,215,0,0.05)',
@@ -97,7 +73,7 @@ export default function ShopPage() {
           }}>
             <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>🎨</div>
             <div style={{
-              fontSize: '0.6rem',
+              fontSize: '0.75rem',
               fontWeight: 600,
               color: '#ffffff',
               fontFamily: 'Press Start 2P, cursive'
@@ -119,7 +95,7 @@ export default function ShopPage() {
           }}>
             <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>⚡</div>
             <div style={{
-              fontSize: '0.6rem',
+              fontSize: '0.75rem',
               fontWeight: 600,
               color: '#ffffff',
               fontFamily: 'Press Start 2P, cursive'
@@ -181,7 +157,7 @@ export default function ShopPage() {
             상점
           </div>
           <div style={{
-            fontSize: '0.7rem',
+            fontSize: '0.75rem',
             color: '#666',
             textAlign: 'center',
             fontFamily: 'Orbitron, monospace'
@@ -230,7 +206,7 @@ export default function ShopPage() {
             상점 기능 준비 중
           </div>
           <div style={{
-            fontSize: '0.7rem',
+            fontSize: '0.75rem',
             lineHeight: '1.5',
             color: '#666'
           }}>

@@ -43,8 +43,8 @@ export default function Home() {
   const { badges, titles, loading: achievementsLoading, error: achievementsError, toggleBadge, selectTitle } = useAchievements();
   const { skills, loading: skillsLoading, error: skillsError } = useSkills();
   
-  // 선택된 칭호 찾기
-  const selectedTitle = titles?.find(title => title.selected);
+  // 선택된 칭호 찾기 (활성화된 칭호만)
+  const selectedTitle = titles?.find(title => title.selected && title.achieved);
   
   // 페이지 로드 시 스탯만 확인 (칭호는 업적 페이지에서 활성화)
   useEffect(() => {
@@ -193,7 +193,7 @@ export default function Home() {
           fontSize: '3rem',
           animation: 'pulse 2s ease-in-out infinite',
           filter: 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.8))'
-        }}>⚡</div>
+        }}>📈</div>
         <div style={{ 
           color: '#00ffff', 
           fontSize: '1rem',
@@ -247,17 +247,6 @@ export default function Home() {
       }}>
         {user && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {/* 닉네임 */}
-            <div style={{
-              color: '#ffffff',
-              fontSize: '1.2rem',
-              fontWeight: 700,
-              fontFamily: 'Press Start 2P, cursive'
-            }}>
-              <span style={{fontSize: '1.3rem', marginRight: '6px'}}>🎮</span>
-              {user.nickname || '플레이어'}
-            </div>
-            
             {/* 선택된 칭호 */}
             {selectedTitle ? (
               <div style={{
@@ -289,20 +278,14 @@ export default function Home() {
               </div>
             )}
             
-            {/* 유저 랭크 */}
+            {/* 닉네임 */}
             <div style={{
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              padding: '3px 6px',
-              background: 'rgba(0,255,255,0.2)',
-              color: '#00ffff',
-              borderRadius: '6px',
-              display: 'inline-block',
-              margin: '0 auto',
+              color: '#ffffff',
+              fontSize: '1.2rem',
+              fontWeight: 700,
               fontFamily: 'Press Start 2P, cursive'
             }}>
-              <span style={{fontSize: '0.8rem', marginRight: '3px'}}>⚡</span>
-              {getUserRank()}
+              {user.nickname || '플레이어'}
             </div>
           </div>
         )}
@@ -310,13 +293,13 @@ export default function Home() {
 
       {/* 스탯 섹션 - 미니멀하게 */}
       <div style={{
-        background: 'rgba(0,255,0,0.05)',
+        background: 'rgba(0,255,255,0.05)',
         borderRadius: '8px',
         padding: '12px'
       }}>
         <div style={{
           fontSize: '0.9rem',
-          color: '#00ff00',
+          color: '#ffffff',
           marginBottom: '8px',
           textAlign: 'center',
           fontWeight: 600,
@@ -339,7 +322,8 @@ export default function Home() {
             padding: '8px',
             background: 'rgba(255,0,102,0.05)',
             borderRadius: '6px',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            border: '2px solid rgba(255,0,102,0.3)'
           }}
           onClick={() => router.push('/strength')}
           >
@@ -429,7 +413,8 @@ export default function Home() {
             padding: '8px',
             background: 'rgba(0,255,255,0.05)',
             borderRadius: '6px',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            border: '2px solid rgba(0,255,255,0.3)'
           }}
           onClick={() => router.push('/agility')}
           >
@@ -519,7 +504,8 @@ export default function Home() {
             padding: '8px',
             background: 'rgba(153,0,255,0.05)',
             borderRadius: '6px',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            border: '2px solid rgba(153,0,255,0.3)'
           }}
           onClick={() => router.push('/wisdom')}
           >
@@ -605,13 +591,13 @@ export default function Home() {
 
       {/* 업적 요약 - 미니멀하게 */}
       <div style={{
-        background: 'rgba(255,255,0,0.05)',
+        background: 'rgba(0,255,255,0.05)',
         borderRadius: '8px',
         padding: '12px'
       }}>
         <div style={{
           fontSize: '0.9rem',
-          color: '#ffff00',
+          color: '#ffffff',
           marginBottom: '8px',
           textAlign: 'center',
           fontWeight: 600,
@@ -630,7 +616,8 @@ export default function Home() {
             background: 'rgba(0,255,255,0.1)',
             borderRadius: '4px',
             flex: 1,
-            cursor: 'pointer'
+            cursor: 'pointer',
+            border: '2px solid rgba(0,255,255,0.3)'
           }}
           onClick={() => router.push('/skills')}
           >
@@ -655,9 +642,10 @@ export default function Home() {
             background: 'rgba(255,255,0,0.1)',
             borderRadius: '4px',
             flex: 1,
-            cursor: 'pointer'
+            cursor: 'pointer',
+            border: '2px solid rgba(255,255,0,0.3)'
           }}
-          onClick={() => router.push('/achievements')}
+          onClick={() => router.push('/achievements?tab=titles')}
           >
             <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>👑</div>
             <div style={{
@@ -680,11 +668,12 @@ export default function Home() {
             background: 'rgba(255,0,102,0.1)',
             borderRadius: '4px',
             flex: 1,
-            cursor: 'pointer'
+            cursor: 'pointer',
+            border: '2px solid rgba(255,0,102,0.3)'
           }}
           onClick={() => router.push('/achievements?tab=badges')}
           >
-            <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>🏆</div>
+            <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>🎖️</div>
             <div style={{
               fontSize: '0.75rem',
               fontWeight: 600,

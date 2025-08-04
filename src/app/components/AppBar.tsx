@@ -1,5 +1,5 @@
 'use client';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSkills } from '@/hooks/useSkills';
@@ -13,6 +13,7 @@ interface Stats {
 
 export default function AppBar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { user, logout } = useAuth();
   const [stats, setStats] = useState<Stats>({ strength: 0, agility: 0, wisdom: 0 });
 
@@ -48,34 +49,46 @@ export default function AppBar() {
 
   const getPageTitle = () => {
     switch (pathname) {
-      case '/':
-        return '스탯';
-      case '/skills':
-        return '스킬';
-      case '/achievements':
-        return '업적';
-      case '/guild':
-        return '길드';
-      case '/shop':
-        return '상점';
+      case '/': return '스탯';
+      case '/skills': return '스킬';
+      case '/achievements': 
+        // URL 파라미터 확인하여 탭 구분
+        const tab = searchParams.get('tab');
+        return tab === 'badges' ? '뱃지' : '칭호';
+      case '/guild': return '길드';
+      case '/chat': return '채팅';
+      case '/shop': return '상점';
+      case '/strength': return '힘';
+      case '/agility': return '민첩';
+      case '/wisdom': return '지혜';
+      case '/wisdom/new': return '지혜 기록';
+      case '/books': return '도서';
+      case '/admin': return '관리';
       default:
+        if (pathname.startsWith('/chat/')) { return '채팅방'; }
         return '라이크게임';
     }
   };
 
   const getPageIcon = () => {
     switch (pathname) {
-      case '/':
-        return '⚡';
-      case '/skills':
-        return '📜';
-      case '/achievements':
-        return '🏆';
-      case '/guild':
-        return '🏰';
-      case '/shop':
-        return '🛒';
+      case '/': return '📈';
+      case '/skills': return '📜';
+      case '/achievements': 
+        // URL 파라미터 확인하여 탭 구분
+        const tab = searchParams.get('tab');
+        return tab === 'badges' ? '🎖️' : '👑';
+      case '/guild': return '⚔️';
+      case '/chat': return '💬';
+      case '/shop': return '🛒';
+      case '/strength': return '💪';
+      case '/agility': return '🏃';
+      case '/wisdom': return '🧠';
+      case '/wisdom/new': return '✍️';
+      case '/books': return '📚';
+      case '/admin': return '⚙️';
       default:
+        if (pathname.startsWith('/chat/')) { return '💬'; }
         return '🎮';
     }
   };

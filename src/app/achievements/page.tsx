@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAchievements } from '@/hooks/useAchievements';
 import Link from 'next/link';
@@ -31,6 +31,7 @@ export default function AchievementsPage() {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const { badges, titles, loading, error: achievementsError, toggleBadge, selectTitle, loadBadges, loadTitles } = useAchievements();
   
   // URL 파라미터에서 탭 상태 읽기
@@ -61,6 +62,8 @@ export default function AchievementsPage() {
     const params = new URLSearchParams();
     if (tab === 'badges') {
       params.set('tab', 'badges');
+    } else {
+      params.set('tab', 'titles');
     }
     router.push(`/achievements?${params.toString()}`);
   };
@@ -335,7 +338,9 @@ export default function AchievementsPage() {
     setSearchTerm('');
   };
 
-  if (loading) {
+  // 로딩 중이거나 로그인되지 않은 경우
+  if (loading || !user) {
+    const loadingEmoji = activeTab === 'titles' ? '👑' : '🎖️';
     return (
       <div style={{
         display: 'flex',
@@ -350,7 +355,7 @@ export default function AchievementsPage() {
           fontSize: '3rem',
           animation: 'pulse 2s ease-in-out infinite',
           filter: 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.8))'
-        }}>⚡</div>
+        }}>{loadingEmoji}</div>
         <div style={{ 
           color: '#00ffff', 
           fontSize: '1rem',
@@ -380,117 +385,6 @@ export default function AchievementsPage() {
       color: '#ffffff',
       minHeight: 'calc(100vh - 130px)'
     }}>
-      {/* 뒤로가기 버튼 */}
-      <div style={{
-        background: 'rgba(255,215,0,0.05)',
-        borderRadius: '8px',
-        padding: '12px',
-        marginBottom: '12px'
-      }}>
-        <button
-          onClick={() => router.push('/')}
-          style={{
-            background: 'rgba(255,215,0,0.1)',
-            border: '1px solid rgba(255,215,0,0.3)',
-            color: '#ffff00',
-            padding: '8px 12px',
-            borderRadius: '6px',
-            fontSize: '0.75rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            fontFamily: 'Press Start 2P, cursive',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255,215,0,0.2)';
-            e.currentTarget.style.boxShadow = '0 0 10px rgba(255,215,0,0.5)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255,215,0,0.1)';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
-        >
-          ← 뒤로
-        </button>
-      </div>
-      
-      {/* 업적 요약 */}
-      <div style={{
-        background: 'rgba(255,215,0,0.05)',
-        borderRadius: '8px',
-        padding: '12px',
-        marginBottom: '12px'
-      }}>
-        <div style={{
-          fontSize: '0.9rem',
-          color: '#ffff00',
-          marginBottom: '8px',
-          textAlign: 'center',
-          fontWeight: 600,
-          fontFamily: 'Press Start 2P, cursive'
-        }}>
-          업적
-        </div>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-around',
-          gap: '4px'
-        }}>
-          <div style={{
-            textAlign: 'center',
-            padding: '6px',
-            background: 'rgba(255,215,0,0.1)',
-            borderRadius: '4px',
-            flex: 1,
-            cursor: 'pointer'
-          }}
-          onClick={() => router.push('/achievements')}
-          >
-            <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>👑</div>
-            <div style={{
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              color: '#ffffff',
-              fontFamily: 'Press Start 2P, cursive'
-            }}>칭호</div>
-            <div style={{
-              fontSize: '0.8rem',
-              fontWeight: 700,
-              color: '#ffff00',
-              fontFamily: 'Press Start 2P, cursive'
-            }}>{titleStats.achieved}/{titleStats.total}</div>
-          </div>
-          
-          <div style={{
-            textAlign: 'center',
-            padding: '6px',
-            background: 'rgba(255,0,102,0.1)',
-            borderRadius: '4px',
-            flex: 1,
-            cursor: 'pointer'
-          }}
-          onClick={() => router.push('/achievements?tab=badges')}
-          >
-            <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>🏆</div>
-            <div style={{
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              color: '#ffffff',
-              fontFamily: 'Press Start 2P, cursive'
-            }}>뱃지</div>
-            <div style={{
-              fontSize: '0.8rem',
-              fontWeight: 700,
-              color: '#ff0066',
-              fontFamily: 'Press Start 2P, cursive'
-            }}>{badgeStats.achieved}/{badgeStats.total}</div>
-          </div>
-        </div>
-      </div>
-
       {/* 탭 선택 */}
       <div style={{
         background: 'rgba(0,255,255,0.05)',
@@ -506,7 +400,7 @@ export default function AchievementsPage() {
           fontWeight: 600,
           fontFamily: 'Press Start 2P, cursive'
         }}>
-          {activeTab === 'titles' ? '👑 칭호' : '🏆 뱃지'} ({activeTab === 'titles' ? titleStats.achieved : badgeStats.achieved}/{activeTab === 'titles' ? titleStats.total : badgeStats.total})
+          {activeTab === 'titles' ? '칭호' : '뱃지'} ({activeTab === 'titles' ? titleStats.achieved : badgeStats.achieved}/{activeTab === 'titles' ? titleStats.total : badgeStats.total})
         </div>
         
         <div style={{
@@ -522,7 +416,7 @@ export default function AchievementsPage() {
               border: activeTab === 'titles' ? '2px solid #ffd700' : '1px solid rgba(255,215,0,0.3)',
               borderRadius: '4px',
               color: '#ffd700',
-              fontSize: '0.7rem',
+              fontSize: '0.75rem',
               fontFamily: 'Press Start 2P, cursive',
               cursor: 'pointer',
               transition: 'all 0.3s ease'
@@ -541,7 +435,7 @@ export default function AchievementsPage() {
               }
             }}
           >
-            👑 칭호 ({titleStats.achieved}/{titleStats.total})
+            칭호 ({titleStats.achieved}/{titleStats.total})
           </button>
 
           <button
@@ -552,7 +446,7 @@ export default function AchievementsPage() {
               border: activeTab === 'badges' ? '2px solid #ff0066' : '1px solid rgba(255,0,102,0.3)',
               borderRadius: '4px',
               color: '#ff0066',
-              fontSize: '0.7rem',
+              fontSize: '0.75rem',
               fontFamily: 'Press Start 2P, cursive',
               cursor: 'pointer',
               transition: 'all 0.3s ease'
@@ -571,7 +465,7 @@ export default function AchievementsPage() {
               }
             }}
           >
-            🏆 뱃지 ({badgeStats.achieved}/{badgeStats.total})
+            뱃지 ({badgeStats.achieved}/{badgeStats.total})
           </button>
         </div>
 
@@ -595,7 +489,7 @@ export default function AchievementsPage() {
               border: '1px solid rgba(0,255,255,0.3)',
               borderRadius: '4px',
               color: '#ffffff',
-              fontSize: '0.7rem',
+              fontSize: '0.75rem',
               fontFamily: 'Press Start 2P, cursive'
             }}
           />
@@ -610,7 +504,7 @@ export default function AchievementsPage() {
               border: '1px solid rgba(0,255,255,0.3)',
               borderRadius: '4px',
               color: '#ffffff',
-              fontSize: '0.7rem',
+              fontSize: '0.75rem',
               fontFamily: 'Press Start 2P, cursive',
               minWidth: '80px'
             }}
@@ -633,7 +527,7 @@ export default function AchievementsPage() {
               border: '1px solid rgba(0,255,255,0.3)',
               borderRadius: '4px',
               color: '#ffffff',
-              fontSize: '0.7rem',
+              fontSize: '0.75rem',
               fontFamily: 'Press Start 2P, cursive',
               minWidth: '80px'
             }}
@@ -652,7 +546,7 @@ export default function AchievementsPage() {
               border: '1px solid rgba(255,0,102,0.3)',
               borderRadius: '4px',
               color: '#ff0066',
-              fontSize: '0.7rem',
+              fontSize: '0.75rem',
               fontFamily: 'Press Start 2P, cursive',
               cursor: 'pointer',
               transition: 'all 0.3s ease'
@@ -672,7 +566,7 @@ export default function AchievementsPage() {
 
         {/* 결과 개수 표시 */}
         <div style={{
-          fontSize: '0.7rem',
+          fontSize: '0.75rem',
           color: '#666',
           textAlign: 'center',
           fontFamily: 'Orbitron, monospace'
@@ -693,19 +587,19 @@ export default function AchievementsPage() {
         }}>
           <div style={{
             fontSize: '0.9rem',
-            color: '#ffd700',
+            color: '#ffffff',
             marginBottom: '8px',
             textAlign: 'center',
             fontWeight: 600,
             fontFamily: 'Press Start 2P, cursive'
           }}>
-            👑 칭호 목록
+            칭호 목록
           </div>
           {filteredTitles.length === 0 ? (
             <div style={{
               textAlign: 'center',
               color: '#666',
-              fontSize: '0.7rem',
+              fontSize: '0.75rem',
               padding: '8px',
               fontFamily: 'Orbitron, monospace'
             }}>
@@ -778,15 +672,52 @@ export default function AchievementsPage() {
                         선택됨
                       </div>
                     )}
-                    <div style={{ fontWeight: 700, color: '#ffff00', fontSize: '0.8rem', marginBottom: '2px', fontFamily: 'Press Start 2P, cursive' }}>
-                      {title.name}
+                    {/* 상단: 아이콘과 이름 */}
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '1px',
+                      marginBottom: '3px',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{fontSize: '1.6rem'}}>👑</div>
+                      <div style={{
+                        fontWeight: 700,
+                        color: '#ffff00',
+                        fontSize: '0.75rem',
+                        fontFamily: 'Press Start 2P, cursive',
+                        lineHeight: '1.1',
+                        wordBreak: 'break-word'
+                      }}>
+                        {title.name}
+                      </div>
                     </div>
-                    <div style={{ fontSize: '0.7rem', color: '#999', marginBottom: '2px', fontFamily: 'Orbitron, monospace' }}>
+
+                    {/* 중간: 설명 */}
+                    <div style={{
+                      fontSize: '0.75rem',
+                      color: '#999',
+                      marginBottom: '3px',
+                      fontFamily: 'Orbitron, monospace',
+                      lineHeight: '1.2',
+                      flex: 1,
+                      textAlign: 'center',
+                      wordBreak: 'break-word'
+                    }}>
                       {title.description}
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+
+                    {/* 하단: 등급과 획득여부 (한 줄) */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: '4px',
+                      marginBottom: '2px'
+                    }}>
                       <div style={{
-                        fontSize: '0.65rem',
+                        fontSize: '0.75rem',
                         fontWeight: 700,
                         padding: '1px 3px',
                         background: `rgba(${hexToRgb(rarityColor)},0.3)`,
@@ -796,8 +727,9 @@ export default function AchievementsPage() {
                       }}>
                         {getRarityText(title.rarity)}
                       </div>
+
                       <div style={{
-                        fontSize: '0.65rem',
+                        fontSize: '0.75rem',
                         fontWeight: 700,
                         padding: '1px 3px',
                         background: isAchieved ? 'rgba(0,255,0,0.3)' : 'rgba(255,0,102,0.3)',
@@ -808,9 +740,11 @@ export default function AchievementsPage() {
                         {isAchieved ? '획득' : '미획득'}
                       </div>
                     </div>
+                    
+                    {/* 획득한 경우에만 날짜 표시 */}
                     {isAchieved && (
                       <div style={{
-                        fontSize: '0.6rem',
+                        fontSize: '0.75rem',
                         color: '#666',
                         fontFamily: 'Orbitron, monospace',
                         textAlign: 'center'
@@ -835,20 +769,20 @@ export default function AchievementsPage() {
         }}>
           <div style={{
             fontSize: '0.9rem',
-            color: '#ff0066',
+            color: '#ffffff',
             marginBottom: '8px',
             textAlign: 'center',
             fontWeight: 600,
             fontFamily: 'Press Start 2P, cursive'
           }}>
-            🏅 뱃지 목록
+            뱃지 목록
           </div>
           
           {filteredBadges.length === 0 ? (
             <div style={{
               textAlign: 'center',
               color: '#666',
-              fontSize: '0.7rem',
+              fontSize: '0.75rem',
               padding: '8px',
               fontFamily: 'Orbitron, monospace'
             }}>
@@ -928,15 +862,16 @@ export default function AchievementsPage() {
                       {badge.description}
                     </div>
 
-                    {/* 하단: 희귀도, 상태, 날짜 */}
+                    {/* 하단: 등급과 획득여부 (한 줄) */}
                     <div style={{
                       display: 'flex',
-                      flexDirection: 'column',
+                      justifyContent: 'space-between',
                       alignItems: 'center',
-                      gap: '1px'
+                      gap: '4px',
+                      marginBottom: '2px'
                     }}>
                       <div style={{
-                        fontSize: '0.65rem',
+                        fontSize: '0.75rem',
                         fontWeight: 700,
                         padding: '1px 3px',
                         background: `rgba(${hexToRgb(rarityColor)},0.3)`,
@@ -948,7 +883,7 @@ export default function AchievementsPage() {
                       </div>
 
                       <div style={{
-                        fontSize: '0.65rem',
+                        fontSize: '0.75rem',
                         fontWeight: 700,
                         padding: '1px 3px',
                         background: badge.achieved ? 'rgba(0,255,0,0.3)' : 'rgba(255,0,102,0.3)',
@@ -958,18 +893,19 @@ export default function AchievementsPage() {
                       }}>
                         {badge.achieved ? '획득' : '미획득'}
                       </div>
-                      
-                      {badge.achieved && (
-                        <div style={{
-                          fontSize: '0.6rem',
-                          color: '#666',
-                          fontFamily: 'Orbitron, monospace',
-                          textAlign: 'center'
-                        }}>
-                          📅 {badge.achievedDate ? new Date(badge.achievedDate).toLocaleDateString('ko-KR') : '날짜 없음'}
-                        </div>
-                      )}
                     </div>
+                    
+                    {/* 획득한 경우에만 날짜 표시 */}
+                    {badge.achieved && (
+                      <div style={{
+                        fontSize: '0.75rem',
+                        color: '#666',
+                        fontFamily: 'Orbitron, monospace',
+                        textAlign: 'center'
+                      }}>
+                        📅 {badge.achievedDate ? new Date(badge.achievedDate).toLocaleDateString('ko-KR') : '날짜 없음'}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -986,7 +922,7 @@ export default function AchievementsPage() {
           padding: '8px',
           marginTop: '8px',
           color: '#ff0066',
-          fontSize: '0.7rem',
+          fontSize: '0.75rem',
           fontFamily: 'Press Start 2P, cursive'
         }}>
           {error}
@@ -999,7 +935,7 @@ export default function AchievementsPage() {
           textAlign: 'center',
           padding: '8px',
           color: '#00ffff',
-          fontSize: '0.7rem',
+          fontSize: '0.75rem',
           fontFamily: 'Press Start 2P, cursive'
         }}>
           로딩 중...

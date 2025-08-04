@@ -47,12 +47,29 @@ export default function ChatListPage() {
 
   if (loading) {
     return (
-      <div style={{ 
-        padding: '20px', 
-        textAlign: 'center',
-        color: '#ffffff'
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 'calc(100vh - 130px)',
+        flexDirection: 'column',
+        gap: '24px',
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)'
       }}>
-        채팅방 목록을 불러오는 중...
+        <div style={{ 
+          fontSize: '3rem',
+          animation: 'pulse 2s ease-in-out infinite',
+          filter: 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.8))'
+        }}>💬</div>
+        <div style={{ 
+          color: '#00ffff', 
+          fontSize: '1rem',
+          fontFamily: 'Press Start 2P, cursive',
+          textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
+          textAlign: 'center'
+        }}>
+          시스템 로딩 중...
+        </div>
       </div>
     );
   }
@@ -63,36 +80,6 @@ export default function ChatListPage() {
       background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
       padding: 'clamp(15px, 4vw, 20px)'
     }}>
-      {/* 헤더 */}
-      <div style={{
-        marginBottom: 'clamp(20px, 5vw, 30px)',
-        textAlign: 'center'
-      }}>
-        <h1 style={{
-          fontSize: 'clamp(1.5rem, 6vw, 2rem)',
-          color: '#ffffff',
-          fontWeight: 700,
-          margin: '0 0 10px 0',
-          textShadow: '0 0 10px rgba(0,255,255,0.5)',
-          fontFamily: 'Press Start 2P, cursive',
-          padding: '8px 16px',
-          background: 'rgba(0,255,255,0.1)',
-          borderRadius: '12px',
-          border: '2px solid rgba(0,255,255,0.3)',
-          display: 'inline-block'
-        }}>
-          <span style={{fontSize: 'clamp(1.6rem, 6.5vw, 2.1rem)', marginRight: '8px'}}>💬</span>
-          채팅방
-        </h1>
-        <p style={{
-          fontSize: 'clamp(0.8rem, 3vw, 0.9rem)',
-          color: '#888888',
-          margin: 0
-        }}>
-          {chatRooms.length}개의 채팅방
-        </p>
-      </div>
-
       {/* 채팅방 목록 */}
       <div style={{
         display: 'flex',
@@ -128,79 +115,90 @@ export default function ChatListPage() {
               key={room.id}
               onClick={() => enterChatRoom(room.id)}
               style={{
-                background: 'rgba(0,255,255,0.1)',
+                background: 'linear-gradient(135deg, rgba(0,255,255,0.08) 0%, rgba(0,255,255,0.03) 100%)',
                 border: '2px solid rgba(0,255,255,0.3)',
-                borderRadius: 'clamp(12px, 4vw, 15px)',
-                padding: 'clamp(15px, 4vw, 20px)',
+                borderRadius: 'clamp(15px, 4vw, 18px)',
+                padding: 'clamp(20px, 4vw, 25px)',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
                 position: 'relative',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                boxShadow: '0 4px 15px rgba(0,255,255,0.1)',
+                backdropFilter: 'blur(10px)'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(0,255,255,0.15)';
+                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(0,255,255,0.15) 0%, rgba(0,255,255,0.08) 100%)';
                 e.currentTarget.style.borderColor = 'rgba(0,255,255,0.5)';
-                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.transform = 'translateY(-3px)';
+                e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,255,255,0.2)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(0,255,255,0.1)';
+                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(0,255,255,0.08) 0%, rgba(0,255,255,0.03) 100%)';
                 e.currentTarget.style.borderColor = 'rgba(0,255,255,0.3)';
                 e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,255,255,0.1)';
               }}
             >
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                marginBottom: 'clamp(8px, 2vw, 10px)'
+                marginBottom: 'clamp(12px, 2vw, 15px)'
               }}>
                 <h3 style={{
-                  fontSize: 'clamp(1rem, 4vw, 1.2rem)',
+                  fontSize: 'clamp(1.1rem, 4vw, 1.3rem)',
                   color: '#00ffff',
                   fontWeight: 'bold',
                   margin: 0,
                   flex: 1,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
+                  textShadow: '0 0 10px rgba(0,255,255,0.5)',
+                  fontFamily: 'Press Start 2P, cursive'
                 }}>
-                  {room.name}
+                  💬 {room.name}
                 </h3>
                 <span style={{
-                  padding: 'clamp(4px, 1.5vw, 6px) clamp(8px, 2.5vw, 12px)',
-                  background: room.type === 'DIRECT' ? 'rgba(255,165,0,0.2)' : 'rgba(0,255,0,0.2)',
+                  padding: 'clamp(6px, 1.5vw, 8px) clamp(12px, 2.5vw, 16px)',
+                  background: room.type === 'DIRECT' 
+                    ? 'linear-gradient(135deg, rgba(255,165,0,0.3) 0%, rgba(255,165,0,0.2) 100%)'
+                    : 'linear-gradient(135deg, rgba(0,255,0,0.3) 0%, rgba(0,255,0,0.2) 100%)',
                   color: room.type === 'DIRECT' ? '#ffa500' : '#00ff00',
-                  borderRadius: 'clamp(8px, 3vw, 12px)',
-                  fontSize: 'clamp(0.6rem, 2.5vw, 0.7rem)',
+                  borderRadius: 'clamp(15px, 3vw, 20px)',
+                  fontSize: 'clamp(0.7rem, 2.5vw, 0.8rem)',
                   fontWeight: 'bold',
                   whiteSpace: 'nowrap',
-                  flexShrink: 0
+                  flexShrink: 0,
+                  boxShadow: room.type === 'DIRECT' 
+                    ? '0 2px 8px rgba(255,165,0,0.3)'
+                    : '0 2px 8px rgba(0,255,0,0.3)',
+                  fontFamily: 'Press Start 2P, cursive'
                 }}>
-                  {room.type === 'DIRECT' ? '퀘스트' : '파티'}
+                  {room.type === 'DIRECT' ? '⚔️ 퀘스트' : '👥 파티'}
                 </span>
               </div>
               
               <div style={{
-                fontSize: 'clamp(0.7rem, 2.5vw, 0.8rem)',
-                color: '#888888',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px'
+                background: 'rgba(255,255,255,0.05)',
+                borderRadius: '10px',
+                padding: '10px',
+                marginTop: '8px'
               }}>
-                <span>👥</span>
-                <span>{room.participants.length}명 참가</span>
+                <div style={{
+                  fontSize: 'clamp(0.8rem, 2.5vw, 0.9rem)',
+                  color: '#888888',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontWeight: 'bold'
+                }}>
+                  <span style={{ fontSize: '1.1rem' }}>👥</span>
+                  <span>{room.participants.length}명 참가</span>
+                </div>
               </div>
               
-              <div style={{
-                position: 'absolute',
-                top: '50%',
-                right: '15px',
-                transform: 'translateY(-50%)',
-                fontSize: '1.2rem',
-                color: 'rgba(0,255,255,0.5)'
-              }}>
-                →
-              </div>
+
             </div>
           ))
         )}

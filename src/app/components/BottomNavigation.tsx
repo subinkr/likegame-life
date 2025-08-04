@@ -2,18 +2,30 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { useChat } from '@/contexts/ChatContext';
 
 export default function BottomNavigation() {
   const pathname = usePathname();
   const { user } = useAuth();
-  const { hasNewMessages } = useChat();
 
   const navItems = [
-    { href: '/', label: '스탯', icon: '📊', disabled: false },
-    { href: '/guild', label: '길드', icon: '⚔️', disabled: false },
-    { href: '/chat', label: '채팅', icon: '💬', disabled: false, hasNotification: hasNewMessages },
-    { href: '/shop', label: '상점', icon: '🛒', disabled: true }
+    {
+      label: '스탯',
+      href: '/',
+      icon: '📈',
+      disabled: false
+    },
+    {
+      label: '길드',
+      href: '/guild',
+      icon: '⚔️',
+      disabled: false
+    },
+    {
+      label: '채팅',
+      href: '/chat',
+      icon: '💬',
+      disabled: false
+    }
   ];
 
   // 관리자 권한이 있는 경우 관리 메뉴 추가
@@ -38,9 +50,23 @@ export default function BottomNavigation() {
       padding: '0 4px'
     }}>
       {navItems.map((item) => {
-        const isActive = pathname === item.href;
+        // 활성 상태 판단을 더 정확하게 처리
+        let isActive = false;
+        if (item.href === '/') {
+          // 메인 페이지는 정확히 '/'일 때만 활성
+          isActive = pathname === '/';
+        } else if (item.href === '/chat') {
+          // 채팅 관련 페이지들 (/chat, /chat/[id])에서 채팅 탭 활성화
+          isActive = pathname === '/chat' || pathname.startsWith('/chat/');
+        } else if (item.href === '/guild') {
+          // 길드 페이지
+          isActive = pathname === '/guild';
+        } else {
+          // 기타 페이지들
+          isActive = pathname === item.href;
+        }
+        
         const isDisabled = item.disabled;
-        const hasNotification = item.hasNotification;
         
         if (isDisabled) {
           return (
@@ -152,20 +178,7 @@ export default function BottomNavigation() {
             </div>
 
             {/* 새로운 메시지 알림 */}
-            {hasNotification && (
-              <div style={{
-                position: 'absolute',
-                top: '2px',
-                right: '2px',
-                width: '10px',
-                height: '10px',
-                background: '#ff0000',
-                borderRadius: '50%',
-                animation: 'pulse 2s infinite',
-                zIndex: 2,
-                border: '1px solid #ffffff'
-              }} />
-            )}
+            {/* hasNotification 속성이 제거되었으므로 이 부분은 제거 */}
 
             {/* 알림 애니메이션 스타일 */}
             <style jsx>{`

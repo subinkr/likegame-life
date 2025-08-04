@@ -632,7 +632,7 @@ async function main() {
       requiredBadges: ['아침 물 한 컵', '5분 스트레칭']
     },
     {
-      name: '호기심 많은',
+      name: '호기심많은',
       description: '호기심으로 지식을 쌓아가는',
       rarity: 'common',
       requiredBadges: ['책 10쪽 읽기', '새 사실 1개']
@@ -650,13 +650,13 @@ async function main() {
       requiredBadges: ['감사 1가지', '안부 전화']
     },
     {
-      name: '언어재주있는',
+      name: '적극적인',
       description: '새로운 표현을 기꺼이 익히는',
       rarity: 'common',
       requiredBadges: ['단어 5개 암기', '어휘 앱 1레벨']
     },
     {
-      name: '음악애호가다운',
+      name: '소리내는',
       description: '선율로 하루를 물들이는',
       rarity: 'common',
       requiredBadges: ['악기 5분 연습', '신곡 감상']
@@ -704,7 +704,7 @@ async function main() {
       requiredBadges: ['스크린 휴식 10분', '구독 해지 1개']
     },
     {
-      name: '맛깔스러운',
+      name: '맛들인',
       description: '손수 만든 음식으로 기쁨을 나누는',
       rarity: 'common',
       requiredBadges: ['간단 요리', '쿠키 3개']
@@ -812,7 +812,7 @@ async function main() {
       requiredBadges: ['녹차 한 잔', '향초 켜기']
     },
     {
-      name: '미소가득한',
+      name: '해맑은',
       description: '거울 앞에서도, 거리에서도 웃는',
       rarity: 'common',
       requiredBadges: ['거울 미소', '낯선 이에게 미소']
@@ -830,7 +830,7 @@ async function main() {
       requiredBadges: ['기부 1000원', '엽서 쓰기']
     },
     {
-      name: '다국어능한',
+      name: '진출하는',
       description: '여러 언어로 소통하는',
       rarity: 'common',
       requiredBadges: ['회화 표현 1개', '수어 단어 1개']
@@ -848,7 +848,7 @@ async function main() {
       requiredBadges: ['타자 80WPM', '단축키 학습']
     },
     {
-      name: '디지털정리된',
+      name: '정돈하는',
       description: '사진과 이모지를 깔끔히 관리하는',
       rarity: 'common',
       requiredBadges: ['사진 10장 정리', '새 이모지']
@@ -866,7 +866,7 @@ async function main() {
       requiredBadges: ['허브티 한 잔', '얼굴 마사지']
     },
     {
-      name: '필체아름다운',
+      name: '꼼꼼한',
       description: '손글씨로 감성을 전하는',
       rarity: 'common',
       requiredBadges: ['손글씨 연습', '캘리그라피 1문장']
@@ -884,7 +884,7 @@ async function main() {
       requiredBadges: ['짧은 이야기', '명언 필사']
     },
     {
-      name: '주도면밀한',
+      name: '가꾸는',
       description: '집도 옷도 깨끗하게 가꾸는',
       rarity: 'common',
       requiredBadges: ['차량 내부 청소', '세탁 완료']
@@ -902,7 +902,7 @@ async function main() {
       requiredBadges: ['무가당 음료', '천천히 씹기']
     },
     {
-      name: '바람가르는',
+      name: '빠른',
       description: '바퀴와 발로 자연을 달리는',
       rarity: 'common',
       requiredBadges: ['자전거 2km', '반려동물 산책']
@@ -1040,7 +1040,7 @@ async function main() {
         requiredBadges: ['자전거 20km', '등산 5km']
       },
       {
-        name: '집중력있는',
+        name: '집중하는',
         description: '소음 없는 한 시간에 몰입하는',
         rarity: 'uncommon',
         requiredBadges: ['심층 작업 1시간', '암벽등반 10m']
@@ -1106,7 +1106,7 @@ async function main() {
         requiredBadges: ['기억법 연습', '숫자 20자리']
       },
       {
-        name: '자기계발하는',
+        name: '발전하는',
         description: '새 알고리즘과 지식을 배우는',
         rarity: 'uncommon',
         requiredBadges: ['알고리즘 학습', '데이터 시각화']
@@ -1502,7 +1502,7 @@ async function main() {
       requiredBadges: ['무기항 세계일주', '극지 탐험']
     },
     {
-      name: '매료시키는',
+      name: '매력적인',
       description: '미각과 청각 두 무대에서 모두 별이 되어 인간의 오감을 완전히 사로잡는',
       rarity: 'legendary',
       requiredBadges: ['미쉐린 3스타', '오페라 솔로']

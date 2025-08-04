@@ -164,7 +164,7 @@ export default function RegisterPage() {
               placeholder="영문 대문자, 소문자, 숫자 포함 8자 이상"
             />
             <div style={{
-              fontSize: '0.7rem',
+              fontSize: '0.75rem',
               color: '#64748b',
               marginTop: '4px'
             }}>
