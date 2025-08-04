@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, author, isbn, description, coverImage } = body;
+    const { title, author } = body;
 
     if (!title || !author) {
       return NextResponse.json({ error: 'Title and author are required' }, { status: 400 });
@@ -42,9 +42,6 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         title,
         author,
-        isbn,
-        description,
-        coverImage,
       },
     });
 

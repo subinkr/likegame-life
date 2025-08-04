@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -16,7 +16,7 @@ interface WisdomNote {
   };
 }
 
-export default function WisdomNotesPage() {
+function WisdomNotesPageContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -887,5 +887,26 @@ export default function WisdomNotesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function WisdomNotesPage() {
+  return (
+    <Suspense fallback={
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 'calc(100vh - 130px)',
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
+        color: '#00ffff',
+        fontSize: '1rem',
+        fontFamily: 'Press Start 2P, cursive'
+      }}>
+        로딩 중...
+      </div>
+    }>
+      <WisdomNotesPageContent />
+    </Suspense>
   );
 } 

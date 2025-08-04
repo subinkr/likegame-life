@@ -118,7 +118,6 @@ export const skillsAPI = {
   create: async (data: {
     name: string
     description: string
-    category?: string
     acquiredDate: string
     expiryDate?: string
     parentSkillId?: string

@@ -4,7 +4,7 @@ import { getCurrentUser } from '@/lib/server-auth'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser(request)
@@ -15,7 +15,7 @@ export async function POST(
       )
     }
 
-    const titleId = params.id
+    const { id: titleId } = await params
 
     // 칭호 존재 확인
     const title = await prisma.title.findUnique({
@@ -38,19 +38,17 @@ export async function POST(
       include: { badge: true }
     })
 
-    // 뱃지 기반 칭호인 경우에만 뱃지 조건 확인
-    if (title.category && title.category === 'badge-based') {
-      const requiredBadgeNames = title.requiredBadges || []
-      const hasRequiredBadges = requiredBadgeNames.length > 0 && requiredBadgeNames.every(badgeName => {
-        return userBadges.some(ub => ub.badge.name === badgeName)
-      })
+    // 뱃지 조건 확인
+    const requiredBadgeNames = title.requiredBadges || []
+    const hasRequiredBadges = requiredBadgeNames.length > 0 && requiredBadgeNames.every(badgeName => {
+      return userBadges.some(ub => ub.badge.name === badgeName)
+    })
 
-      if (!hasRequiredBadges) {
-        return NextResponse.json(
-          { error: '이 칭호를 획득하기 위한 뱃지가 부족합니다.' },
-          { status: 400 }
-        )
-      }
+    if (!hasRequiredBadges) {
+      return NextResponse.json(
+        { error: '이 칭호를 획득하기 위한 뱃지가 부족합니다.' },
+        { status: 400 }
+      )
     }
 
     // 기존 선택된 칭호 모두 해제

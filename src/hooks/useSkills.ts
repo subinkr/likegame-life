@@ -6,7 +6,6 @@ interface Skill {
   id: string
   name: string
   description: string
-  category?: string
   acquiredDate: string
   expiryDate?: string
   parentSkillId?: string
@@ -48,7 +47,6 @@ export function useSkills() {
   const createSkill = async (skillData: {
     name: string
     description: string
-    category?: string
     acquiredDate: string
     expiryDate?: string
     parentSkillId?: string

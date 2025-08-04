@@ -6,7 +6,6 @@ interface Badge {
   id: string
   name: string
   description: string
-  category: string
   rarity: string
   icon: string
   achieved: boolean
@@ -17,7 +16,6 @@ interface Title {
   id: string
   name: string
   description: string
-  category: string
   rarity: string
   requiredBadges: string[]
   achieved: boolean

@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/lib/server-auth';
 // 개별 힘 기록 삭제
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser(request);
@@ -13,7 +13,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // 기록이 존재하고 해당 사용자의 것인지 확인
     const record = await prisma.strengthRecord.findFirst({

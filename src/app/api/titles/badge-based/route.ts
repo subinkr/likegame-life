@@ -28,7 +28,6 @@ export async function POST(request: NextRequest) {
 
     // 뱃지 조합에 따른 칭호 결정
     const badgeNames = userBadges.map(ub => ub.badge.name)
-    const badgeCategories = userBadges.map(ub => ub.badge.category)
     const badgeCount = badgeNames.length
 
     let titleName = ''

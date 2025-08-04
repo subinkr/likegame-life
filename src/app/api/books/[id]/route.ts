@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/lib/server-auth';
 // 특정 책 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser(request);
@@ -13,9 +13,11 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     const book = await prisma.book.findFirst({
       where: { 
-        id: params.id,
+        id: id,
         userId: user.id 
       },
       include: {
@@ -39,7 +41,7 @@ export async function GET(
 // 책 수정
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser(request);
@@ -47,8 +49,10 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     const body = await request.json();
-    const { title, author, isbn, description, coverImage } = body;
+    const { title, author } = body;
 
     if (!title || !author) {
       return NextResponse.json({ error: 'Title and author are required' }, { status: 400 });
@@ -56,7 +60,7 @@ export async function PUT(
 
     const book = await prisma.book.findFirst({
       where: { 
-        id: params.id,
+        id: id,
         userId: user.id 
       }
     });
@@ -66,13 +70,10 @@ export async function PUT(
     }
 
     const updatedBook = await prisma.book.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         title,
         author,
-        isbn,
-        description,
-        coverImage,
       },
     });
 
@@ -86,7 +87,7 @@ export async function PUT(
 // 책 삭제
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser(request);
@@ -94,9 +95,11 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     const book = await prisma.book.findFirst({
       where: { 
-        id: params.id,
+        id: id,
         userId: user.id 
       }
     });
@@ -106,7 +109,7 @@ export async function DELETE(
     }
 
     await prisma.book.delete({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     return NextResponse.json({ message: 'Book deleted successfully' });

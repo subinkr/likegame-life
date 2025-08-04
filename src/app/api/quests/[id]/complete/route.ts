@@ -6,8 +6,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  let user;
   try {
-    const user = await getCurrentUser(request);
+    user = await getCurrentUser(request);
     if (!user) {
       return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
     }
@@ -58,7 +59,6 @@ export async function POST(
       data: {
         status: 'COMPLETED',
         rewardPaid: true,
-        paidAt: new Date(),
       },
     });
 
@@ -68,7 +68,6 @@ export async function POST(
         ...quest,
         status: 'COMPLETED',
         rewardPaid: true,
-        paidAt: new Date(),
       }
     });
   } catch (error) {
@@ -76,7 +75,6 @@ export async function POST(
     console.error('에러 상세:', {
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
-      questId,
       userId: user?.id
     });
     return NextResponse.json({ error: '퀘스트 완료에 실패했습니다' }, { status: 500 });

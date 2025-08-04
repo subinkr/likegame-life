@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/lib/server-auth'
 // 뱃지 수정
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser(request)
@@ -16,7 +16,7 @@ export async function PUT(
       )
     }
 
-    const { id } = params
+    const { id } = await params
     const { name, description, category, rarity, requirement, icon } = await request.json()
 
     // 필수 필드 검증
@@ -45,9 +45,7 @@ export async function PUT(
       data: {
         name,
         description,
-        category,
         rarity,
-        requirement,
         icon
       }
     })
@@ -69,7 +67,7 @@ export async function PUT(
 // 뱃지 삭제
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser(request)
@@ -80,7 +78,7 @@ export async function DELETE(
       )
     }
 
-    const { id } = params
+    const { id } = await params
 
     // 기존 뱃지 확인
     const existingBadge = await prisma.badge.findUnique({
@@ -115,7 +113,7 @@ export async function DELETE(
 // 뱃지 토글 (달성/미달성)
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser(request)
@@ -126,7 +124,7 @@ export async function POST(
       )
     }
 
-    const badgeId = params.id
+    const { id: badgeId } = await params
 
     // 뱃지 존재 확인
     const badge = await prisma.badge.findUnique({

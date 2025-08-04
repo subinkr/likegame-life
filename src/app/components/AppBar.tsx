@@ -1,6 +1,6 @@
 'use client';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSkills } from '@/hooks/useSkills';
 import Link from 'next/link';
@@ -11,7 +11,7 @@ interface Stats {
   wisdom: number;
 }
 
-export default function AppBar() {
+function AppBarContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { user, logout } = useAuth();
@@ -176,5 +176,53 @@ export default function AppBar() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function AppBar() {
+  return (
+    <Suspense fallback={
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '60px',
+        background: 'rgba(0,255,255,0.05)',
+        backdropFilter: 'blur(20px)',
+        borderBottom: '2px solid rgba(0,255,255,0.3)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0 12px',
+        zIndex: 10000
+      }}>
+        <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+          <div style={{
+            width: '32px',
+            height: '32px',
+            borderRadius: '8px',
+            background: 'rgba(0,255,255,0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1rem',
+            border: '1px solid rgba(0,255,255,0.3)'
+          }}>
+            🎮
+          </div>
+          <div style={{
+            fontSize: '0.8rem',
+            fontWeight: 600,
+            color: '#ffffff',
+            fontFamily: 'Press Start 2P, cursive'
+          }}>
+            로딩...
+          </div>
+        </div>
+      </div>
+    }>
+      <AppBarContent />
+    </Suspense>
   );
 } 

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAchievements } from '@/hooks/useAchievements';
@@ -9,7 +9,6 @@ interface Title {
   id: string;
   name: string;
   description: string;
-  category: 'personal' | 'career' | 'education' | 'hobby' | 'social' | 'challenge' | 'milestone' | 'creative';
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
   achieved: boolean;
   achievedDate?: string;
@@ -27,7 +26,7 @@ interface Badge {
   icon: string;
 }
 
-export default function AchievementsPage() {
+function AchievementsPageContent() {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -170,43 +169,7 @@ export default function AchievementsPage() {
     }
   };
 
-  const getCategoryText = (category: string) => {
-    switch (category) {
-      case 'personal': return '개인';
-      case 'career': return '직업';
-      case 'education': return '교육';
-      case 'hobby': return '취미';
-      case 'social': return '사회';
-      case 'challenge': return '도전';
-      case 'milestone': return '이정표';
-      case 'creative': return '창작';
-      case 'donation': return '기부';
-      case 'visit': return '방문';
-      case 'exercise': return '운동';
-      case 'study': return '학습';
-      case 'special': return '특별';
-      default: return category;
-    }
-  };
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'personal': return '#ff0066';
-      case 'career': return '#00ffff';
-      case 'education': return '#00ff00';
-      case 'hobby': return '#ffff00';
-      case 'social': return '#9900ff';
-      case 'challenge': return '#ff6600';
-      case 'milestone': return '#ff00ff';
-      case 'creative': return '#00ffff';
-      case 'donation': return '#00ff00';
-      case 'visit': return '#ffff00';
-      case 'exercise': return '#ff0066';
-      case 'study': return '#00ffff';
-      case 'special': return '#ff00ff';
-      default: return '#666666';
-    }
-  };
 
   const getRarityColor = (rarity: string) => {
     switch (rarity) {
@@ -472,18 +435,18 @@ export default function AchievementsPage() {
         {/* 검색 및 필터 */}
         <div style={{
           display: 'flex',
+          flexDirection: 'column',
           gap: '8px',
-          marginBottom: '8px',
-          flexWrap: 'wrap'
+          marginBottom: '8px'
         }}>
+          {/* 검색창 */}
           <input
             type="text"
             placeholder="검색..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
-              flex: 1,
-              minWidth: '120px',
+              width: '100%',
               padding: '6px',
               background: 'rgba(255,255,255,0.1)',
               border: '1px solid rgba(0,255,255,0.3)',
@@ -494,74 +457,84 @@ export default function AchievementsPage() {
             }}
           />
 
-          {/* 희귀도 필터 */}
-          <select
-            value={rarityFilter}
-            onChange={(e) => setRarityFilter(e.target.value)}
-            style={{
-              padding: '6px',
-              background: 'rgba(255,255,255,0.1)',
-              border: '1px solid rgba(0,255,255,0.3)',
-              borderRadius: '4px',
-              color: '#ffffff',
-              fontSize: '0.75rem',
-              fontFamily: 'Press Start 2P, cursive',
-              minWidth: '80px'
-            }}
-          >
-            <option value="all">전체 희귀도</option>
-            <option value="common">C</option>
-            <option value="uncommon">UC</option>
-            <option value="rare">R</option>
-            <option value="epic">SR</option>
-            <option value="legendary">SSR</option>
-          </select>
+          {/* 필터 버튼들 */}
+          <div style={{
+            display: 'flex',
+            gap: '8px',
+            flexWrap: 'wrap'
+          }}>
+            {/* 희귀도 필터 */}
+            <select
+              value={rarityFilter}
+              onChange={(e) => setRarityFilter(e.target.value)}
+              style={{
+                flex: 1,
+                minWidth: '60px',
+                padding: '6px',
+                background: 'rgba(255,255,255,0.1)',
+                border: '1px solid rgba(0,255,255,0.3)',
+                borderRadius: '4px',
+                color: '#ffffff',
+                fontSize: '0.75rem',
+                fontFamily: 'Press Start 2P, cursive'
+              }}
+            >
+              <option value="all">희귀도</option>
+              <option value="common">C</option>
+              <option value="uncommon">UC</option>
+              <option value="rare">R</option>
+              <option value="epic">SR</option>
+              <option value="legendary">SSR</option>
+            </select>
 
-          {/* 상태 필터 */}
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            style={{
-              padding: '6px',
-              background: 'rgba(255,255,255,0.1)',
-              border: '1px solid rgba(0,255,255,0.3)',
-              borderRadius: '4px',
-              color: '#ffffff',
-              fontSize: '0.75rem',
-              fontFamily: 'Press Start 2P, cursive',
-              minWidth: '80px'
-            }}
-          >
-            <option value="all">전체 상태</option>
-            <option value="achieved">달성</option>
-            <option value="not-achieved">미달성</option>
-          </select>
+            {/* 상태 필터 */}
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              style={{
+                flex: 1,
+                minWidth: '60px',
+                padding: '6px',
+                background: 'rgba(255,255,255,0.1)',
+                border: '1px solid rgba(0,255,255,0.3)',
+                borderRadius: '4px',
+                color: '#ffffff',
+                fontSize: '0.75rem',
+                fontFamily: 'Press Start 2P, cursive'
+              }}
+            >
+              <option value="all">상태</option>
+              <option value="achieved">달성</option>
+              <option value="not-achieved">미달성</option>
+            </select>
 
-          {/* 필터 초기화 버튼 */}
-          <button
-            onClick={resetFilters}
-            style={{
-              padding: '6px 8px',
-              background: 'rgba(255,0,102,0.2)',
-              border: '1px solid rgba(255,0,102,0.3)',
-              borderRadius: '4px',
-              color: '#ff0066',
-              fontSize: '0.75rem',
-              fontFamily: 'Press Start 2P, cursive',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255,0,102,0.3)';
-              e.currentTarget.style.boxShadow = '0 0 5px rgba(255,0,102,0.5)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255,0,102,0.2)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          >
-            초기화
-          </button>
+            {/* 필터 초기화 버튼 */}
+            <button
+              onClick={resetFilters}
+              style={{
+                padding: '6px 8px',
+                background: 'rgba(255,0,102,0.2)',
+                border: '1px solid rgba(255,0,102,0.3)',
+                borderRadius: '4px',
+                color: '#ff0066',
+                fontSize: '0.75rem',
+                fontFamily: 'Press Start 2P, cursive',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                minWidth: '60px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255,0,102,0.3)';
+                e.currentTarget.style.boxShadow = '0 0 5px rgba(255,0,102,0.5)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255,0,102,0.2)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              초기화
+            </button>
+          </div>
         </div>
 
         {/* 결과 개수 표시 */}
@@ -943,7 +916,28 @@ export default function AchievementsPage() {
       )}
     </div>
   );
-} 
+}
+
+export default function AchievementsPage() {
+  return (
+    <Suspense fallback={
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 'calc(100vh - 130px)',
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
+        color: '#00ffff',
+        fontSize: '1rem',
+        fontFamily: 'Press Start 2P, cursive'
+      }}>
+        로딩 중...
+      </div>
+    }>
+      <AchievementsPageContent />
+    </Suspense>
+  );
+}
 
 // hexToRgb 유틸 함수 추가
 function hexToRgb(hex: string) {

@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { name, description, category, acquiredDate, expiryDate, parentSkillId } = await request.json()
+    const { name, description, acquiredDate, expiryDate, parentSkillId } = await request.json()
 
     // 필수 필드 검증
     if (!name || !description || !acquiredDate) {
@@ -59,7 +59,6 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         name,
         description,
-        category,
         acquiredDate: new Date(acquiredDate),
         expiryDate: expiryDate ? new Date(expiryDate) : null,
         parentSkillId

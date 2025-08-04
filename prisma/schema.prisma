@@ -75,7 +75,6 @@ model Skill {
   userId      String
   name        String
   description String
-  category    String?
   acquiredDate DateTime
   expiryDate  DateTime?
   parentSkillId String?
@@ -119,9 +118,7 @@ model Title {
   id             String   @id @default(cuid())
   name           String   @unique
   description    String
-  category       String?
   rarity         String
-  requirement    String?
   requiredBadges String[] // JSON 배열로 저장
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -153,7 +150,6 @@ model Quest {
   location    String
   reward      Int      // 원화 보상 (예: 50000 = 5만원)
   rewardPaid  Boolean  @default(false)  // 보상 지급 여부
-  paidAt      DateTime? // 보상 지급 일시
   status      String   // OPEN, IN_PROGRESS, COMPLETED
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -213,9 +209,6 @@ model Book {
   userId      String
   title       String
   author      String
-  isbn        String?
-  description String?
-  coverImage  String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

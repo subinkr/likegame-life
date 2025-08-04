@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -10,7 +10,6 @@ interface Quest {
   location: string;
   reward: number;
   rewardPaid?: boolean;
-  paidAt?: string;
   status: string;
   creator: {
     id: string;
@@ -38,7 +37,7 @@ interface Party {
   }>;
 }
 
-export default function GuildPage() {
+function GuildPageContent() {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -595,11 +594,7 @@ export default function GuildPage() {
                           )}
                         </p>
                       </div>
-                      {quest.paidAt && (
-                        <p style={{ margin: '8px 0', color: '#00ff00', fontSize: '0.8rem' }}>
-                          지급일시: {new Date(quest.paidAt).toLocaleString()}
-                        </p>
-                      )}
+
                       <p style={{ margin: '8px 0', color: '#888888', fontSize: '0.9rem' }}>
                         생성자: {quest.creator.nickname}
                       </p>
@@ -1246,5 +1241,26 @@ export default function GuildPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function GuildPage() {
+  return (
+    <Suspense fallback={
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 'calc(100vh - 130px)',
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
+        color: '#00ffff',
+        fontSize: '1rem',
+        fontFamily: 'Press Start 2P, cursive'
+      }}>
+        로딩 중...
+      </div>
+    }>
+      <GuildPageContent />
+    </Suspense>
   );
 } 

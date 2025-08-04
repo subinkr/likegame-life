@@ -17,9 +17,7 @@ interface Title {
   id: string;
   name: string;
   description: string;
-  category: string;
   rarity: string;
-  requirement: string;
   achieved: boolean;
   selected?: boolean;
   requiredBadges?: string[];
@@ -29,9 +27,7 @@ interface Badge {
   id: string;
   name: string;
   description: string;
-  category: string;
   rarity: string;
-  requirement: string;
   achieved: boolean;
   icon: string;
 }
@@ -49,7 +45,7 @@ export default function Home() {
   // 페이지 로드 시 스탯만 확인 (칭호는 업적 페이지에서 활성화)
   useEffect(() => {
     if (user && stats && !statsLoading) {
-      console.log('스탯 로드 완료:', stats);
+      // 스탯 로드 완료
     }
   }, [user, stats, statsLoading]);
 

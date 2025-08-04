@@ -5,7 +5,7 @@ import { verifyToken } from '@/lib/auth'
 // 퀘스트 포기 (수락한 사람만 가능)
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authHeader = request.headers.get('authorization')
@@ -26,7 +26,7 @@ export async function POST(
       )
     }
 
-    const questId = params.id
+    const { id: questId } = await params
 
     // 퀘스트 존재 확인
     const quest = await prisma.quest.findUnique({

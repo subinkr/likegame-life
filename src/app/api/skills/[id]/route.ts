@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/lib/server-auth'
 // 스킬 수정
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser(request)
@@ -16,8 +16,8 @@ export async function PUT(
       )
     }
 
-    const skillId = params.id
-    const { name, description, category, acquiredDate, expiryDate, parentSkillId } = await request.json()
+    const { id: skillId } = await params
+    const { name, description, acquiredDate, expiryDate, parentSkillId } = await request.json()
 
     // 스킬 존재 확인 및 소유권 확인
     const existingSkill = await prisma.skill.findFirst({
@@ -47,7 +47,6 @@ export async function PUT(
       data: {
         name,
         description,
-        category,
         acquiredDate: new Date(acquiredDate),
         expiryDate: expiryDate ? new Date(expiryDate) : null,
         parentSkillId
@@ -75,7 +74,7 @@ export async function PUT(
 // 스킬 삭제
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser(request)
@@ -86,7 +85,7 @@ export async function DELETE(
       )
     }
 
-    const skillId = params.id
+    const { id: skillId } = await params
 
     // 스킬 존재 확인 및 소유권 확인
     const existingSkill = await prisma.skill.findFirst({

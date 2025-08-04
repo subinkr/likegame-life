@@ -4,7 +4,7 @@ import { verifyToken } from '@/lib/auth';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = request.cookies.get('likegame-token')?.value;
@@ -17,6 +17,8 @@ export async function PUT(
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     const body = await request.json();
     const { name, description, rarity, icon } = body;
 
@@ -25,7 +27,7 @@ export async function PUT(
     }
 
     const badge = await prisma.badge.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         name,
         description,
@@ -43,7 +45,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = request.cookies.get('likegame-token')?.value;
@@ -56,14 +58,16 @@ export async function DELETE(
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     // 먼저 관련된 UserBadge 레코드들을 삭제
     await prisma.userBadge.deleteMany({
-      where: { badgeId: params.id }
+      where: { badgeId: id }
     });
 
     // 그 다음 Badge를 삭제
     await prisma.badge.delete({
-      where: { id: params.id }
+      where: { id: id }
     });
 
     return NextResponse.json({ success: true });

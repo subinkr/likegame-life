@@ -4,7 +4,7 @@ import { getCurrentUser } from '@/lib/server-auth'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser(request)
@@ -15,7 +15,7 @@ export async function POST(
       )
     }
 
-    const badgeId = params.id
+    const { id: badgeId } = await params
 
     // 뱃지 존재 확인
     const badge = await prisma.badge.findUnique({

@@ -4,7 +4,7 @@ import { getCurrentUser } from '@/lib/server-auth';
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser(request);
@@ -12,7 +12,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // 해당 초서가 현재 사용자의 것인지 확인
     const wisdomNote = await prisma.wisdomNote.findFirst({

@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/lib/server-auth'
 // 칭호 수정
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser(request)
@@ -16,11 +16,11 @@ export async function PUT(
       )
     }
 
-    const { id } = params
-    const { name, description, category, rarity, requirement, requiredBadges } = await request.json()
+    const { id } = await params
+    const { name, description, rarity, requiredBadges } = await request.json()
 
     // 필수 필드 검증
-    if (!name || !description || !rarity || !requirement) {
+    if (!name || !description || !rarity) {
       return NextResponse.json(
         { error: '필수 필드가 누락되었습니다.' },
         { status: 400 }
@@ -45,9 +45,7 @@ export async function PUT(
       data: {
         name,
         description,
-        category,
         rarity,
-        requirement,
         requiredBadges: requiredBadges || []
       }
     })
@@ -69,7 +67,7 @@ export async function PUT(
 // 칭호 삭제
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser(request)
@@ -80,7 +78,7 @@ export async function DELETE(
       )
     }
 
-    const { id } = params
+    const { id } = await params
 
     // 기존 칭호 확인
     const existingTitle = await prisma.title.findUnique({

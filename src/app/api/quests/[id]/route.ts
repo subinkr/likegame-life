@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/lib/server-auth'
 // 퀘스트 수정
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser(request)
@@ -16,7 +16,7 @@ export async function PUT(
       )
     }
 
-    const questId = params.id
+    const { id: questId } = await params
     const { title, description, location, reward } = await request.json()
 
     // 퀘스트 존재 확인 및 소유권 확인
@@ -85,7 +85,7 @@ export async function PUT(
 // 퀘스트 삭제
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser(request)
@@ -96,7 +96,7 @@ export async function DELETE(
       )
     }
 
-    const questId = params.id
+    const { id: questId } = await params
 
     // 퀘스트 존재 확인 및 소유권 확인
     const existingQuest = await prisma.quest.findFirst({
