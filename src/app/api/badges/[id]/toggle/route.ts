@@ -79,7 +79,6 @@ export async function POST(
     })
 
     const badgeCount = userBadges.length
-    console.log('뱃지 토글 후 상태:', { badgeCount, userBadge: userBadge.achieved })
 
     // 모든 칭호들의 상태 재계산
     const allTitles = await prisma.title.findMany()
@@ -108,7 +107,6 @@ export async function POST(
             achievedDate: new Date()
           }
         })
-        console.log(`칭호 획득: ${title.name}`)
       } else if (!shouldHaveTitle && existingUserTitle) {
         // 뱃지 조건을 만족하지 않으면 칭호 비활성화 및 선택 해제
         await prisma.userTitle.update({
@@ -123,8 +121,7 @@ export async function POST(
             selected: false,
             achievedDate: null
           }
-        })
-        console.log(`칭호 비활성화 및 선택 해제: ${title.name}`)
+                  })
       }
     }
 

@@ -42,10 +42,10 @@ export async function GET(request: NextRequest) {
         };
       });
 
-      return NextResponse.json(allRecords);
+      return NextResponse.json({ records: allRecords });
     }
 
-    return NextResponse.json([]);
+    return NextResponse.json({ records: [] });
   } catch (error) {
     console.error('Error fetching strength records:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

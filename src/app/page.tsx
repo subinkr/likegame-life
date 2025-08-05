@@ -40,7 +40,20 @@ export default function Home() {
   const { skills, loading: skillsLoading, error: skillsError } = useSkills();
   
   // 선택된 칭호 찾기 (활성화된 칭호만)
-  const selectedTitle = titles?.find(title => title.selected && title.achieved);
+  const selectedTitle = titles?.find(title => {
+    if (!title.selected || !title.achieved) return false;
+    
+    // 필요한 뱃지가 모두 활성화되어 있는지 확인
+    if (title.requiredBadges && title.requiredBadges.length > 0) {
+      const hasAllRequiredBadges = title.requiredBadges.every(badgeName => {
+        const badge = badges.find(b => b.name === badgeName);
+        return badge && badge.achieved;
+      });
+      return hasAllRequiredBadges;
+    }
+    
+    return true; // requiredBadges가 없으면 활성화된 것으로 간주
+  });
   
   // 페이지 로드 시 스탯만 확인 (칭호는 업적 페이지에서 활성화)
   useEffect(() => {

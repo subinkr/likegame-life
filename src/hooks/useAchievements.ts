@@ -29,6 +29,7 @@ export function useAchievements() {
   const [titles, setTitles] = useState<Title[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [optimisticUpdates, setOptimisticUpdates] = useState<Set<string>>(new Set())
 
   // 뱃지 로드
   const loadBadges = async () => {
@@ -68,7 +69,7 @@ export function useAchievements() {
           credentials: 'include'
         })
       } catch (err) {
-        console.log('랭크 기반 칭호 업데이트 실패 (무시됨):', err)
+        // 랭크 기반 칭호 업데이트 실패 (무시됨)
       }
 
       const response = await titlesAPI.get()
@@ -105,25 +106,64 @@ export function useAchievements() {
     }
   }
 
-  // 뱃지 토글
+  // 뱃지 토글 - 즉시 UI 업데이트 + 백그라운드 서버 동기화
   const toggleBadge = async (badgeId: string) => {
     if (!user) return
 
-    setLoading(true)
-    setError(null)
+    // 이미 처리 중인 뱃지인지 확인
+    if (optimisticUpdates.has(badgeId)) {
+      return
+    }
 
+    // 현재 뱃지 상태 확인
+    const currentBadge = badges.find(b => b.id === badgeId)
+    if (!currentBadge) return
+
+    // 즉시 UI 업데이트 (Optimistic Update)
+    setOptimisticUpdates(prev => new Set(prev).add(badgeId))
+    
+    const newAchieved = !currentBadge.achieved
+    const newAchievedDate = newAchieved ? new Date().toISOString() : undefined
+
+    setBadges(prev => prev.map(badge => 
+      badge.id === badgeId 
+        ? { 
+            ...badge, 
+            achieved: newAchieved, 
+            achievedDate: newAchievedDate 
+          }
+        : badge
+    ))
+
+    // 칭호 상태도 즉시 업데이트
+    setTitles(prev => prev.map(title => {
+      const requiredBadgeNames = title.requiredBadges || []
+      const updatedBadgeNames = badges.map(b => 
+        b.id === badgeId ? { ...b, achieved: newAchieved } : b
+      ).filter(b => b.achieved).map(b => b.name)
+      
+      const shouldHaveTitle = requiredBadgeNames.length > 0 && 
+        requiredBadgeNames.every(badgeName => updatedBadgeNames.includes(badgeName))
+      
+      if (shouldHaveTitle && !title.achieved) {
+        return { ...title, achieved: true, achievedDate: new Date().toISOString() }
+      } else if (!shouldHaveTitle && title.achieved) {
+        // 뱃지 조건을 만족하지 않으면 칭호 비활성화 및 선택 해제
+        return { ...title, achieved: false, selected: false, achievedDate: undefined }
+      }
+      return title
+    }))
+
+    // 백그라운드에서 서버 동기화
     try {
       const response = await badgesAPI.toggle(badgeId)
       
-      // 뱃지 목록 업데이트
+      // 서버 응답으로 상태 동기화 (에러가 없었다면)
       setBadges(prev => prev.map(badge => 
         badge.id === badgeId 
           ? { ...badge, achieved: response.userBadge.achieved, achievedDate: response.userBadge.achievedDate }
           : badge
       ))
-
-      // 뱃지 변경 후 칭호 상태도 다시 로드
-      await loadTitles()
 
       // localStorage 백업
       if (typeof window !== 'undefined') {
@@ -131,33 +171,82 @@ export function useAchievements() {
         localStorage.setItem('likegame-titles', JSON.stringify(titles))
       }
     } catch (err: any) {
+      // 서버 에러 시 원래 상태로 되돌리기
+      setBadges(prev => prev.map(badge => 
+        badge.id === badgeId 
+          ? { ...badge, achieved: currentBadge.achieved, achievedDate: currentBadge.achievedDate }
+          : badge
+      ))
+      
+      // 칭호 상태도 원래대로 되돌리기
+      await loadTitles()
+      
       setError(err.message || '뱃지 토글에 실패했습니다.')
     } finally {
-      setLoading(false)
+      // 처리 완료 표시 제거
+      setOptimisticUpdates(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(badgeId)
+        return newSet
+      })
     }
   }
 
-  // 칭호 선택
+  // 칭호 선택 - 즉시 UI 업데이트 + 백그라운드 서버 동기화
   const selectTitle = async (titleId: string) => {
     if (!user) return
 
-    setLoading(true)
-    setError(null)
+    // 이미 처리 중인 칭호인지 확인
+    if (optimisticUpdates.has(titleId)) {
+      return
+    }
 
+    // 현재 칭호 상태 확인
+    const currentTitle = titles.find(t => t.id === titleId)
+    if (!currentTitle) return
+
+    // 즉시 UI 업데이트 (Optimistic Update)
+    setOptimisticUpdates(prev => new Set(prev).add(titleId))
+    
+    const newSelected = !currentTitle.selected
+
+    setTitles(prev => prev.map(title => 
+      title.id === titleId 
+        ? { ...title, selected: newSelected }
+        : { ...title, selected: false } // 다른 칭호는 선택 해제
+    ))
+
+    // 백그라운드에서 서버 동기화
     try {
       const response = await titlesAPI.select(titleId)
       
-      // 칭호 목록 전체를 다시 로드 (선택 상태가 변경될 수 있으므로)
-      await loadTitles()
+      // 서버 응답으로 상태 동기화 (에러가 없었다면)
+      setTitles(prev => prev.map(title => 
+        title.id === titleId 
+          ? { ...title, selected: response.userTitle?.selected ?? newSelected }
+          : { ...title, selected: false }
+      ))
 
       // localStorage 백업
       if (typeof window !== 'undefined') {
         localStorage.setItem('likegame-titles', JSON.stringify(titles))
       }
     } catch (err: any) {
+      // 서버 에러 시 원래 상태로 되돌리기
+      setTitles(prev => prev.map(title => 
+        title.id === titleId 
+          ? { ...title, selected: currentTitle.selected }
+          : title
+      ))
+      
       setError(err.message || '칭호 선택에 실패했습니다.')
     } finally {
-      setLoading(false)
+      // 처리 완료 표시 제거
+      setOptimisticUpdates(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(titleId)
+        return newSet
+      })
     }
   }
 
@@ -177,6 +266,7 @@ export function useAchievements() {
     loadBadges,
     loadTitles,
     toggleBadge,
-    selectTitle
+    selectTitle,
+    optimisticUpdates
   }
 } 

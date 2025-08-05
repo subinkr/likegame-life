@@ -31,7 +31,7 @@ function AchievementsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const { badges, titles, loading, error: achievementsError, toggleBadge, selectTitle, loadBadges, loadTitles } = useAchievements();
+  const { badges, titles, loading, error: achievementsError, toggleBadge, selectTitle, loadBadges, loadTitles, optimisticUpdates } = useAchievements();
   
   // URL 파라미터에서 탭 상태 읽기
   const tabParam = searchParams.get('tab');
@@ -68,63 +68,23 @@ function AchievementsPageContent() {
   };
 
   const toggleBadgeAchievement = async (id: string) => {
-    try {
-      const response = await fetch(`/api/badges/${id}/toggle`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include'
-      });
-
-      const result = await response.json();
-      
-      if (response.ok) {
-        // 뱃지 상태 변경 후 칭호 선택 상태 자동 해제
-        await checkAndDeselectTitles();
-        // 데이터 다시 불러오기 (필터링 유지)
-        await loadBadges();
-        await loadTitles();
-      } else {
-        alert(result.error || '뱃지 상태 변경에 실패했습니다.');
-      }
-    } catch (err: any) {
-      setError(err.message || '뱃지 상태 변경에 실패했습니다.');
+    // 이미 처리 중인 뱃지인지 확인
+    if (optimisticUpdates.has(id)) {
+      return;
     }
+    
+    // 새로운 optimistic update 방식 사용
+    await toggleBadge(id);
   };
 
-  // 칭호 선택 상태 자동 해제 함수
-  const checkAndDeselectTitles = async () => {
-    try {
-      // 현재 선택된 칭호들 중에서 미획득된 칭호 찾기
-      const selectedTitles = titles.filter(title => title.selected);
-      const titlesToDeselect = selectedTitles.filter(title => {
-        const hasRequiredBadges = title.requiredBadges?.length > 0 && 
-          title.requiredBadges.every(badgeName => {
-            const badge = badges.find(b => b.name === badgeName);
-            return badge && badge.achieved;
-          });
-        
-        const isAchieved = title.requiredBadges?.length === 0 || hasRequiredBadges;
-        return !isAchieved; // 미획득된 칭호
-      });
 
-      // 미획득된 칭호들의 선택 해제
-      for (const title of titlesToDeselect) {
-        await fetch(`/api/titles/${title.id}/select`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include'
-        });
-      }
-    } catch (err) {
-      console.error('칭호 선택 해제 중 오류:', err);
-    }
-  };
 
   const selectTitleForDisplay = async (id: string) => {
+    // 이미 처리 중인 칭호인지 확인
+    if (optimisticUpdates.has(id)) {
+      return;
+    }
+    
     try {
       // 선택하려는 칭호 찾기
       const targetTitle = titles.find(title => title.id === id);
@@ -148,22 +108,8 @@ function AchievementsPageContent() {
         return;
       }
 
-      const response = await fetch(`/api/titles/${id}/select`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include'
-      });
-
-      const result = await response.json();
-      
-      if (response.ok) {
-        // 선택 성공 시 데이터 다시 불러오기 (필터링 유지)
-        await loadTitles();
-      } else {
-        alert(result.error || '칭호 선택에 실패했습니다.');
-      }
+      // 새로운 optimistic update 방식 사용
+      await selectTitle(id);
     } catch (err: any) {
       setError(err.message || '칭호 선택에 실패했습니다.');
     }
@@ -603,14 +549,14 @@ function AchievementsPageContent() {
                     borderRadius: '3px',
                     padding: '4px',
                     border: isAchieved ? '2px solid rgba(255,215,0,0.5)' : '1px solid rgba(255,215,0,0.2)',
-                    cursor: isAchieved ? 'pointer' : 'not-allowed',
+                    cursor: isAchieved && !optimisticUpdates.has(title.id) ? 'pointer' : 'not-allowed',
                     transition: 'all 0.3s ease',
                     minHeight: '100px',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
                     position: 'relative',
-                    opacity: isAchieved ? 1 : 0.6
+                    opacity: isAchieved ? (optimisticUpdates.has(title.id) ? 0.7 : 1) : 0.6
                   }}
                   onClick={() => isAchieved ? selectTitleForDisplay(title.id) : null}
                   onMouseEnter={e => {
@@ -652,9 +598,26 @@ function AchievementsPageContent() {
                       alignItems: 'center',
                       gap: '1px',
                       marginBottom: '3px',
-                      textAlign: 'center'
+                      textAlign: 'center',
+                      position: 'relative'
                     }}>
                       <div style={{fontSize: '1.6rem'}}>👑</div>
+                      
+                      {/* 처리 중인 칭호에 로딩 표시 */}
+                      {optimisticUpdates.has(title.id) && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '-2px',
+                          right: '-2px',
+                          width: '12px',
+                          height: '12px',
+                          borderRadius: '50%',
+                          border: '2px solid rgba(0,255,255,0.3)',
+                          borderTop: '2px solid #00ffff',
+                          animation: 'spin 1s linear infinite',
+                          zIndex: 1
+                        }} />
+                      )}
                       <div style={{
                         fontWeight: 700,
                         color: '#ffff00',
@@ -714,7 +677,7 @@ function AchievementsPageContent() {
                       </div>
                     </div>
                     
-                    {/* 획득한 경우에만 날짜 표시 */}
+                    {/* 활성화된 경우에만 획득 날짜 표시 */}
                     {isAchieved && (
                       <div style={{
                         fontSize: '0.75rem',
@@ -722,7 +685,7 @@ function AchievementsPageContent() {
                         fontFamily: 'Orbitron, monospace',
                         textAlign: 'center'
                       }}>
-                        📅 {title.achievedDate ? new Date(title.achievedDate).toLocaleDateString('ko-KR') : '날짜 없음'}
+                        {title.achievedDate ? new Date(title.achievedDate).toLocaleDateString('ko-KR') : '날짜 없음'}
                       </div>
                     )}
                   </div>
@@ -777,13 +740,15 @@ function AchievementsPageContent() {
                     borderRadius: '3px',
                     padding: '4px',
                     border: badge.achieved ? '2px solid rgba(255,0,102,0.5)' : '1px solid rgba(255,0,102,0.2)',
-                    cursor: 'pointer',
+                    cursor: optimisticUpdates.has(badge.id) ? 'not-allowed' : 'pointer',
                     transition: 'all 0.3s ease',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
                     minWidth: '0',
-                    minHeight: '100px'
+                    minHeight: '100px',
+                    opacity: optimisticUpdates.has(badge.id) ? 0.7 : 1,
+                    position: 'relative'
                   }}
                   onClick={() => toggleBadgeAchievement(badge.id)}
                   onMouseEnter={(e) => {
@@ -802,9 +767,26 @@ function AchievementsPageContent() {
                       alignItems: 'center',
                       gap: '1px',
                       marginBottom: '3px',
-                      textAlign: 'center'
+                      textAlign: 'center',
+                      position: 'relative'
                     }}>
                       <div style={{fontSize: '1.6rem'}}>{badge.icon}</div>
+                      
+                      {/* 처리 중인 뱃지에 로딩 표시 */}
+                      {optimisticUpdates.has(badge.id) && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '-2px',
+                          right: '-2px',
+                          width: '12px',
+                          height: '12px',
+                          borderRadius: '50%',
+                          border: '2px solid rgba(0,255,255,0.3)',
+                          borderTop: '2px solid #00ffff',
+                          animation: 'spin 1s linear infinite',
+                          zIndex: 1
+                        }} />
+                      )}
                       <div style={{
                         fontWeight: 700,
                         color: '#ff0066',
@@ -876,7 +858,7 @@ function AchievementsPageContent() {
                         fontFamily: 'Orbitron, monospace',
                         textAlign: 'center'
                       }}>
-                        📅 {badge.achievedDate ? new Date(badge.achievedDate).toLocaleDateString('ko-KR') : '날짜 없음'}
+                        {badge.achievedDate ? new Date(badge.achievedDate).toLocaleDateString('ko-KR') : '날짜 없음'}
                       </div>
                     )}
                   </div>
@@ -920,22 +902,30 @@ function AchievementsPageContent() {
 
 export default function AchievementsPage() {
   return (
-    <Suspense fallback={
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: 'calc(100vh - 130px)',
-        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
-        color: '#00ffff',
-        fontSize: '1rem',
-        fontFamily: 'Press Start 2P, cursive'
-      }}>
-        로딩 중...
-      </div>
-    }>
-      <AchievementsPageContent />
-    </Suspense>
+    <>
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+      <Suspense fallback={
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 'calc(100vh - 130px)',
+          background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
+          color: '#00ffff',
+          fontSize: '1rem',
+          fontFamily: 'Press Start 2P, cursive'
+        }}>
+          로딩 중...
+        </div>
+      }>
+        <AchievementsPageContent />
+      </Suspense>
+    </>
   );
 }
 

@@ -61,7 +61,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     setIsConnecting(true);
     
     try {
-      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001';
+      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || (typeof window !== 'undefined' ? window.location.origin.replace('http', 'ws') + '/ws' : 'wss://likegame-life.vercel.app/ws');
       console.log('🌐 웹소켓 URL:', wsUrl);
       
       const ws = new WebSocket(wsUrl);
