@@ -1,46 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server-auth';
-import { prisma } from '@/lib/prisma';
+import { getCurrentUserFromSupabase } from '@/lib/auth';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await getCurrentUser(request);
+    const user = await getCurrentUserFromSupabase(request);
     if (!user) {
       return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
     }
 
     console.log('파티 목록 조회 시작');
-    const parties = await prisma.party.findMany({
-      include: {
-        leader: {
-          select: {
-            id: true,
-            nickname: true,
-          },
-        },
-        members: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                nickname: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    const { data: parties, error } = await supabaseAdmin
+      .from('parties')
+      .select(`
+        *,
+        leader:users!leader_id(id, nickname),
+        members:party_members(
+          user:users(id, nickname)
+        )
+      `)
+      .order('created_at', { ascending: false });
 
-    const formattedParties = parties.map(party => ({
+    if (error) {
+      console.error('파티 목록 조회 에러:', error);
+      return NextResponse.json({ error: '파티 목록을 불러오는데 실패했습니다' }, { status: 500 });
+    }
+
+    const formattedParties = (parties || []).map(party => ({
       id: party.id,
       name: party.name,
       description: party.description,
-      maxMembers: party.maxMembers,
+      maxMembers: party.max_members,
       leader: party.leader,
-      members: party.members.map(member => member.user),
+      members: (party.members || []).map((member: any) => member.user),
     }));
 
     console.log('파티 목록 조회 완료:', formattedParties.length, '개');
@@ -55,7 +47,7 @@ export async function POST(request: NextRequest) {
   try {
     console.log('파티 생성 요청 시작');
     
-    const user = await getCurrentUser(request);
+    const user = await getCurrentUserFromSupabase(request);
     if (!user) {
       console.log('인증 실패');
       return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
@@ -82,43 +74,58 @@ export async function POST(request: NextRequest) {
     console.log('파티 생성 시작:', { name, description, maxMembers, leaderId: user.id });
 
     // 파티 생성
-    const party = await prisma.party.create({
-      data: {
+    const { data: party, error: partyError } = await supabaseAdmin
+      .from('parties')
+      .insert({
         name,
         description,
-        maxMembers,
-        leaderId: user.id,
-      },
-      include: {
-        leader: {
-          select: {
-            id: true,
-            nickname: true,
-          },
-        },
-      },
-    });
+        max_members: maxMembers,
+        leader_id: user.id,
+      })
+      .select(`
+        *,
+        leader:users!leader_id(id, nickname)
+      `)
+      .single();
+
+    if (partyError) {
+      console.error('파티 생성 에러:', partyError);
+      return NextResponse.json({ error: '파티 생성에 실패했습니다' }, { status: 500 });
+    }
 
     console.log('파티 생성 완료:', party.id);
 
     // 파티장을 멤버로 추가
-    await prisma.partyMember.create({
-      data: {
-        partyId: party.id,
-        userId: user.id,
-      },
-    });
+    const { error: memberError } = await supabaseAdmin
+      .from('party_members')
+      .insert({
+        party_id: party.id,
+        user_id: user.id,
+      });
+
+    if (memberError) {
+      console.error('파티 멤버 추가 에러:', memberError);
+      return NextResponse.json({ error: '파티 생성에 실패했습니다' }, { status: 500 });
+    }
 
     console.log('파티장 멤버 추가 완료');
 
     // 파티용 채팅방 생성
-    const chatRoom = await (prisma as any).chatRoom.create({
-      data: {
+    const { data: chatRoom, error: chatRoomError } = await supabaseAdmin
+      .from('chat_rooms')
+      .insert({
         name: party.name,
         type: 'PARTY',
-        partyId: party.id,
-      },
-    });
+        created_by: user.id,
+        party_id: party.id,
+      })
+      .select()
+      .single();
+
+    if (chatRoomError) {
+      console.error('채팅방 생성 에러:', chatRoomError);
+      return NextResponse.json({ error: '파티 생성에 실패했습니다' }, { status: 500 });
+    }
 
     console.log('채팅방 생성 완료:', {
       chatRoomId: chatRoom.id,
@@ -127,12 +134,17 @@ export async function POST(request: NextRequest) {
     });
 
     // 파티장을 채팅방 참가자로 추가
-    await (prisma as any).chatParticipant.create({
-      data: {
-        chatRoomId: chatRoom.id,
-        userId: user.id,
-      },
-    });
+    const { error: participantError } = await supabaseAdmin
+      .from('chat_room_participants')
+      .insert({
+        chat_room_id: chatRoom.id,
+        user_id: user.id,
+      });
+
+    if (participantError) {
+      console.error('채팅방 참가자 추가 에러:', participantError);
+      return NextResponse.json({ error: '파티 생성에 실패했습니다' }, { status: 500 });
+    }
 
     console.log('채팅방 참가자 추가 완료');
 
@@ -140,7 +152,7 @@ export async function POST(request: NextRequest) {
       id: party.id,
       name: party.name,
       description: party.description,
-      maxMembers: party.maxMembers,
+      maxMembers: party.max_members,
       leader: party.leader,
       members: [party.leader],
     };

@@ -1,81 +1,90 @@
-import jwt from 'jsonwebtoken'
-import bcrypt from 'bcryptjs'
+import { createClient } from '@supabase/supabase-js'
+import { NextRequest } from 'next/server'
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-export interface JWTPayload {
-  userId: string
-  email: string
-  nickname?: string
-  role?: string
-  exp?: number
-}
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-export const generateToken = (payload: JWTPayload): string => {
-  if (!JWT_SECRET) {
-    throw new Error('JWT_SECRET 환경변수가 설정되지 않았습니다. 프로덕션 환경에서 반드시 설정해야 합니다.');
-  }
-  
-  return jwt.sign(payload, JWT_SECRET, { 
-    expiresIn: '7d',
-    issuer: 'likegame-life',
-    audience: 'likegame-users'
+// 서버 사이드용 Supabase 클라이언트 (쿠키 지원)
+const createServerSupabaseClient = (request: NextRequest) => {
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    },
+    global: {
+      headers: {
+        cookie: request.headers.get('cookie') || ''
+      }
+    }
   })
 }
 
-// 클라이언트 사이드에서는 토큰을 파싱만 하고, 실제 검증은 서버에서 수행
-export const parseToken = (token: string): JWTPayload | null => {
+// Supabase auth를 사용한 사용자 인증 함수
+export const getCurrentUserFromSupabase = async (request: NextRequest) => {
   try {
-    if (!token || token.split('.').length !== 3) {
-      return null
+    console.log('🔍 getCurrentUserFromSupabase 시작');
+    
+    // 1. 먼저 Bearer 토큰 확인
+    const authHeader = request.headers.get('authorization')
+    console.log('🔍 Authorization 헤더:', authHeader ? '존재' : '없음');
+    
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7)
+      console.log('🔍 Bearer 토큰 확인 시도');
+      
+      try {
+        // Supabase에서 토큰 검증
+        const { data: { user }, error } = await supabase.auth.getUser(token)
+        
+        if (!error && user) {
+          console.log('✅ Bearer 토큰으로 인증 성공:', user.email);
+          return {
+            id: user.id,
+            email: user.email,
+            nickname: user.user_metadata?.nickname || user.email?.split('@')[0],
+            role: user.user_metadata?.role || 'user'
+          }
+        } else {
+          console.log('❌ Bearer 토큰 검증 실패:', error);
+        }
+      } catch (tokenError) {
+        console.error('❌ Token validation error:', tokenError)
+      }
     }
+
+    // 2. 쿠키 기반 세션 확인
+    const cookieHeader = request.headers.get('cookie')
+    console.log('🔍 Cookie 헤더:', cookieHeader ? '존재' : '없음');
     
-    // 클라이언트 사이드에서는 토큰을 디코드만 함 (검증은 서버에서)
-    const base64Url = token.split('.')[1]
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-    
-    // Base64 디코딩
-    let jsonPayload
-    try {
-      const decoded = atob(base64)
-      jsonPayload = decodeURIComponent(decoded.split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-      }).join(''))
-    } catch (decodeError) {
-      return null
+    if (cookieHeader) {
+      try {
+        console.log('🔍 쿠키 기반 세션 확인 시도');
+        // 서버 사이드 Supabase 클라이언트로 세션 확인
+        const serverSupabase = createServerSupabaseClient(request)
+        const { data: { session }, error } = await serverSupabase.auth.getSession()
+        
+        if (!error && session?.user) {
+          console.log('✅ 쿠키 세션으로 인증 성공:', session.user.email);
+          return {
+            id: session.user.id,
+            email: session.user.email,
+            nickname: session.user.user_metadata?.nickname || session.user.email?.split('@')[0],
+            role: session.user.user_metadata?.role || 'user'
+          }
+        } else {
+          console.log('❌ 쿠키 세션 검증 실패:', error);
+        }
+      } catch (sessionError) {
+        console.error('❌ Session validation error:', sessionError)
+      }
     }
-    
-    const payload = JSON.parse(jsonPayload) as JWTPayload
-    
-    // 만료 시간 확인
-    if (payload.exp && payload.exp * 1000 < Date.now()) {
-      return null
-    }
-    
-    return payload
+
+    console.log('❌ 모든 인증 방법 실패');
+    return null
   } catch (error) {
+    console.error('❌ Supabase auth error:', error)
     return null
   }
-}
-
-// 서버 사이드에서만 사용하는 검증 함수
-export const verifyToken = (token: string): JWTPayload | null => {
-  try {
-    if (!JWT_SECRET) {
-      return null
-    }
-    
-    const payload = jwt.verify(token, JWT_SECRET) as JWTPayload
-    return payload
-  } catch (error) {
-    return null
-  }
-}
-
-export const hashPassword = async (password: string): Promise<string> => {
-  return bcrypt.hash(password, 12)
-}
-
-export const comparePassword = async (password: string, hashedPassword: string): Promise<boolean> => {
-  return bcrypt.compare(password, hashedPassword)
 } 

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { getCurrentUser } from '@/lib/server-auth';
+import { supabaseAdmin } from '@/lib/supabase';
+import { getCurrentUserFromSupabase } from '@/lib/auth';
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getCurrentUser(request);
+    const user = await getCurrentUserFromSupabase(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -15,23 +15,27 @@ export async function DELETE(
     const { id } = await params;
 
     // 해당 초서가 현재 사용자의 것인지 확인
-    const wisdomNote = await prisma.wisdomNote.findFirst({
-      where: {
-        id: id,
-        userId: user.id,
-      },
-    });
+    const { data: wisdomNote, error: wisdomNoteError } = await supabaseAdmin
+      .from('wisdom_notes')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .single();
 
-    if (!wisdomNote) {
+    if (wisdomNoteError || !wisdomNote) {
       return NextResponse.json({ error: 'Wisdom note not found' }, { status: 404 });
     }
 
     // 초서 삭제
-    await prisma.wisdomNote.delete({
-      where: {
-        id: id,
-      },
-    });
+    const { error: deleteError } = await supabaseAdmin
+      .from('wisdom_notes')
+      .delete()
+      .eq('id', id);
+
+    if (deleteError) {
+      console.error('초서 삭제 에러:', deleteError);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
 
     return NextResponse.json({ message: 'Wisdom note deleted successfully' });
   } catch (error) {

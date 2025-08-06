@@ -1,110 +1,87 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? window.location.origin + '/api' : '/api')
 
-// 쿠키 설정 함수
-export const setCookie = (name: string, value: string | null, expires: Date) => {
-  if (typeof document !== 'undefined') {
-    if (value) {
-      document.cookie = `${name}=${value}; expires=${expires.toUTCString()}; path=/; secure; samesite=lax`
-    } else {
-      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`
-    }
-  }
-}
+// Supabase 클라이언트 import
+import { supabase } from './auth'
 
-// 쿠키 읽기 함수
-export const getCookie = (name: string): string | null => {
-  if (typeof document !== 'undefined') {
-    const value = `; ${document.cookie}`
-    const parts = value.split(`; ${name}=`)
-    if (parts.length === 2) {
-      return parts.pop()?.split(';').shift() || null
-    }
-  }
-  return null
-}
-
-// 쿠키 삭제 함수
-export const deleteCookie = (name: string) => {
-  if (typeof document !== 'undefined') {
-    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`
-  }
-}
-
-// 토큰 관리
-export const getToken = (): string | null => {
-  return getCookie('likegame-token')
-}
-
-export const setToken = (token: string): void => {
-  setCookie('likegame-token', token, new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)) // 7일간 유효
-}
-
-export const removeToken = (): void => {
-  deleteCookie('likegame-token')
-}
-
-// API 요청 헬퍼
-const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
+// API 요청 헬퍼 함수
+export const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
+  // Supabase에서 현재 세션 가져오기
+  const { data: { session } } = await supabase.auth.getSession()
+  
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string> || {}),
   }
 
-  // credentials: 'include'로 쿠키 자동 전송
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  // 세션이 있으면 Authorization 헤더 추가
+  if (session?.access_token) {
+    headers['Authorization'] = `Bearer ${session.access_token}`
+  }
+
+  const response = await fetch(`/api${endpoint}`, {
     ...options,
     headers,
-    credentials: 'include',
   })
 
   if (!response.ok) {
-    // 401 에러는 AuthContext에서 처리하므로 여기서는 무시
-    if (response.status === 401) {
-      throw new Error('인증이 필요합니다.')
-    }
-    
-    // 401이 아닌 다른 에러들 처리
-    let errorMessage = 'API 요청에 실패했습니다.'
-    try {
-      const errorData = await response.json()
-      errorMessage = errorData.error || errorMessage
-    } catch (e) {
-      // JSON 파싱 실패 시 기본 메시지 사용
-    }
-    throw new Error(errorMessage)
+    const error = await response.json()
+    throw new Error(error.error || 'API 요청에 실패했습니다.')
   }
 
   return response.json()
-}
-
-// 인증 API
-export const authAPI = {
-  register: async (data: { email: string; password: string; nickname?: string }) => {
-    return apiRequest('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    })
-  },
-
-  login: async (data: { email: string; password: string }) => {
-    return apiRequest('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    })
-  },
 }
 
 // 스탯 API
 export const statsAPI = {
   get: async (month?: string) => {
     const params = month ? `?month=${month}` : ''
-    return apiRequest(`/stats${params}`)
+    return apiRequest(`/stats/main${params}`)
   },
 
   update: async (data: { strength: number; agility: number; wisdom: number; month?: string }) => {
-    return apiRequest('/stats', {
+    return apiRequest('/stats/main', {
       method: 'POST',
       body: JSON.stringify(data),
+    })
+  },
+}
+
+// 힘 기록 API
+export const strengthAPI = {
+  get: async () => {
+    return apiRequest('/stats/strength')
+  },
+
+  create: async (data: { bench: number; squat: number; deadlift: number }) => {
+    return apiRequest('/stats/strength', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  delete: async (id: string) => {
+    return apiRequest(`/stats/strength/${id}`, {
+      method: 'DELETE',
+    })
+  },
+}
+
+// 민첩 기록 API
+export const agilityAPI = {
+  get: async () => {
+    return apiRequest('/stats/agility')
+  },
+
+  create: async (data: { distance: number }) => {
+    return apiRequest('/stats/agility', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  delete: async (id: string) => {
+    return apiRequest(`/stats/agility/${id}`, {
+      method: 'DELETE',
     })
   },
 }
@@ -148,12 +125,12 @@ export const badgesAPI = {
     return apiRequest('/badges')
   },
 
-  toggle: async (badgeId: string) => {
-    return apiRequest(`/badges/${badgeId}`, {
+  toggle: async (id: string) => {
+    return apiRequest(`/badges/${id}`, {
       method: 'POST',
     })
   },
-}
+};
 
 // 칭호 API
 export const titlesAPI = {
@@ -161,17 +138,21 @@ export const titlesAPI = {
     return apiRequest('/titles')
   },
 
-  select: async (titleId: string) => {
-    return apiRequest(`/titles/${titleId}/select`, {
+  select: async (id: string) => {
+    return apiRequest(`/titles/${id}/select`, {
       method: 'POST',
     })
   },
-}
+};
 
 // 퀘스트 API
 export const questsAPI = {
   get: async () => {
     return apiRequest('/quests')
+  },
+
+  getActive: async () => {
+    return apiRequest('/quests/active')
   },
 
   create: async (data: {
@@ -205,8 +186,20 @@ export const questsAPI = {
     })
   },
 
+  cancel: async (questId: string) => {
+    return apiRequest(`/quests/${questId}/cancel`, {
+      method: 'POST',
+    })
+  },
+
   complete: async (questId: string) => {
     return apiRequest(`/quests/${questId}/complete`, {
+      method: 'POST',
+    })
+  },
+
+  reject: async (questId: string) => {
+    return apiRequest(`/quests/${questId}/reject`, {
       method: 'POST',
     })
   },
@@ -246,22 +239,182 @@ export const partiesAPI = {
       method: 'POST',
     })
   },
+
+  kick: async (partyId: string, memberId: string) => {
+    return apiRequest(`/parties/${partyId}/kick`, {
+      method: 'POST',
+      body: JSON.stringify({ memberId, confirmed: true }),
+    })
+  },
+
+  disband: async (partyId: string) => {
+    return apiRequest(`/parties/${partyId}/disband`, {
+      method: 'POST',
+      body: JSON.stringify({ confirmed: true }),
+    })
+  },
 }
 
 // 지혜 API
 export const wisdomAPI = {
-  get: async () => {
-    return apiRequest('/wisdom')
+  get: async (page = 1, limit = 10) => {
+    return apiRequest(`/wisdom?page=${page}&limit=${limit}`)
   },
 
   create: async (data: {
-    title: string
+    bookId: string
     quote: string
     impression: string
+    date?: string
   }) => {
     return apiRequest('/wisdom', {
       method: 'POST',
       body: JSON.stringify(data),
+    })
+  },
+
+  delete: async (noteId: string) => {
+    return apiRequest(`/wisdom/${noteId}`, {
+      method: 'DELETE',
+    })
+  },
+}
+
+// 책 API
+export const booksAPI = {
+  get: async () => {
+    return apiRequest('/books')
+  },
+
+  create: async (data: {
+    title: string
+    author: string
+  }) => {
+    return apiRequest('/books', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  update: async (id: string, data: any) => {
+    return apiRequest(`/books/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  delete: async (id: string) => {
+    return apiRequest(`/books/${id}`, {
+      method: 'DELETE',
+    })
+  },
+}
+
+// 채팅 API
+export const chatAPI = {
+  getRooms: async () => {
+    return apiRequest('/chat/rooms')
+  },
+
+  getRoom: async (roomId: string) => {
+    return apiRequest(`/chat/rooms/${roomId}`)
+  },
+
+  getMessages: async (roomId: string) => {
+    return apiRequest(`/chat/rooms/${roomId}/messages`)
+  },
+
+  leaveRoom: async (roomId: string) => {
+    return apiRequest(`/chat/rooms/${roomId}/leave`, {
+      method: 'POST',
+    })
+  },
+
+  sendMessage: async (roomId: string, message: string) => {
+    return apiRequest(`/chat/rooms/${roomId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    })
+  },
+
+  getRoomByQuest: async (questId: string) => {
+    return apiRequest(`/chat/rooms/by-quest/${questId}`)
+  },
+
+  getRoomByParty: async (partyId: string) => {
+    return apiRequest(`/chat/rooms/by-party/${partyId}`)
+  },
+}
+
+// 어드민 API
+export const adminAPI = {
+  // 뱃지 관리
+  getBadges: async () => {
+    return apiRequest('/admin/badges')
+  },
+
+  createBadge: async (data: {
+    name: string
+    description: string
+    rarity: string
+    icon: string
+  }) => {
+    return apiRequest('/admin/badges', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  updateBadge: async (id: string, data: {
+    name: string
+    description: string
+    rarity: string
+    icon: string
+  }) => {
+    return apiRequest(`/admin/badges/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  deleteBadge: async (id: string) => {
+    return apiRequest(`/admin/badges/${id}`, {
+      method: 'DELETE',
+    })
+  },
+
+  // 칭호 관리
+  getTitles: async () => {
+    return apiRequest('/admin/titles')
+  },
+
+  createTitle: async (data: {
+    name: string
+    description: string
+    rarity: string
+    requiredBadges: string[]
+  }) => {
+    return apiRequest('/admin/titles', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  updateTitle: async (id: string, data: {
+    name: string
+    description: string
+    rarity: string
+    requiredBadges: string[]
+  }) => {
+    return apiRequest(`/admin/titles/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  deleteTitle: async (id: string) => {
+    return apiRequest(`/admin/titles/${id}`, {
+      method: 'DELETE',
     })
   },
 } 

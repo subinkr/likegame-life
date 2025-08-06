@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getCurrentUser } from '@/lib/server-auth'
+import { supabaseAdmin } from '@/lib/supabase';
+import { getCurrentUserFromSupabase } from '@/lib/auth';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getCurrentUser(request)
+    const user = await getCurrentUserFromSupabase(request)
     if (!user) {
       return NextResponse.json(
         { error: '인증이 필요합니다.' },
@@ -18,11 +18,13 @@ export async function POST(
     const { id: badgeId } = await params
 
     // 뱃지 존재 확인
-    const badge = await prisma.badge.findUnique({
-      where: { id: badgeId }
-    })
+    const { data: badge, error: badgeError } = await supabaseAdmin
+      .from('badges')
+      .select('*')
+      .eq('id', badgeId)
+      .single()
 
-    if (!badge) {
+    if (badgeError || !badge) {
       return NextResponse.json(
         { error: '존재하지 않는 뱃지입니다.' },
         { status: 404 }
@@ -30,98 +32,141 @@ export async function POST(
     }
 
     // 기존 사용자 뱃지 상태 확인
-    const existingUserBadge = await prisma.userBadge.findUnique({
-      where: {
-        userId_badgeId: {
-          userId: user.id,
-          badgeId
-        }
-      }
-    })
+    const { data: existingUserBadge, error: userBadgeError } = await supabaseAdmin
+      .from('user_badges')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('badge_id', badgeId)
+      .single()
 
     let userBadge
 
     if (existingUserBadge) {
       // 기존 상태 토글
-      userBadge = await prisma.userBadge.update({
-        where: {
-          userId_badgeId: {
-            userId: user.id,
-            badgeId
-          }
-        },
-        data: {
+      const { data: updatedUserBadge, error: updateError } = await supabaseAdmin
+        .from('user_badges')
+        .update({
           achieved: !existingUserBadge.achieved,
-          achievedDate: !existingUserBadge.achieved ? new Date() : null
-        },
-        include: { badge: true }
-      })
+          achieved_date: !existingUserBadge.achieved ? new Date().toISOString() : null
+        })
+        .eq('user_id', user.id)
+        .eq('badge_id', badgeId)
+        .select(`
+          *,
+          badges(*)
+        `)
+        .single()
+
+      if (updateError) {
+        console.error('뱃지 업데이트 에러:', updateError)
+        return NextResponse.json(
+          { error: '서버 오류가 발생했습니다.' },
+          { status: 500 }
+        )
+      }
+      userBadge = updatedUserBadge
     } else {
       // 새로 생성 (달성 상태로)
-      userBadge = await prisma.userBadge.create({
-        data: {
-          userId: user.id,
-          badgeId,
+      const { data: newUserBadge, error: createError } = await supabaseAdmin
+        .from('user_badges')
+        .insert({
+          user_id: user.id,
+          badge_id: badgeId,
           achieved: true,
-          achievedDate: new Date()
-        },
-        include: { badge: true }
-      })
+          achieved_date: new Date().toISOString()
+        })
+        .select(`
+          *,
+          badges(*)
+        `)
+        .single()
+
+      if (createError) {
+        console.error('뱃지 생성 에러:', createError)
+        return NextResponse.json(
+          { error: '서버 오류가 발생했습니다.' },
+          { status: 500 }
+        )
+      }
+      userBadge = newUserBadge
     }
 
     // 뱃지 상태 변경 후 관련 칭호 상태 업데이트
-    const userBadges = await prisma.userBadge.findMany({
-      where: {
-        userId: user.id,
-        achieved: true
-      },
-      include: { badge: true }
-    })
+    const { data: userBadges, error: userBadgesError } = await supabaseAdmin
+      .from('user_badges')
+      .select(`
+        *,
+        badges(*)
+      `)
+      .eq('user_id', user.id)
+      .eq('achieved', true)
 
-    const badgeCount = userBadges.length
+    if (userBadgesError) {
+      console.error('사용자 뱃지 조회 에러:', userBadgesError)
+      return NextResponse.json(
+        { error: '서버 오류가 발생했습니다.' },
+        { status: 500 }
+      )
+    }
+
+    const badgeCount = (userBadges || []).length
 
     // 모든 칭호들의 상태 재계산
-    const allTitles = await prisma.title.findMany()
+    const { data: allTitles, error: titlesError } = await supabaseAdmin
+      .from('titles')
+      .select('*')
 
-    for (const title of allTitles) {
+    if (titlesError) {
+      console.error('칭호 조회 에러:', titlesError)
+      return NextResponse.json(
+        { error: '서버 오류가 발생했습니다.' },
+        { status: 500 }
+      )
+    }
+
+    for (const title of (allTitles || [])) {
       // 필요한 뱃지 확인
-      const requiredBadgeNames = title.requiredBadges || []
-      const userBadgeNames = userBadges.map(ub => ub.badge.name)
-      const shouldHaveTitle = requiredBadgeNames.length > 0 && requiredBadgeNames.every(badgeName => userBadgeNames.includes(badgeName))
+      const requiredBadgeNames = title.required_badges || []
+      const userBadgeNames = (userBadges || []).map((ub: any) => ub.badges.name)
+      const shouldHaveTitle = requiredBadgeNames.length > 0 && requiredBadgeNames.every((badgeName: any) => userBadgeNames.includes(badgeName))
 
       // 사용자의 칭호 상태 확인
-      const existingUserTitle = await prisma.userTitle.findFirst({
-        where: {
-          userId: user.id,
-          titleId: title.id
-        }
-      })
+      const { data: existingUserTitle, error: userTitleError } = await supabaseAdmin
+        .from('user_titles')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('title_id', title.id)
+        .single()
 
       if (shouldHaveTitle && !existingUserTitle) {
         // 칭호 획득
-        await prisma.userTitle.create({
-          data: {
-            userId: user.id,
-            titleId: title.id,
+        const { error: insertError } = await supabaseAdmin
+          .from('user_titles')
+          .insert({
+            user_id: user.id,
+            title_id: title.id,
             achieved: true,
-            achievedDate: new Date()
-          }
-        })
+            achieved_date: new Date().toISOString()
+          })
+
+        if (insertError) {
+          console.error('칭호 생성 에러:', insertError)
+        }
       } else if (!shouldHaveTitle && existingUserTitle) {
         // 뱃지 조건을 만족하지 않으면 칭호 비활성화 및 선택 해제
-        await prisma.userTitle.update({
-          where: {
-            userId_titleId: {
-              userId: user.id,
-              titleId: title.id
-            }
-          },
-          data: {
+        const { error: updateError } = await supabaseAdmin
+          .from('user_titles')
+          .update({
             achieved: false,
             selected: false,
-            achievedDate: null
-          }
-                  })
+            achieved_date: null
+          })
+          .eq('user_id', user.id)
+          .eq('title_id', title.id)
+
+        if (updateError) {
+          console.error('칭호 업데이트 에러:', updateError)
+        }
       }
     }
 

@@ -1,67 +1,102 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server-auth';
-import { prisma } from '@/lib/prisma';
+import { getCurrentUserFromSupabase } from '@/lib/auth';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getCurrentUser(request);
+    const user = await getCurrentUserFromSupabase(request);
     if (!user) {
-      return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
+      return NextResponse.json(
+        { error: '인증이 필요합니다.' },
+        { status: 401 }
+      );
     }
 
-    const { id: chatRoomId } = await params;
-    
-    console.log('채팅방 조회 요청:', {
-      chatRoomId,
-      userId: user.id,
-      userNickname: user.nickname
-    });
+    const paramsData = await params;
+    const { id } = paramsData;
 
-    // 채팅방 정보 조회 (사용자가 참여한 채팅방인지 확인)
-    const chatRoom = await (prisma as any).chatRoom.findFirst({
-      where: {
-        id: chatRoomId,
-        participants: {
-          some: {
-            userId: user.id,
-          },
-        },
-      },
-      include: {
-        participants: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                nickname: true,
-              },
-            },
-          },
-        },
-      },
-    });
+    // 채팅방 정보 조회
+    const { data: chatRoom, error } = await supabaseAdmin
+      .from('chat_rooms')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-    if (!chatRoom) {
-      console.log('채팅방을 찾을 수 없음:', {
-        chatRoomId,
-        userId: user.id
-      });
-      return NextResponse.json({ error: '채팅방을 찾을 수 없습니다' }, { status: 404 });
+    if (error) {
+      console.error('채팅방 조회 에러:', error);
+      return NextResponse.json(
+        { error: '채팅방을 찾을 수 없습니다.' },
+        { status: 404 }
+      );
     }
 
-    const formattedChatRoom = {
-      id: chatRoom.id,
-      name: chatRoom.name,
-      type: chatRoom.type,
-      participants: chatRoom.participants.map((p: any) => p.user),
-    };
+    // 파티 채팅방인 경우 파티 멤버십도 확인
+    if (chatRoom.party_id) {
+      const { data: partyMember, error: partyMemberError } = await supabaseAdmin
+        .from('party_members')
+        .select('*')
+        .eq('party_id', chatRoom.party_id)
+        .eq('user_id', user.id)
+        .single();
 
-    return NextResponse.json(formattedChatRoom);
+      if (partyMemberError || !partyMember) {
+        return NextResponse.json(
+          { error: '파티 멤버가 아니므로 채팅방에 접근할 수 없습니다.' },
+          { status: 403 }
+        );
+      }
+    }
+
+    // 퀘스트 채팅방인 경우 퀘스트 권한도 확인
+    if (chatRoom.quest_id) {
+      const { data: quest, error: questError } = await supabaseAdmin
+        .from('quests')
+        .select('creator_id, accepted_by_user_id')
+        .eq('id', chatRoom.quest_id)
+        .single();
+
+      if (questError || !quest) {
+        return NextResponse.json(
+          { error: '퀘스트를 찾을 수 없습니다.' },
+          { status: 404 }
+        );
+      }
+
+      const isCreator = quest.creator_id === user.id;
+      const isAcceptor = quest.accepted_by_user_id === user.id;
+
+      if (!isCreator && !isAcceptor) {
+        return NextResponse.json(
+          { error: '퀘스트 생성자이거나 수락한 사용자가 아니므로 채팅방에 접근할 수 없습니다.' },
+          { status: 403 }
+        );
+      }
+    }
+
+    // 사용자가 해당 채팅방의 참가자인지 확인
+    const { data: participant, error: participantError } = await supabaseAdmin
+      .from('chat_room_participants')
+      .select('*')
+      .eq('chat_room_id', id)
+      .eq('user_id', user.id)
+      .single();
+
+    if (participantError || !participant) {
+      return NextResponse.json(
+        { error: '채팅방에 접근할 권한이 없습니다.' },
+        { status: 403 }
+      );
+    }
+
+    return NextResponse.json(chatRoom);
   } catch (error) {
-    console.error('채팅방 정보 조회 실패:', error);
-    return NextResponse.json({ error: '채팅방 정보를 불러오는데 실패했습니다' }, { status: 500 });
+    console.error('채팅방 조회 실패:', error);
+    return NextResponse.json(
+      { error: '서버 오류가 발생했습니다.' },
+      { status: 500 }
+    );
   }
 } 

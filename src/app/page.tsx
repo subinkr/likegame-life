@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useStats } from '@/hooks/useStats';
 import { useAchievements } from '@/hooks/useAchievements';
 import { useSkills } from '@/hooks/useSkills';
+import AuthGuard from '@/components/AuthGuard';
 
 interface Stats {
   strength: number;
@@ -20,7 +21,7 @@ interface Title {
   rarity: string;
   achieved: boolean;
   selected?: boolean;
-  requiredBadges?: string[];
+  required_badges?: string[];
 }
 
 interface Badge {
@@ -32,27 +33,30 @@ interface Badge {
   icon: string;
 }
 
-export default function Home() {
-  const { user, loading: authLoading } = useAuth();
+function HomeContent() {
+  const { user } = useAuth();
   const router = useRouter();
   const { stats, loading: statsLoading, error: statsError, updateStats, loadStats, getCurrentMonth, getLastMonth } = useStats();
   const { badges, titles, loading: achievementsLoading, error: achievementsError, toggleBadge, selectTitle } = useAchievements();
   const { skills, loading: skillsLoading, error: skillsError } = useSkills();
+  
+  // stats가 undefined일 때를 대비한 안전장치
+  const safeStats = stats || { strength: 0, agility: 0, wisdom: 0 };
   
   // 선택된 칭호 찾기 (활성화된 칭호만)
   const selectedTitle = titles?.find(title => {
     if (!title.selected || !title.achieved) return false;
     
     // 필요한 뱃지가 모두 활성화되어 있는지 확인
-    if (title.requiredBadges && title.requiredBadges.length > 0) {
-      const hasAllRequiredBadges = title.requiredBadges.every(badgeName => {
+    if (title.required_badges && title.required_badges.length > 0) {
+      const hasAllRequiredBadges = title.required_badges.every(badgeName => {
         const badge = badges.find(b => b.name === badgeName);
         return badge && badge.achieved;
       });
       return hasAllRequiredBadges;
     }
     
-    return true; // requiredBadges가 없으면 활성화된 것으로 간주
+    return true; // required_badges가 없으면 활성화된 것으로 간주
   });
   
   // 페이지 로드 시 스탯만 확인 (칭호는 업적 페이지에서 활성화)
@@ -176,18 +180,18 @@ export default function Home() {
   // 통계 계산
   const achievedTitles = titles.filter(t => {
     if (!t.achieved) return false;
-    const hasRequiredBadges = t.requiredBadges?.every((badgeName: string) => {
-      const badge = badges.find(b => b.name === badgeName);
-      return badge && badge.achieved;
-    });
-    return hasRequiredBadges;
+          const hasRequiredBadges = t.required_badges?.every((badgeName: string) => {
+        const badge = badges.find(b => b.name === badgeName);
+        return badge && badge.achieved;
+      });
+      return hasRequiredBadges;
   }).length;
   const totalTitles = titles.length;
   const achievedBadges = badges.filter(b => b.achieved).length;
   const totalBadges = badges.length;
 
-  // 로딩 중이거나 로그인되지 않은 경우
-  if (authLoading || statsLoading || achievementsLoading || skillsLoading || !user) {
+  // 로딩 중인 경우
+  if (statsLoading || achievementsLoading || skillsLoading) {
     return (
       <div style={{
         display: 'flex',
@@ -232,9 +236,9 @@ export default function Home() {
 
   // 유저 랭크 계산 함수
   const getUserRank = () => {
-    const strengthRank = getRank(stats.strength, 'strength');
-    const agilityRank = getRank(stats.agility, 'agility');
-    const wisdomRank = getRank(stats.wisdom, 'wisdom');
+    const strengthRank = getRank(safeStats.strength, 'strength');
+    const agilityRank = getRank(safeStats.agility, 'agility');
+    const wisdomRank = getRank(safeStats.wisdom, 'wisdom');
     return `${strengthRank}${agilityRank}${wisdomRank}`;
   };
 
@@ -294,7 +298,7 @@ export default function Home() {
               fontWeight: 700,
               fontFamily: 'Press Start 2P, cursive'
             }}>
-              {user.nickname || '플레이어'}
+              {user.user_metadata?.nickname || user.email?.split('@')[0] || '플레이어'}
             </div>
           </div>
         )}
@@ -356,7 +360,7 @@ export default function Home() {
                   fontWeight: 700,
                   color: '#ff0066',
                   fontFamily: 'Press Start 2P, cursive'
-                }}>{stats.strength}kg</span>
+                }}>{safeStats.strength}kg</span>
                 <div style={{
                   fontSize: '0.8rem',
                   fontWeight: 700,
@@ -366,13 +370,13 @@ export default function Home() {
                   borderRadius: '4px',
                   fontFamily: 'Press Start 2P, cursive'
                 }}>
-                  {getRank(stats.strength, 'strength')}
+                  {getRank(safeStats.strength, 'strength')}
                 </div>
               </div>
             </div>
             {/* 프로그레스 바 */}
             {(() => {
-              const progress = getProgressToNextRank(stats.strength, 'strength');
+              const progress = getProgressToNextRank(safeStats.strength, 'strength');
               return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                   <div style={{
@@ -407,7 +411,7 @@ export default function Home() {
                     textAlign: 'right',
                     fontFamily: 'Orbitron, monospace'
                   }}>
-                    {progress.nextRank !== 'S' ? `${stats.strength}/${progress.nextThreshold}kg` : '최고 등급'}
+                    {progress.nextRank !== 'S' ? `${safeStats.strength}/${progress.nextThreshold}kg` : '최고 등급'}
                   </div>
                 </div>
               );
@@ -447,7 +451,7 @@ export default function Home() {
                   fontWeight: 700,
                   color: '#00ffff',
                   fontFamily: 'Press Start 2P, cursive'
-                }}>{stats.agility}km</span>
+                }}>{safeStats.agility}km</span>
                 <div style={{
                   fontSize: '0.8rem',
                   fontWeight: 700,
@@ -457,13 +461,13 @@ export default function Home() {
                   borderRadius: '4px',
                   fontFamily: 'Press Start 2P, cursive'
                 }}>
-                  {getRank(stats.agility, 'agility')}
+                  {getRank(safeStats.agility, 'agility')}
                 </div>
               </div>
             </div>
             {/* 프로그레스 바 */}
             {(() => {
-              const progress = getProgressToNextRank(stats.agility, 'agility');
+              const progress = getProgressToNextRank(safeStats.agility, 'agility');
               return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                   <div style={{
@@ -498,7 +502,7 @@ export default function Home() {
                     textAlign: 'right',
                     fontFamily: 'Orbitron, monospace'
                   }}>
-                    {progress.nextRank !== 'S' ? `${stats.agility}/${progress.nextThreshold}km` : '최고 등급'}
+                    {progress.nextRank !== 'S' ? `${safeStats.agility}/${progress.nextThreshold}km` : '최고 등급'}
                   </div>
                 </div>
               );
@@ -538,7 +542,7 @@ export default function Home() {
                   fontWeight: 700,
                   color: '#9900ff',
                   fontFamily: 'Press Start 2P, cursive'
-                }}>{stats.wisdom}개</span>
+                }}>{safeStats.wisdom}개</span>
                 <div style={{
                   fontSize: '0.8rem',
                   fontWeight: 700,
@@ -548,13 +552,13 @@ export default function Home() {
                   borderRadius: '4px',
                   fontFamily: 'Press Start 2P, cursive'
                 }}>
-                  {getRank(stats.wisdom, 'wisdom')}
+                  {getRank(safeStats.wisdom, 'wisdom')}
                 </div>
               </div>
             </div>
             {/* 프로그레스 바 */}
             {(() => {
-              const progress = getProgressToNextRank(stats.wisdom, 'wisdom');
+              const progress = getProgressToNextRank(safeStats.wisdom, 'wisdom');
               return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                   <div style={{
@@ -589,7 +593,7 @@ export default function Home() {
                     textAlign: 'right',
                     fontFamily: 'Orbitron, monospace'
                   }}>
-                    {progress.nextRank !== 'S' ? `${stats.wisdom}/${progress.nextThreshold}개` : '최고 등급'}
+                    {progress.nextRank !== 'S' ? `${safeStats.wisdom}/${progress.nextThreshold}개` : '최고 등급'}
                   </div>
                 </div>
               );
@@ -699,6 +703,14 @@ export default function Home() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <AuthGuard>
+      <HomeContent />
+    </AuthGuard>
   );
 }
 

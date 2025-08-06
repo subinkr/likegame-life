@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { statsAPI } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
+import { strengthAPI } from '@/lib/api' // Added import for strengthAPI
 
 interface Stats {
   strength: number
@@ -23,22 +24,31 @@ export function useStats() {
 
     try {
       // 메인 페이지용 스탯 API 사용 (힘: 최고 기록, 민첩: 누적 기록, 지혜: 월 합계)
-      const response = await fetch(`/api/stats/main${month ? `?month=${month}` : ''}`, {
-        credentials: 'include'
-      })
+      const [mainResponse, strengthResponse] = await Promise.all([
+        statsAPI.get(month),
+        strengthAPI.get().catch(() => ({ records: [] })) // 힘 API 실패 시 빈 배열
+      ])
       
-      if (response.ok) {
-        const data = await response.json()
-        setStats(data.stats)
-      } else {
-        // 401 에러는 AuthContext에서 처리하므로 여기서는 무시
-        if (response.status === 401) {
-          return
-        }
-        console.error('Main stats API error:', response.status, response.statusText)
-        setStats({ strength: 0, agility: 0, wisdom: 0 })
-      }
+      // 힘 최고 기록 계산
+      const maxStrength = strengthResponse.records?.length > 0 
+        ? Math.max(...strengthResponse.records.map((r: any) => 
+            (r.bench || 0) + (r.squat || 0) + (r.deadlift || 0)
+          ))
+        : 0
+      
+      // API 응답 구조에 맞게 변환
+      setStats({
+        strength: maxStrength,
+        agility: mainResponse.totalDistance || 0,
+        wisdom: mainResponse.noteCount || 0
+      })
     } catch (err: any) {
+      // 401 에러는 AuthContext에서 처리하므로 여기서는 무시
+      if (err.message === '인증이 필요합니다.') {
+        return
+      }
+      console.error('Main stats API error:', err)
+      setStats({ strength: 0, agility: 0, wisdom: 0 })
       setError(err.message || '스탯을 불러오는데 실패했습니다.')
       // API 실패 시 localStorage에서 로드
       if (typeof window !== 'undefined') {

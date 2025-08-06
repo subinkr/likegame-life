@@ -1,511 +1,487 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useChat } from '@/contexts/ChatContext';
-import { useWebSocket } from '@/hooks/useWebSocket';
-import { useActiveQuest } from '@/hooks/useActiveQuest';
-import { useRouter } from 'next/navigation';
-import { use } from 'react';
 
-interface ChatMessage {
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { apiRequest } from '@/lib/api';
+import AuthGuard from '@/components/AuthGuard';
+import { supabase } from '@/lib/supabase';
+
+interface Message {
   id: string;
   content: string;
-  timestamp: string;
-  user: {
-    id: string;
-    nickname: string;
-  };
+  user_nickname: string;
+  created_at: string;
 }
 
 interface ChatRoom {
   id: string;
   name: string;
   type: string;
-  participants: Array<{
-    id: string;
-    nickname: string;
-  }>;
+  party_id?: string;
+  quest_id?: string;
 }
 
-export default function ChatRoomPage({ params }: { params: Promise<{ id: string }> }) {
-  const { user } = useAuth();
-  const { messages, addMessage, loadMessages, setCurrentRoom } = useChat();
-  const { hasActiveQuest, activeQuest, loading: questLoading } = useActiveQuest();
+interface Party {
+  id: string;
+  leader_id: string;
+  name: string;
+}
+
+function ChatRoomPageContent() {
+  const { id } = useParams();
   const router = useRouter();
+  const { user } = useAuth();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [chatRoom, setChatRoom] = useState<ChatRoom | null>(null);
+  const [party, setParty] = useState<Party | null>(null);
   const [newMessage, setNewMessage] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [messagesLoaded, setMessagesLoaded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(true);
 
-  // params를 unwrap
-  const { id: chatRoomId } = use(params);
-
-  // 현재 채팅방의 메시지들
-  const currentMessages = messages[chatRoomId] || [];
-
-  // 현재 채팅방이 활성 퀘스트의 채팅방인지 확인 (수락자 또는 생성자)
-  const isActiveQuestChatRoom = hasActiveQuest && activeQuest?.chatRoomId === chatRoomId;
-
-  // 웹소켓 연결
-  const { isConnected, isConnecting, sendChatMessage, joinRoom, leaveRoom } = useWebSocket({
-    onChatMessage: addMessage,
-    onConnect: () => {
-      console.log('🔌 웹소켓 연결됨');
-    },
-    onDisconnect: () => {
-      console.log('🔌 웹소켓 연결 해제됨');
-    }
-  });
-
-  // 채팅방 정보와 메시지 로드
   useEffect(() => {
-    if (user) {
-      setMessagesLoaded(false);
+    if (id) {
       fetchChatRoom();
-      if (!messagesLoaded) {
-        fetchMessages();
-      }
+      fetchMessages();
+      let cleanup: (() => void) | undefined;
+      
+      setupRealtimeSubscription().then((cleanupFn) => {
+        cleanup = cleanupFn;
+      });
+      
+      return () => {
+        if (cleanup) {
+          cleanup();
+        }
+      };
     }
-  }, [chatRoomId, user]);
+  }, [id]);
 
-  // 현재 채팅방 설정 및 참가
-  useEffect(() => {
-    setCurrentRoom(chatRoomId);
+  const setupRealtimeSubscription = async () => {
+    if (!id || !user) return;
+
+    console.log('🔄 SSE 실시간 채팅 구독 설정 중...', { roomId: id, userId: user.id });
+
+    // SSE 연결 (인증 토큰 포함)
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
     
-    // 웹소켓이 연결되면 채팅방 참가
-    if (isConnected && chatRoomId) {
-      joinRoom(chatRoomId);
+    if (!token) {
+      console.error('❌ 인증 토큰이 없습니다.');
+      return;
     }
-    
-    return () => {
-      setCurrentRoom(null);
-      // 컴포넌트 언마운트 시에만 채팅방 나가기 (웹소켓이 연결된 상태에서만)
-      if (isConnected && chatRoomId) {
-        leaveRoom(chatRoomId);
+
+    // EventSource는 헤더를 직접 설정할 수 없으므로 URL 파라미터로 토큰 전달
+    const eventSource = new EventSource(`/api/chat/rooms/${id}/stream?token=${encodeURIComponent(token)}`);
+
+    eventSource.onopen = () => {
+      console.log('✅ SSE 연결 성공!');
+    };
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        console.log('💬 SSE 메시지 수신:', data);
+
+        if (data.type === 'connected') {
+          console.log('✅ SSE 연결 확인됨');
+        } else if (data.type === 'new_message') {
+          // 새 메시지를 기존 메시지 목록에 추가
+          setMessages((prevMessages) => {
+            // 이미 존재하는 메시지인지 확인
+            const exists = prevMessages.some(msg => msg.id === data.message.id);
+            if (exists) {
+              console.log('⚠️ 중복 메시지 무시:', data.message.id);
+              return prevMessages;
+            }
+            
+            console.log('✅ 새 메시지 추가:', data.message);
+            return [...prevMessages, data.message];
+          });
+        }
+      } catch (error) {
+        console.error('SSE 메시지 파싱 실패:', error);
       }
     };
-  }, [chatRoomId, isConnected, setCurrentRoom, joinRoom, leaveRoom]);
 
-  // 웹소켓 연결 상태 변경 시 채팅방 참가
-  useEffect(() => {
-    if (isConnected && chatRoomId) {
-      // 실제 권한이 있는 경우에만 채팅방 참가
-      joinRoom(chatRoomId);
-    }
-  }, [isConnected, chatRoomId, joinRoom]);
+    eventSource.onerror = (error) => {
+      console.error('❌ SSE 연결 에러:', error);
+    };
 
-  // 스크롤을 맨 아래로
-  useEffect(() => {
-    scrollToBottom();
-  }, [currentMessages]);
+    return () => {
+      console.log('🔄 SSE 연결 해제:', id);
+      eventSource.close();
+    };
+  };
 
   const fetchChatRoom = async () => {
     try {
-      const response = await fetch(`/api/chat/rooms/${chatRoomId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setChatRoom(data);
-      } else {
-        console.error('Failed to fetch chat room:', response.status);
-        router.push('/chat');
+      const response = await apiRequest(`/chat/rooms/${id}`);
+      setChatRoom(response);
+      
+      // 파티 채팅방인 경우 파티 정보도 가져오기
+      if (response.party_id) {
+        const partyResponse = await apiRequest(`/parties/${response.party_id}`);
+        setParty(partyResponse);
       }
     } catch (error) {
       console.error('채팅방 정보 로드 실패:', error);
-      router.push('/chat');
-    } finally {
-      setLoading(false);
     }
   };
 
   const fetchMessages = async () => {
     try {
-      const response = await fetch(`/api/chat/rooms/${chatRoomId}/messages`);
-      if (response.ok) {
-        const data = await response.json();
-        // 기존 메시지들을 ChatContext에 로드
-        const chatMessages = data.map((message: any) => ({
-          id: message.id,
-          chatRoomId: message.chatRoomId,
-          userId: message.userId,
-          content: message.content,
-          timestamp: message.createdAt,
-          user: message.user
-        }));
-        loadMessages(chatRoomId, chatMessages);
-        setMessagesLoaded(true);
-      }
+      const response = await apiRequest(`/chat/rooms/${id}/messages`);
+      setMessages(response);
     } catch (error) {
       console.error('메시지 로드 실패:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const sendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim()) return;
-
-    const messageContent = newMessage.trim();
-    setNewMessage('');
-
-    console.log('💬 채팅 전송 시도:', {
-      content: messageContent,
-      chatRoomId,
-      isConnected,
-      user: user?.id
-    });
-
-    // 웹소켓 연결 상태 확인
-    if (!isConnected) {
-      console.error('❌ 웹소켓 연결 안됨');
-      alert('웹소켓 연결이 안 되어 있습니다. 잠시 후 다시 시도해주세요.');
-      return;
-    }
-
-    // 웹소켓을 통해 메시지 전송
-    const success = sendChatMessage(chatRoomId, messageContent);
-    console.log('📤 메시지 전송 결과:', success);
-    
-    if (!success) {
-      alert('메시지 전송에 실패했습니다. 다시 시도해주세요.');
-    }
-  };
-
+  // 자동 스크롤 함수
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const leaveChatRoom = async () => {
-    // 활성 퀘스트가 있으면 나가기 제한
-    if (isActiveQuestChatRoom) {
-      alert('퀘스트 진행 중에는 채팅방을 나갈 수 없습니다.\n퀘스트를 완료하거나 포기한 후 다시 시도해주세요.');
-      return;
-    }
+  // 메시지가 추가될 때마다 자동 스크롤
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
-    if (!confirm('정말로 이 채팅방을 나가시겠습니까?\n나가면 다시 접근할 수 없습니다.')) {
-      return;
-    }
+  const sendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMessage.trim() || !user) return;
 
     try {
-      // API로 채팅방에서 나가기
-      const response = await fetch(`/api/chat/rooms/${chatRoomId}/leave`, {
+      await apiRequest(`/chat/rooms/${id}/messages`, {
         method: 'POST',
+        body: JSON.stringify({
+          content: newMessage
+        })
       });
       
-      if (response.ok) {
-        router.push('/chat');
-      } else {
-        const error = await response.json();
-        alert(error.error || '채팅방 나가기에 실패했습니다');
-      }
+      setNewMessage('');
+      // SSE로 새 메시지가 자동으로 추가됨
     } catch (error) {
-      console.error('채팅방 나가기 실패:', error);
-      alert('채팅방 나가기에 실패했습니다');
+      console.error('메시지 전송 실패:', error);
     }
   };
 
-  if (loading || questLoading) {
-    return (
-      <div style={{ 
-        padding: '20px', 
-        textAlign: 'center',
-        color: '#ffffff'
-      }}>
-        {loading ? '채팅방을 불러오는 중...' : '퀘스트 정보를 확인하는 중...'}
-      </div>
-    );
-  }
+  const handleGoBack = () => {
+    router.back();
+  };
 
-  if (!chatRoom) {
+  const handleLeaveRoom = async () => {
+    // 파티장인 경우 나가기 제한
+    if (party && party.leader_id === user?.id) {
+      alert('파티장은 채팅방을 나갈 수 없습니다. 파티를 해산하거나 다른 멤버에게 파티장을 넘겨주세요.');
+      return;
+    }
+
+    // 퀘스트 채팅방인 경우 퀘스트 포기 확인
+    if (chatRoom?.quest_id) {
+      try {
+        const questResponse = await apiRequest(`/quests/${chatRoom.quest_id}`);
+        
+        // 퀘스트 생성자인 경우
+        if (questResponse.creator_id === user?.id) {
+          // 완료된 퀘스트는 취소하지 않고 바로 나가기
+          if (questResponse.status === 'COMPLETED') {
+            const confirmMessage = '완료된 퀘스트 채팅방을 나가시겠습니까?';
+            if (!confirm(confirmMessage)) {
+              return;
+            }
+            // 바로 채팅방 나가기 (퀘스트 취소 없이)
+          } else {
+            const confirmMessage = '⚠️ 퀘스트 생성자가 채팅방을 나가면 퀘스트와 채팅방이 모두 삭제됩니다.\n\n정말로 나가시겠습니까?';
+            if (!confirm(confirmMessage)) {
+              return;
+            }
+            
+            // 퀘스트 취소 (삭제)
+            try {
+              await apiRequest(`/quests/${chatRoom.quest_id}/cancel`, {
+                method: 'POST'
+              });
+              console.log('✅ 퀘스트 취소 완료');
+              router.push('/chat');
+              return;
+            } catch (error) {
+              console.error('퀘스트 취소 실패:', error);
+              alert('퀘스트 취소에 실패했습니다.');
+              return;
+            }
+          }
+        } 
+        // 퀘스트 수락자인 경우
+        else if (questResponse.accepted_by_user_id === user?.id) {
+          // 완료된 퀘스트는 포기하지 않고 바로 나가기
+          if (questResponse.status === 'COMPLETED') {
+            const confirmMessage = '완료된 퀘스트 채팅방을 나가시겠습니까?';
+            if (!confirm(confirmMessage)) {
+              return;
+            }
+            // 바로 채팅방 나가기 (퀘스트 포기 없이)
+          } else {
+            const confirmMessage = '⚠️ 퀘스트 채팅방을 나가면 퀘스트가 포기됩니다.\n\n정말로 퀘스트를 포기하고 나가시겠습니까?';
+            if (!confirm(confirmMessage)) {
+              return;
+            }
+            
+            // 퀘스트 포기
+            try {
+              await apiRequest(`/quests/${chatRoom.quest_id}/abandon`, {
+                method: 'POST'
+              });
+              console.log('✅ 퀘스트 포기 완료');
+              router.push('/chat');
+              return;
+            } catch (error) {
+              console.error('퀘스트 포기 실패:', error);
+              alert('퀘스트 포기에 실패했습니다.');
+              return;
+            }
+          }
+        }
+      } catch (error) {
+        console.error('퀘스트 정보 조회 실패:', error);
+      }
+    }
+
+    // 파티 채팅방인 경우 파티에서도 나가는지 확인
+    if (chatRoom?.party_id) {
+      const confirmMessage = '파티 채팅방을 나가면 파티에서도 자동으로 나가게 됩니다. 정말로 나가시겠습니까?';
+      if (!confirm(confirmMessage)) {
+        return;
+      }
+    }
+
+    try {
+      await apiRequest(`/chat/rooms/${id}/leave`, {
+        method: 'POST'
+      });
+      router.push('/chat');
+    } catch (error) {
+      console.error('채팅방 나가기 실패:', error);
+      // 퀘스트 채팅방이고 완료된 상태라면 성공으로 처리
+      if (chatRoom?.quest_id) {
+        try {
+          const questResponse = await apiRequest(`/quests/${chatRoom.quest_id}`);
+          if (questResponse.status === 'COMPLETED') {
+            console.log('✅ 완료된 퀘스트 채팅방에서 나가기 성공');
+            router.push('/chat');
+            return;
+          }
+        } catch (questError) {
+          console.error('퀘스트 정보 조회 실패:', questError);
+        }
+      }
+      alert('채팅방을 나가는데 실패했습니다.');
+    }
+  };
+
+  if (loading) {
     return (
-      <div style={{ 
-        padding: '20px', 
-        textAlign: 'center',
-        color: '#ffffff'
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        flexDirection: 'column',
+        gap: '24px',
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 1000
       }}>
-        채팅방을 찾을 수 없습니다.
+        <div style={{ 
+          fontSize: '3rem',
+          animation: 'pulse 2s infinite',
+          filter: 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.8))'
+        }}>💬</div>
+        <div style={{ 
+          color: '#00ffff', 
+          fontSize: '1rem',
+          fontFamily: 'Press Start 2P, cursive',
+          textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
+          textAlign: 'center'
+        }}>
+          채팅방 로딩 중...
+        </div>
       </div>
     );
   }
 
   return (
-    <div style={{ 
-      height: '100vh',
+    <div style={{
+      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
+      padding: '8px',
       display: 'flex',
-      flexDirection: 'column'
+      flexDirection: 'column',
+      height: '100vh',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 1000
     }}>
-      {/* 헤더 */}
+      {/* 채팅방 헤더 */}
       <div style={{
-        padding: '12px 15px',
-        background: 'rgba(0,255,255,0.1)',
-        borderBottom: '2px solid rgba(0,255,255,0.3)',
+        background: 'rgba(0,255,255,0.05)',
+        border: '2px solid rgba(0,255,255,0.3)',
+        borderRadius: '10px',
+        padding: '12px',
+        marginBottom: '8px',
         display: 'flex',
         alignItems: 'center',
-        gap: '10px',
-        minHeight: '60px'
+        justifyContent: 'space-between'
       }}>
         <button
-          onClick={() => router.push('/chat')}
+          onClick={handleGoBack}
           style={{
-            background: 'none',
-            border: 'none',
-            color: '#00ffff',
-            fontSize: '1.2rem',
+            background: 'rgba(255,255,255,0.1)',
+            border: '2px solid rgba(255,255,255,0.3)',
+            borderRadius: '8px',
+            padding: '8px 12px',
+            color: '#ffffff',
             cursor: 'pointer',
-            padding: '8px',
-            minWidth: '40px',
+            fontSize: '0.8rem',
+            fontWeight: 'bold',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            gap: '4px',
+            fontFamily: 'Press Start 2P, cursive'
           }}
         >
-          ←
+          ← 뒤로
         </button>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <h2 style={{ 
-            fontSize: 'clamp(0.9rem, 4vw, 1.1rem)', 
-            fontWeight: 'bold', 
+        
+        <div style={{
+          flex: 1,
+          textAlign: 'center'
+        }}>
+          <h2 style={{
             color: '#00ffff',
-            margin: '0 0 2px 0',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap'
+            margin: 0,
+            fontSize: '1.2rem',
+            fontFamily: 'Press Start 2P, cursive',
+            textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
+            marginBottom: '4px'
           }}>
-            {chatRoom.name} ({chatRoom.participants.length}명)
+            {chatRoom?.name || '채팅방'}
           </h2>
           <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
+            fontSize: '0.8rem',
+            color: chatRoom?.type === 'PARTY' ? '#00ff00' : '#ffa500',
+            fontWeight: 'bold',
+            fontFamily: 'Press Start 2P, cursive',
+            textShadow: chatRoom?.type === 'PARTY' 
+              ? '0 0 5px rgba(0, 255, 0, 0.8)' 
+              : '0 0 5px rgba(255, 165, 0, 0.8)'
           }}>
-            <span style={{
-              padding: '3px 6px',
-              background: chatRoom.type === 'DIRECT' ? 'rgba(255,165,0,0.2)' : 'rgba(0,255,0,0.2)',
-              color: chatRoom.type === 'DIRECT' ? '#ffa500' : '#00ff00',
-              borderRadius: '3px',
-              fontSize: 'clamp(0.6rem, 2.5vw, 0.7rem)',
-              fontWeight: 'bold',
-              whiteSpace: 'nowrap'
-            }}>
-              {chatRoom.type === 'DIRECT' ? '퀘스트' : '파티'}
-            </span>
+            {chatRoom?.type === 'PARTY' ? '파티' : '퀘스트'}
           </div>
         </div>
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '6px',
-          flexShrink: 0
-        }}>
-          <button
-            onClick={leaveChatRoom}
-            disabled={isActiveQuestChatRoom}
-            style={{
-              background: isActiveQuestChatRoom ? 'rgba(128,128,128,0.2)' : 'rgba(255,0,0,0.2)',
-              border: isActiveQuestChatRoom ? '1px solid rgba(128,128,128,0.5)' : '1px solid rgba(255,0,0,0.5)',
-              color: isActiveQuestChatRoom ? '#888888' : '#ff0000',
-              borderRadius: '3px',
-              padding: '3px 6px',
-              fontSize: 'clamp(0.6rem, 2.5vw, 0.7rem)',
-              cursor: isActiveQuestChatRoom ? 'not-allowed' : 'pointer',
-              fontWeight: 'bold',
-              whiteSpace: 'nowrap',
-              opacity: isActiveQuestChatRoom ? 0.5 : 1
-            }}
-          >
-            {isActiveQuestChatRoom ? '나가기 불가' : '나가기'}
-          </button>
-        </div>
+
+        <button
+          onClick={handleLeaveRoom}
+          disabled={!!(party && party.leader_id === user?.id)}
+          style={{
+            background: party && party.leader_id === user?.id 
+              ? 'rgba(128,128,128,0.2)' 
+              : 'rgba(255,0,0,0.2)',
+            border: `2px solid ${party && party.leader_id === user?.id 
+              ? 'rgba(128,128,128,0.3)' 
+              : 'rgba(255,0,0,0.3)'}`,
+            borderRadius: '8px',
+            padding: '8px 12px',
+            color: party && party.leader_id === user?.id ? '#888888' : '#ff0000',
+            cursor: party && party.leader_id === user?.id ? 'not-allowed' : 'pointer',
+            fontSize: '0.8rem',
+            fontWeight: 'bold',
+            fontFamily: 'Press Start 2P, cursive'
+          }}
+        >
+          {party && party.leader_id === user?.id ? '파티장' : '나가기'}
+        </button>
       </div>
 
-      {/* 메시지 영역 */}
+      {/* 메시지 목록 */}
       <div style={{
         flex: 1,
+        background: 'rgba(255,255,255,0.05)',
+        border: '2px solid rgba(0,255,255,0.2)',
+        borderRadius: '10px',
+        padding: '12px',
+        marginBottom: '8px',
         overflowY: 'auto',
-        padding: 'clamp(10px, 3vw, 20px)',
         display: 'flex',
         flexDirection: 'column',
         gap: '8px'
       }}>
-        {currentMessages.length === 0 ? (
+        {messages.length === 0 ? (
           <div style={{
             textAlign: 'center',
             color: '#888888',
-            padding: '40px 20px'
+            fontSize: '0.9rem',
+            marginTop: '20px'
           }}>
-            <div style={{ fontSize: '3rem', marginBottom: '15px' }}>💬</div>
-            <p style={{ fontSize: 'clamp(0.9rem, 4vw, 1rem)' }}>아직 메시지가 없습니다.</p>
-            <p style={{ fontSize: 'clamp(0.7rem, 3vw, 0.8rem)', marginTop: '10px' }}>
-              첫 번째 메시지를 보내보세요!
-            </p>
+            아직 메시지가 없습니다.
           </div>
         ) : (
-          currentMessages.map((message) => {
-            // 시스템 메시지 처리
-            if ('content' in message && (message.content === 'SYSTEM_JOIN' || message.content === 'SYSTEM_LEAVE')) {
-              const isJoin = message.content === 'SYSTEM_JOIN';
-              return (
-                <div key={message.id} style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  marginBottom: '10px',
-                  padding: '0 10px'
-                }}>
-                  <div style={{
-                    padding: '8px 16px',
-                    background: isJoin ? 'rgba(0,255,0,0.1)' : 'rgba(255,0,0,0.1)',
-                    border: isJoin ? '1px solid rgba(0,255,0,0.3)' : '1px solid rgba(255,0,0,0.3)',
-                    borderRadius: '20px',
-                    color: isJoin ? '#00ff00' : '#ff0000',
-                    fontSize: 'clamp(0.7rem, 2.5vw, 0.8rem)',
-                    textAlign: 'center',
-                    fontWeight: 'bold',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                    maxWidth: '80%',
-                    wordBreak: 'break-word'
-                  }}>
-                    <span style={{ marginRight: '6px' }}>
-                      {isJoin ? '🎯' : '🚪'}
-                    </span>
-                    <span style={{ fontWeight: 'bold' }}>
-                      {message.user.nickname || '익명'}
-                    </span>
-                    <span style={{ marginLeft: '6px' }}>
-                      {isJoin ? '님이 채팅방에 참가했습니다' : '님이 채팅방을 나갔습니다'}
-                    </span>
-                    <div style={{
-                      fontSize: 'clamp(0.6rem, 2vw, 0.7rem)',
-                      color: isJoin ? '#00cc00' : '#cc0000',
-                      marginTop: '2px',
-                      opacity: 0.8
-                    }}>
-                      {new Date(message.timestamp).toLocaleTimeString('ko-KR', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </div>
-                  </div>
-                </div>
-              );
-            }
-
-            // 입장 메시지 처리
-            if ('type' in message && message.type === 'user_joined') {
-              return (
-                <div key={message.id} style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  marginBottom: '10px',
-                  padding: '0 10px'
-                }}>
-                  <div style={{
-                    padding: '8px 16px',
-                    background: 'rgba(0,255,0,0.1)',
-                    border: '1px solid rgba(0,255,0,0.3)',
-                    borderRadius: '20px',
-                    color: '#00ff00',
-                    fontSize: 'clamp(0.7rem, 2.5vw, 0.8rem)',
-                    textAlign: 'center',
-                    fontWeight: 'bold',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                    maxWidth: '80%',
-                    wordBreak: 'break-word'
-                  }}>
-                    <span style={{ marginRight: '6px' }}>
-                      🎯
-                    </span>
-                    <span style={{ fontWeight: 'bold' }}>
-                      {message.user.nickname || '익명'}
-                    </span>
-                    <span style={{ marginLeft: '6px' }}>
-                      님이 채팅방에 참가했습니다
-                    </span>
-                    <div style={{
-                      fontSize: 'clamp(0.6rem, 2vw, 0.7rem)',
-                      color: '#00cc00',
-                      marginTop: '2px',
-                      opacity: 0.8
-                    }}>
-                      {new Date(message.timestamp).toLocaleTimeString('ko-KR', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </div>
-                  </div>
-                </div>
-              );
-            }
-
-            // 일반 채팅 메시지 처리
-            if ('content' in message && message.content !== 'SYSTEM_JOIN' && message.content !== 'SYSTEM_LEAVE') {
-              const isOwnMessage = message.userId === user?.id;
-              
-              return (
-                <div key={message.id} style={{
-                  display: 'flex',
-                  justifyContent: isOwnMessage ? 'flex-end' : 'flex-start',
-                  marginBottom: '10px'
-                }}>
-                  <div style={{
-                    maxWidth: 'clamp(200px, 70%, 400px)',
-                    padding: 'clamp(8px, 2.5vw, 10px) clamp(12px, 3vw, 15px)',
-                    borderRadius: 'clamp(10px, 3vw, 15px)',
-                    background: isOwnMessage 
-                      ? 'rgba(0,255,255,0.2)' 
-                      : 'rgba(255,255,255,0.1)',
-                    border: isOwnMessage 
-                      ? '1px solid rgba(0,255,255,0.3)' 
-                      : '1px solid rgba(255,255,255,0.2)',
-                    color: '#ffffff',
-                    position: 'relative',
-                    wordBreak: 'break-word'
-                  }}>
-                    {!isOwnMessage && (
-                      <div style={{
-                        fontSize: 'clamp(0.7rem, 2.5vw, 0.8rem)',
-                        color: '#00ffff',
-                        fontWeight: 'bold',
-                        marginBottom: '3px'
-                      }}>
-                        {message.user.nickname || '익명'}
-                      </div>
-                    )}
-                    <div style={{ 
-                      fontSize: 'clamp(0.8rem, 3vw, 0.9rem)', 
-                      lineHeight: '1.4',
-                      wordBreak: 'break-word'
-                    }}>
-                      {message.content}
-                    </div>
-                    <div style={{
-                      fontSize: 'clamp(0.6rem, 2vw, 0.7rem)',
-                      color: '#888888',
-                      marginTop: '3px',
-                      textAlign: isOwnMessage ? 'right' : 'left'
-                    }}>
-                      {new Date(message.timestamp).toLocaleTimeString('ko-KR', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </div>
-                  </div>
-                </div>
-              );
-            }
-
-            return null; // 알 수 없는 메시지 타입
-          })
+          messages.map((message) => (
+            <div
+              key={message.id}
+              style={{
+                background: 'rgba(0,255,255,0.1)',
+                border: '1px solid rgba(0,255,255,0.3)',
+                borderRadius: '8px',
+                padding: '8px',
+                maxWidth: '80%',
+                alignSelf: message.user_nickname === user?.email?.split('@')[0] ? 'flex-end' : 'flex-start'
+              }}
+            >
+              <div style={{
+                fontSize: '0.8rem',
+                color: '#00ffff',
+                marginBottom: '4px',
+                fontWeight: 'bold'
+              }}>
+                {message.user_nickname}
+              </div>
+              <div style={{
+                color: '#ffffff',
+                fontSize: '0.9rem',
+                wordBreak: 'break-word'
+              }}>
+                {message.content}
+              </div>
+              <div style={{
+                fontSize: '0.7rem',
+                color: '#888888',
+                marginTop: '4px',
+                textAlign: 'right'
+              }}>
+                {new Date(message.created_at).toLocaleTimeString()}
+              </div>
+            </div>
+          ))
         )}
+        {/* 자동 스크롤을 위한 타겟 */}
         <div ref={messagesEndRef} />
       </div>
 
       {/* 메시지 입력 */}
       <form onSubmit={sendMessage} style={{
-        padding: 'clamp(10px, 3vw, 15px) clamp(12px, 4vw, 20px)',
-        background: 'rgba(0,0,0,0.3)',
-        borderTop: '1px solid rgba(0,255,255,0.2)',
         display: 'flex',
-        gap: 'clamp(6px, 2vw, 10px)',
-        alignItems: 'flex-end'
+        gap: '8px',
+        minWidth: 0
       }}>
         <input
           type="text"
@@ -514,29 +490,32 @@ export default function ChatRoomPage({ params }: { params: Promise<{ id: string 
           placeholder="메시지를 입력하세요..."
           style={{
             flex: 1,
-            padding: 'clamp(10px, 3vw, 12px) clamp(12px, 3vw, 15px)',
+            minWidth: 0,
+            padding: '10px',
             background: 'rgba(255,255,255,0.1)',
             border: '2px solid rgba(0,255,255,0.3)',
-            borderRadius: 'clamp(15px, 5vw, 20px)',
+            borderRadius: '8px',
             color: '#ffffff',
-            fontSize: 'clamp(0.8rem, 3vw, 0.9rem)',
-            minHeight: '44px'
+            fontSize: '0.9rem',
+            fontFamily: 'Press Start 2P, cursive'
           }}
         />
         <button
           type="submit"
           disabled={!newMessage.trim()}
           style={{
-            padding: 'clamp(10px, 3vw, 12px) clamp(15px, 4vw, 20px)',
-            background: newMessage.trim() ? 'rgba(0,255,255,0.2)' : 'rgba(255,255,255,0.1)',
-            border: newMessage.trim() ? '2px solid rgba(0,255,255,0.5)' : '2px solid rgba(255,255,255,0.2)',
-            color: newMessage.trim() ? '#00ffff' : '#666666',
-            borderRadius: 'clamp(15px, 5vw, 20px)',
+            padding: '8px 12px',
+            width: '70px',
+            minWidth: '70px',
+            flexShrink: 0,
+            background: newMessage.trim() ? 'rgba(0,255,255,0.2)' : 'rgba(128,128,128,0.2)',
+            border: '2px solid rgba(0,255,255,0.3)',
+            borderRadius: '8px',
+            color: newMessage.trim() ? '#00ffff' : '#888888',
             cursor: newMessage.trim() ? 'pointer' : 'not-allowed',
+            fontSize: '0.8rem',
             fontWeight: 'bold',
-            fontSize: 'clamp(0.7rem, 2.5vw, 0.9rem)',
-            whiteSpace: 'nowrap',
-            minHeight: '44px'
+            fontFamily: 'Press Start 2P, cursive'
           }}
         >
           전송
@@ -544,4 +523,12 @@ export default function ChatRoomPage({ params }: { params: Promise<{ id: string 
       </form>
     </div>
   );
-} 
+}
+
+export default function ChatRoomPage() {
+  return (
+    <AuthGuard>
+      <ChatRoomPageContent />
+    </AuthGuard>
+  );
+}

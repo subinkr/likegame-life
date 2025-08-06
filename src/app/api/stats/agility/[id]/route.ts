@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { getCurrentUser } from '@/lib/server-auth';
+import { supabaseAdmin } from '@/lib/supabase';
+import { getCurrentUserFromSupabase } from '@/lib/auth';
 
 // 개별 민첩 기록 삭제
 export async function DELETE(
@@ -8,34 +8,43 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getCurrentUser(request);
+    const user = await getCurrentUserFromSupabase(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = await params;
+    const { id: recordId } = await params;
 
-    // 기록이 존재하고 해당 사용자의 것인지 확인
-    const record = await prisma.stat.findFirst({
-      where: {
-        id: id,
-        userId: user.id,
-        agility: { gt: 0 }
-      }
-    });
+    // 기록이 사용자의 것인지 확인
+    const { data: record, error: fetchError } = await supabaseAdmin
+      .from('agility_records')
+      .select('id, user_id')
+      .eq('id', recordId)
+      .single();
 
-    if (!record) {
+    if (fetchError || !record) {
       return NextResponse.json({ error: 'Record not found' }, { status: 404 });
     }
 
+    // 기록 소유자 확인
+    if (record.user_id !== user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     // 기록 삭제
-    await prisma.stat.delete({
-      where: { id: id }
-    });
+    const { error: deleteError } = await supabaseAdmin
+      .from('agility_records')
+      .delete()
+      .eq('id', recordId);
+
+    if (deleteError) {
+      console.error('Error deleting agility record:', deleteError);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
 
     return NextResponse.json({ message: 'Record deleted successfully' });
   } catch (error) {
     console.error('Error deleting agility record:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-} 
+}

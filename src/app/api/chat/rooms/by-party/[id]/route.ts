@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server-auth';
-import { prisma } from '@/lib/prisma';
+import { getCurrentUserFromSupabase } from '@/lib/auth';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getCurrentUser(request);
+    const user = await getCurrentUserFromSupabase(request);
     if (!user) {
       return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
     }
@@ -20,30 +20,18 @@ export async function GET(
     });
 
     // 파티 ID로 채팅방 찾기
-    const chatRoom = await (prisma as any).chatRoom.findFirst({
-      where: {
-        partyId: partyId,
-        participants: {
-          some: {
-            userId: user.id,
-          },
-        },
-      },
-      include: {
-        participants: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                nickname: true,
-              },
-            },
-          },
-        },
-      },
-    });
+    const { data: chatRoom, error } = await supabaseAdmin
+      .from('chat_rooms')
+      .select(`
+        *,
+        participants:chat_room_participants(
+          user:users(id, nickname)
+        )
+      `)
+      .eq('party_id', partyId)
+      .single();
 
-    if (!chatRoom) {
+    if (error || !chatRoom) {
       console.log('파티 채팅방을 찾을 수 없음:', {
         partyId,
         userId: user.id
@@ -55,7 +43,7 @@ export async function GET(
       id: chatRoom.id,
       name: chatRoom.name,
       type: chatRoom.type,
-      participants: chatRoom.participants.map((p: any) => p.user),
+      participants: (chatRoom.participants || []).map((p: any) => p.user),
     };
 
     console.log('파티 채팅방 찾음:', {

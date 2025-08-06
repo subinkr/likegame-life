@@ -1,134 +1,106 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getCurrentUser } from '@/lib/server-auth'
+import { NextRequest, NextResponse } from 'next/server';
+import { getCurrentUserFromSupabase } from '@/lib/auth';
+import { supabaseAdmin } from '@/lib/supabase';
 
-// 메인 페이지용 스탯 조회 (힘: 최고 기록, 민첩: 누적 기록, 지혜: 월 합계)
 export async function GET(request: NextRequest) {
   try {
-    const user = await getCurrentUser(request)
+    const user = await getCurrentUserFromSupabase(request);
     if (!user) {
-      return NextResponse.json(
-        { error: '인증이 필요합니다.' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url)
-    const month = searchParams.get('month') || getCurrentMonth()
+    const { searchParams } = new URL(request.url);
+    const month = searchParams.get('month');
 
     // 30일 전 날짜 계산
-    const thirtyDaysAgo = new Date()
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    // 힘: 30일간 최고 기록 (StrengthRecord 모델 사용)
-    const strengthRecords = await prisma.strengthRecord.findMany({
-      where: {
-        userId: user.id,
-        createdAt: { gte: thirtyDaysAgo }
-      },
-      orderBy: { total: 'desc' },
-      select: { 
-        id: true,
-        total: true,
-        createdAt: true
-      }
-    })
-    
-    // 최고 기록 찾기
-    let bestStrength = 0
-    if (strengthRecords.length > 0) {
-      bestStrength = strengthRecords[0].total
+    // 민첩성 총 거리 (30일간)
+    const { data: agilityData, error: agilityError } = await supabaseAdmin
+      .from('agility_records')
+      .select('distance')
+      .eq('user_id', user.id)
+      .gte('created_at', thirtyDaysAgo.toISOString());
+
+    if (agilityError) {
+      console.error('Error fetching agility data:', agilityError);
+      return NextResponse.json({ error: 'Failed to fetch agility data' }, { status: 500 });
     }
 
-    // 민첩: 30일간 누적 기록 (삭제되지 않은 기록들만)
-    const agilityRecords = await prisma.stat.findMany({
-      where: {
-        userId: user.id,
-        agility: { gt: 0 },
-        createdAt: { gte: thirtyDaysAgo }
-      },
-      select: { 
-        id: true,
-        agility: true,
-        createdAt: true
-      }
-    })
-    
-    // 실제로 존재하는 기록들만 누적
-    let totalAgility = 0
-    for (const record of agilityRecords) {
-      const exists = await prisma.stat.findUnique({
-        where: { id: record.id },
-        select: { id: true }
-      })
-      if (exists) {
-        totalAgility += record.agility
-      }
+    const totalDistance = agilityData?.reduce((sum, record) => sum + (record.distance || 0), 0) || 0;
+
+    // 지혜 노트 수 (30일간)
+    const { data: wisdomData, error: wisdomError } = await supabaseAdmin
+      .from('wisdom_notes')
+      .select('id')
+      .eq('user_id', user.id)
+      .gte('created_at', thirtyDaysAgo.toISOString());
+
+    if (wisdomError) {
+      console.error('Error fetching wisdom data:', wisdomError);
+      return NextResponse.json({ error: 'Failed to fetch wisdom data' }, { status: 500 });
     }
 
-    // 지혜: 30일간 초서 개수 (WisdomNote 모델 사용)
-    const wisdomCount = await prisma.wisdomNote.count({
-      where: {
-        userId: user.id,
-        date: {
-          gte: thirtyDaysAgo,
-          lte: new Date(),
-        },
-      },
-    })
+    const noteCount = wisdomData?.length || 0;
 
-    const stats = {
-      strength: bestStrength,
-      agility: totalAgility,
-      wisdom: wisdomCount
+    // 랭킹 계산 (30일간 기준)
+    const { data: agilityRankData, error: agilityRankError } = await supabaseAdmin
+      .from('agility_records')
+      .select('user_id, distance')
+      .gte('created_at', thirtyDaysAgo.toISOString());
+
+    if (agilityRankError) {
+      console.error('Error fetching agility rank data:', agilityRankError);
+      return NextResponse.json({ error: 'Failed to fetch rank data' }, { status: 500 });
     }
 
-    // 랭크 계산
-    const strengthRank = getRank('strength', stats.strength)
-    const agilityRank = getRank('agility', stats.agility)
-    const wisdomRank = getRank('wisdom', stats.wisdom)
+    // 사용자별 총 거리 계산
+    const userDistances = new Map<string, number>();
+    agilityRankData?.forEach(record => {
+      const current = userDistances.get(record.user_id) || 0;
+      userDistances.set(record.user_id, current + (record.distance || 0));
+    });
 
-    // 랭크 기반 칭호 자동 업데이트
+    // 거리 기준 랭킹 계산
+    const sortedUsers = Array.from(userDistances.entries())
+      .sort(([, a], [, b]) => b - a);
 
+    const userRank = sortedUsers.findIndex(([userId]) => userId === user.id) + 1;
+
+    // 지혜 랭킹 계산
+    const { data: wisdomRankData, error: wisdomRankError } = await supabaseAdmin
+      .from('wisdom_notes')
+      .select('user_id')
+      .gte('created_at', thirtyDaysAgo.toISOString());
+
+    if (wisdomRankError) {
+      console.error('Error fetching wisdom rank data:', wisdomRankError);
+      return NextResponse.json({ error: 'Failed to fetch wisdom rank data' }, { status: 500 });
+    }
+
+    // 사용자별 노트 수 계산
+    const userNoteCounts = new Map<string, number>();
+    wisdomRankData?.forEach(record => {
+      const current = userNoteCounts.get(record.user_id) || 0;
+      userNoteCounts.set(record.user_id, current + 1);
+    });
+
+    // 노트 수 기준 랭킹 계산
+    const sortedWisdomUsers = Array.from(userNoteCounts.entries())
+      .sort(([, a], [, b]) => b - a);
+
+    const wisdomRank = sortedWisdomUsers.findIndex(([userId]) => userId === user.id) + 1;
 
     return NextResponse.json({
-      stats,
-      ranks: { strengthRank, agilityRank, wisdomRank }
-    })
-
+      totalDistance,
+      noteCount,
+      agilityRank: userRank,
+      wisdomRank: wisdomRank,
+      totalUsers: Math.max(sortedUsers.length, sortedWisdomUsers.length)
+    });
   } catch (error) {
-    console.error('메인 스탯 조회 에러:', error)
-    return NextResponse.json(
-      { error: '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
+    console.error('Stats main API error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-
-// 랭크 계산 함수
-function getRank(type: string, value: number): string {
-  const thresholds = {
-    strength: { F: 0, E: 100, D: 200, C: 300, B: 400, A: 500, S: 600 },
-    agility: { F: 0, E: 100, D: 200, C: 300, B: 400, A: 500, S: 600 },
-    wisdom: { F: 0, E: 30, D: 60, C: 90, B: 120, A: 150, S: 180 }
-  }
-
-  const currentThresholds = thresholds[type as keyof typeof thresholds]
-  
-  if (value >= currentThresholds.S) return 'S'
-  if (value >= currentThresholds.A) return 'A'
-  if (value >= currentThresholds.B) return 'B'
-  if (value >= currentThresholds.C) return 'C'
-  if (value >= currentThresholds.D) return 'D'
-  if (value >= currentThresholds.E) return 'E'
-  return 'F'
-}
-
-
-
-
-
-function getCurrentMonth(): string {
-  const now = new Date()
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
-} 

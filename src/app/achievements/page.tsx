@@ -4,6 +4,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAchievements } from '@/hooks/useAchievements';
 import Link from 'next/link';
+import AuthGuard from '@/components/AuthGuard';
 
 interface Title {
   id: string;
@@ -11,9 +12,9 @@ interface Title {
   description: string;
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
   achieved: boolean;
-  achievedDate?: string;
+  achieved_date?: string;
   selected?: boolean;
-  requiredBadges: string[]; // 필요한 뱃지 ID들
+  required_badges: string[]; // snake_case로 수정
 }
 
 interface Badge {
@@ -94,13 +95,13 @@ function AchievementsPageContent() {
       }
 
       // 칭호의 획득 상태 확인
-      const hasRequiredBadges = targetTitle.requiredBadges?.length > 0 && 
-        targetTitle.requiredBadges.every(badgeName => {
+      const hasRequiredBadges = targetTitle.required_badges?.length > 0 && 
+        targetTitle.required_badges.every(badgeName => {
           const badge = badges.find(b => b.name === badgeName);
           return badge && badge.achieved;
         });
       
-      const isAchieved = targetTitle.requiredBadges?.length === 0 || hasRequiredBadges;
+      const isAchieved = targetTitle.required_badges?.length === 0 || hasRequiredBadges;
 
       // 미획득 칭호는 선택할 수 없음
       if (!isAchieved) {
@@ -145,13 +146,13 @@ function AchievementsPageContent() {
       const matchesRarity = rarityFilter === 'all' || title.rarity === rarityFilter;
       
       // 칭호의 achieved 상태를 실시간으로 계산
-      const hasRequiredBadges = title.requiredBadges?.length > 0 && 
-        title.requiredBadges.every(badgeName => {
+      const hasRequiredBadges = title.required_badges?.length > 0 && 
+        title.required_badges.every(badgeName => {
           const badge = badges.find(b => b.name === badgeName);
           return badge && badge.achieved;
         });
       
-      const isAchieved = title.requiredBadges?.length === 0 || hasRequiredBadges;
+      const isAchieved = title.required_badges?.length === 0 || hasRequiredBadges;
       
       const matchesStatus = statusFilter === 'all' || 
         (statusFilter === 'achieved' && isAchieved) ||
@@ -163,19 +164,19 @@ function AchievementsPageContent() {
       return matchesRarity && matchesStatus && matchesSearch;
     }).sort((a, b) => {
       // 칭호의 achieved 상태를 실시간으로 계산
-      const aHasRequiredBadges = a.requiredBadges?.length > 0 && 
-        a.requiredBadges.every(badgeName => {
+      const aHasRequiredBadges = a.required_badges?.length > 0 && 
+        a.required_badges.every(badgeName => {
           const badge = badges.find(b => b.name === badgeName);
           return badge && badge.achieved;
         });
-      const bHasRequiredBadges = b.requiredBadges?.length > 0 && 
-        b.requiredBadges.every(badgeName => {
+      const bHasRequiredBadges = b.required_badges?.length > 0 && 
+        b.required_badges.every(badgeName => {
           const badge = badges.find(b => b.name === badgeName);
           return badge && badge.achieved;
         });
       
-      const aIsAchieved = a.requiredBadges?.length === 0 || aHasRequiredBadges;
-      const bIsAchieved = b.requiredBadges?.length === 0 || bHasRequiredBadges;
+      const aIsAchieved = a.required_badges?.length === 0 || aHasRequiredBadges;
+      const bIsAchieved = b.required_badges?.length === 0 || bHasRequiredBadges;
       
       // 활성화된 항목을 위로 정렬
       if (aIsAchieved && !bIsAchieved) return -1;
@@ -209,26 +210,26 @@ function AchievementsPageContent() {
     const total = titles.length;
     const achieved = titles.filter(t => {
       // 실시간으로 뱃지 상태를 기반으로 칭호 획득 여부 계산
-      const hasRequiredBadges = t.requiredBadges?.length > 0 && 
-        t.requiredBadges.every(badgeName => {
+      const hasRequiredBadges = t.required_badges?.length > 0 && 
+        t.required_badges.every(badgeName => {
           const badge = badges.find(b => b.name === badgeName);
           return badge && badge.achieved;
         });
       
-      const isAchieved = t.requiredBadges?.length === 0 || hasRequiredBadges;
+      const isAchieved = t.required_badges?.length === 0 || hasRequiredBadges;
       return isAchieved;
     }).length;
     const selected = titles.filter(t => {
       if (!t.selected) return false;
       
       // 선택된 칭호도 실시간으로 획득 상태 확인
-      const hasRequiredBadges = t.requiredBadges?.length > 0 && 
-        t.requiredBadges.every(badgeName => {
+      const hasRequiredBadges = t.required_badges?.length > 0 && 
+        t.required_badges.every(badgeName => {
           const badge = badges.find(b => b.name === badgeName);
           return badge && badge.achieved;
         });
       
-      const isAchieved = t.requiredBadges?.length === 0 || hasRequiredBadges;
+      const isAchieved = t.required_badges?.length === 0 || hasRequiredBadges;
       return isAchieved;
     }).length;
     return { total, achieved, selected };
@@ -245,6 +246,22 @@ function AchievementsPageContent() {
     setRarityFilter('all');
     setStatusFilter('all');
     setSearchTerm('');
+  };
+
+  // 날짜 포맷팅 함수
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '날짜 없음';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return '날짜 없음';
+      return date.toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+    } catch {
+      return '날짜 없음';
+    }
   };
 
   // 로딩 중이거나 로그인되지 않은 경우
@@ -527,7 +544,7 @@ function AchievementsPageContent() {
           ) : (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
               gap: '2px',
               padding: '1px',
               justifyContent: 'center'
@@ -536,12 +553,12 @@ function AchievementsPageContent() {
                 const rarityColor = getRarityColor(title.rarity);
                 
                 // 칭호의 achieved 상태를 실시간으로 계산
-                const hasRequiredBadges = title.requiredBadges?.length > 0 && 
-                  title.requiredBadges.every(badgeName => {
+                const hasRequiredBadges = title.required_badges?.length > 0 && 
+                  title.required_badges.every(badgeName => {
                     const badge = badges.find(b => b.name === badgeName);
                     return badge && badge.achieved;
                   });
-                const isAchieved = title.requiredBadges?.length === 0 || hasRequiredBadges;
+                const isAchieved = title.required_badges?.length === 0 || hasRequiredBadges;
                 
                 return (
                   <div key={title.id} style={{
@@ -685,7 +702,7 @@ function AchievementsPageContent() {
                         fontFamily: 'Orbitron, monospace',
                         textAlign: 'center'
                       }}>
-                        {title.achievedDate ? new Date(title.achievedDate).toLocaleDateString('ko-KR') : '날짜 없음'}
+                        {formatDate(title.achieved_date)}
                       </div>
                     )}
                   </div>
@@ -727,7 +744,7 @@ function AchievementsPageContent() {
           ) : (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
               gap: '2px',
               padding: '1px',
               justifyContent: 'center'
@@ -858,7 +875,7 @@ function AchievementsPageContent() {
                         fontFamily: 'Orbitron, monospace',
                         textAlign: 'center'
                       }}>
-                        {badge.achievedDate ? new Date(badge.achievedDate).toLocaleDateString('ko-KR') : '날짜 없음'}
+                        {formatDate(badge.achievedDate)}
                       </div>
                     )}
                   </div>
@@ -902,30 +919,32 @@ function AchievementsPageContent() {
 
 export default function AchievementsPage() {
   return (
-    <>
-      <style jsx>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
-      <Suspense fallback={
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: 'calc(100vh - 130px)',
-          background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
-          color: '#00ffff',
-          fontSize: '1rem',
-          fontFamily: 'Press Start 2P, cursive'
-        }}>
-          로딩 중...
-        </div>
-      }>
-        <AchievementsPageContent />
-      </Suspense>
-    </>
+    <AuthGuard>
+      <>
+        <style jsx>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+        <Suspense fallback={
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: 'calc(100vh - 130px)',
+            background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
+            color: '#00ffff',
+            fontSize: '1rem',
+            fontFamily: 'Press Start 2P, cursive'
+          }}>
+            로딩 중...
+          </div>
+        }>
+          <AchievementsPageContent />
+        </Suspense>
+      </>
+    </AuthGuard>
   );
 }
 

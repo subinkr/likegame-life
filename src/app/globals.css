@@ -38,12 +38,7 @@ body {
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: #000000;
 }
 
 a {
@@ -51,10 +46,9 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+/* 기기 설정과 상관없이 항상 다크 테마 유지 */
+html {
+  color-scheme: dark;
 }
 
 /* 버튼 스타일 */
@@ -88,11 +82,24 @@ a {
   font-size: 0.9rem;
   outline: none;
   transition: all 0.3s ease;
+  /* 모바일 자동 확대 방지 */
+  font-size: 16px !important;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
 .input:focus {
   border-color: #ffff00;
   box-shadow: 0 0 15px rgba(255,255,0,0.5);
+}
+
+/* 모든 입력 필드에 모바일 자동 확대 방지 적용 */
+input, textarea, select {
+  font-size: 16px !important;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
 /* 제목 스타일 */

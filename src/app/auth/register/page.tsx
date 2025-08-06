@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -11,6 +12,7 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,22 +26,11 @@ export default function RegisterPage() {
     }
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password, nickname }),
-      });
-
-      if (response.ok) {
-        router.push('/auth/login');
-      } else {
-        const data = await response.json();
-        setError(data.error || '회원가입에 실패했습니다.');
-      }
-    } catch (error) {
-      setError('서버 오류가 발생했습니다.');
+      await signUp({ email, password, nickname });
+      alert('📧 이메일 확인이 필요합니다.\n\n가입하신 이메일로 확인 메일을 보냈습니다.\n이메일을 확인하고 링크를 클릭해주세요.');
+      router.push('/auth/login');
+    } catch (error: any) {
+      setError(error.message || '회원가입에 실패했습니다.');
     } finally {
       setLoading(false);
     }

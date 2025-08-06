@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getCurrentUser } from '@/lib/server-auth'
+import { supabaseAdmin } from '@/lib/supabase';
+import { getCurrentUserFromSupabase } from '@/lib/auth';
 
 // 칭호 수정
 export async function PUT(
@@ -8,7 +8,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getCurrentUser(request)
+    const user = await getCurrentUserFromSupabase(request)
     if (!user) {
       return NextResponse.json(
         { error: '인증이 필요합니다.' },
@@ -28,27 +28,39 @@ export async function PUT(
     }
 
     // 기존 칭호 확인
-    const existingTitle = await prisma.title.findUnique({
-      where: { id }
-    })
+    const { data: existingTitle, error: existingTitleError } = await supabaseAdmin
+      .from('titles')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-    if (!existingTitle) {
+    if (existingTitleError || !existingTitle) {
       return NextResponse.json(
         { error: '칭호를 찾을 수 없습니다.' },
         { status: 404 }
-      )
+      );
     }
 
     // 칭호 업데이트
-    const updatedTitle = await prisma.title.update({
-      where: { id },
-      data: {
+    const { data: updatedTitle, error: updateError } = await supabaseAdmin
+      .from('titles')
+      .update({
         name,
         description,
         rarity,
-        requiredBadges: requiredBadges || []
-      }
-    })
+        required_badges: requiredBadges || []
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error('칭호 업데이트 에러:', updateError);
+      return NextResponse.json(
+        { error: '서버 오류가 발생했습니다.' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       message: '칭호가 성공적으로 수정되었습니다.',
@@ -70,7 +82,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getCurrentUser(request)
+    const user = await getCurrentUserFromSupabase(request)
     if (!user) {
       return NextResponse.json(
         { error: '인증이 필요합니다.' },
@@ -81,21 +93,32 @@ export async function DELETE(
     const { id } = await params
 
     // 기존 칭호 확인
-    const existingTitle = await prisma.title.findUnique({
-      where: { id }
-    })
+    const { data: existingTitle, error: existingTitleError } = await supabaseAdmin
+      .from('titles')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-    if (!existingTitle) {
+    if (existingTitleError || !existingTitle) {
       return NextResponse.json(
         { error: '칭호를 찾을 수 없습니다.' },
         { status: 404 }
-      )
+      );
     }
 
     // 칭호 삭제
-    await prisma.title.delete({
-      where: { id }
-    })
+    const { error: deleteError } = await supabaseAdmin
+      .from('titles')
+      .delete()
+      .eq('id', id);
+
+    if (deleteError) {
+      console.error('칭호 삭제 에러:', deleteError);
+      return NextResponse.json(
+        { error: '서버 오류가 발생했습니다.' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       message: '칭호가 성공적으로 삭제되었습니다.'

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server-auth';
-import { prisma } from '@/lib/prisma';
+import { getCurrentUserFromSupabase } from '@/lib/auth';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getCurrentUser(request);
+    const user = await getCurrentUserFromSupabase(request);
     if (!user) {
       return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
     }
@@ -15,20 +15,22 @@ export async function POST(
     const { id: questId } = await params;
 
     // 퀘스트 조회
-    const quest = await prisma.quest.findUnique({
-      where: { id: questId },
-      include: {
-        chatRoom: true,
-      },
-    });
+    const { data: quest, error: questError } = await supabaseAdmin
+      .from('quests')
+      .select(`
+        *,
+        chat_room:chat_rooms(*)
+      `)
+      .eq('id', questId)
+      .single();
 
-    if (!quest) {
+    if (questError || !quest) {
       return NextResponse.json({ error: '퀘스트를 찾을 수 없습니다' }, { status: 404 });
     }
 
-    // 수락자인지 확인
-    if (!quest.acceptedBy || quest.acceptedBy !== user.id) {
-      return NextResponse.json({ error: '퀘스트를 수락한 사용자가 아닙니다' }, { status: 403 });
+    // 수락한 사용자만 거절할 수 있음
+    if (!quest.accepted_by_user_id || quest.accepted_by_user_id !== user.id) {
+      return NextResponse.json({ error: '수락한 사용자만 거절할 수 있습니다' }, { status: 403 });
     }
 
     // 퀘스트가 진행 중인 상태인지 확인
@@ -36,20 +38,30 @@ export async function POST(
       return NextResponse.json({ error: '진행 중인 퀘스트만 거절할 수 있습니다' }, { status: 400 });
     }
 
-    // 퀘스트 상태를 OPEN으로 되돌리고 수락자 정보 제거
-    await prisma.quest.update({
-      where: { id: questId },
-      data: {
+    // 퀘스트 거절
+    const { error: questUpdateError } = await supabaseAdmin
+      .from('quests')
+      .update({
         status: 'OPEN',
-        acceptedBy: null,
-      },
-    });
+        accepted_by_user_id: null,
+      })
+      .eq('id', questId);
+
+    if (questUpdateError) {
+      console.error('퀘스트 거절 에러:', questUpdateError);
+      return NextResponse.json({ error: '퀘스트 거절에 실패했습니다' }, { status: 500 });
+    }
 
     // 채팅방이 있다면 삭제
-    if (quest.chatRoom) {
-      await (prisma as any).chatRoom.delete({
-        where: { id: quest.chatRoom.id },
-      });
+    if (quest.chat_room) {
+      const { error: chatRoomDeleteError } = await supabaseAdmin
+        .from('chat_rooms')
+        .delete()
+        .eq('id', quest.chat_room.id);
+
+      if (chatRoomDeleteError) {
+        console.error('채팅방 삭제 에러:', chatRoomDeleteError);
+      }
     }
 
     return NextResponse.json({ 
@@ -57,7 +69,7 @@ export async function POST(
       quest: {
         ...quest,
         status: 'OPEN',
-        acceptedBy: null,
+        accepted_by_user_id: null,
       }
     });
   } catch (error) {

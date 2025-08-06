@@ -9,8 +9,6 @@ interface Skill {
   acquiredDate: string
   expiryDate?: string
   parentSkillId?: string
-  parentSkill?: Skill
-  childSkills?: Skill[]
 }
 
 export function useSkills() {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getCurrentUser } from '@/lib/server-auth'
+import { supabaseAdmin } from '@/lib/supabase';
+import { getCurrentUserFromSupabase } from '@/lib/auth';
 
 // 퀘스트 수락
 export async function POST(
@@ -8,7 +8,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getCurrentUser(request)
+    const user = await getCurrentUserFromSupabase(request)
     if (!user) {
       return NextResponse.json(
         { error: '인증이 필요합니다.' },
@@ -16,43 +16,37 @@ export async function POST(
       )
     }
 
-    const { id: questId } = await params
+    const paramsData = await params;
+    const { id: questId } = paramsData;
 
     // 퀘스트 존재 확인
-    const quest = await prisma.quest.findUnique({
-      where: { id: questId },
-      include: {
-        creator: {
-          select: {
-            id: true,
-            email: true,
-            nickname: true
-          }
-        }
-      }
-    })
+    const { data: quest, error: questError } = await supabaseAdmin
+      .from('quests')
+      .select(`
+        *,
+        creator:users!creator_id(id, email, nickname)
+      `)
+      .eq('id', questId)
+      .single();
 
-    if (!quest) {
+    if (questError || !quest) {
       return NextResponse.json(
         { error: '존재하지 않는 퀘스트입니다.' },
         { status: 404 }
-      )
+      );
     }
 
     // 자신이 만든 퀘스트는 수락할 수 없음
-    if (quest.creatorId === user.id) {
+    if (quest.creator_id === user.id) {
       return NextResponse.json(
         { error: '자신이 만든 퀘스트는 수락할 수 없습니다.' },
         { status: 400 }
-      )
+      );
     }
 
     // 이미 수락된 퀘스트인지 확인
-    if (quest.acceptedBy) {
-      return NextResponse.json(
-        { error: '이미 수락된 퀘스트입니다.' },
-        { status: 400 }
-      )
+    if (quest.accepted_by_user_id) {
+      return NextResponse.json({ error: '이미 수락된 퀘스트입니다' }, { status: 400 });
     }
 
     // 퀘스트가 열린 상태인지 확인
@@ -60,80 +54,79 @@ export async function POST(
       return NextResponse.json(
         { error: '수락할 수 없는 퀘스트입니다.' },
         { status: 400 }
-      )
+      );
     }
 
-    // 트랜잭션으로 퀘스트 수락과 채팅방 생성을 함께 처리
-    const result = await prisma.$transaction(async (tx) => {
-      // 퀘스트 상태 업데이트
-      const updatedQuest = await tx.quest.update({
-        where: { id: questId },
-        data: {
-          acceptedBy: user.id,
-          status: 'IN_PROGRESS'
-        },
-        include: {
-          creator: {
-            select: {
-              id: true,
-              email: true,
-              nickname: true
-            }
-          },
-          acceptedByUser: {
-            select: {
-              id: true,
-              email: true,
-              nickname: true
-            }
-          }
-        }
+    // 퀘스트 수락
+    const { data: updatedQuest, error: questUpdateError } = await supabaseAdmin
+      .from('quests')
+      .update({
+        status: 'IN_PROGRESS',
+        accepted_by_user_id: user.id,
       })
+      .eq('id', questId)
+      .select(`
+        *,
+        creator:users!creator_id(id, email, nickname),
+        accepted_by_user:users!accepted_by_user_id(id, email, nickname)
+      `)
+      .single();
 
-      // 1대1 채팅방 생성
-      const chatRoom = await (tx as any).chatRoom.create({
-        data: {
-          name: quest.title,
-          type: 'DIRECT',
-          questId: questId,
-        },
-      })
+    if (questUpdateError) {
+      console.error('퀘스트 업데이트 에러:', questUpdateError);
+      return NextResponse.json(
+        { error: '서버 오류가 발생했습니다.' },
+        { status: 500 }
+      );
+    }
 
-      console.log('채팅방 생성 완료:', {
-        chatRoomId: chatRoom.id,
-        questId: questId,
-        questTitle: quest.title
+    // 기존 퀘스트 채팅방 찾기
+    const { data: chatRoom, error: chatRoomError } = await supabaseAdmin
+      .from('chat_rooms')
+      .select('*')
+      .eq('quest_id', questId)
+      .single();
+
+    if (chatRoomError || !chatRoom) {
+      console.error('퀘스트 채팅방을 찾을 수 없습니다:', chatRoomError);
+      return NextResponse.json(
+        { error: '퀘스트 채팅방을 찾을 수 없습니다.' },
+        { status: 500 }
+      );
+    }
+
+    // 퀘스트 수락자를 채팅방에 추가
+    const { error: participantError } = await supabaseAdmin
+      .from('chat_room_participants')
+      .insert({
+        chat_room_id: chatRoom.id,
+        user_id: user.id
       });
 
-      // 퀘스트 생성자와 수락자를 채팅방에 추가
-      await (tx as any).chatParticipant.createMany({
-        data: [
-          {
-            chatRoomId: chatRoom.id,
-            userId: quest.creatorId,
-          },
-          {
-            chatRoomId: chatRoom.id,
-            userId: user.id,
-          },
-        ],
+    if (participantError) {
+      console.error('채팅방 참가자 추가 에러:', participantError);
+      return NextResponse.json(
+        { error: '서버 오류가 발생했습니다.' },
+        { status: 500 }
+      );
+    }
+
+    // 시스템 메시지 생성 (수락자가 참가)
+    const { error: messageError } = await supabaseAdmin
+      .from('chat_messages')
+      .insert({
+        chat_room_id: chatRoom.id,
+        user_id: user.id,
+        content: `${user.nickname || user.email?.split('@')[0]}님이 퀘스트를 수락했습니다!`,
       });
 
-      // 시스템 메시지 생성 (수락자가 참가)
-      await (tx as any).chatMessage.create({
-        data: {
-          chatRoomId: chatRoom.id,
-          userId: user.id,
-          content: 'SYSTEM_JOIN',
-        },
-      });
-
-      return { updatedQuest, chatRoom }
-    })
+    if (messageError) {
+      console.error('시스템 메시지 생성 에러:', messageError);
+    }
 
     return NextResponse.json({
       message: '퀘스트를 수락했습니다.',
-      quest: result.updatedQuest
+      quest: updatedQuest
     })
 
   } catch (error) {

@@ -1,28 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { getCurrentUser } from '@/lib/server-auth';
+import { supabaseAdmin } from '@/lib/supabase';
+import { getCurrentUserFromSupabase } from '@/lib/auth';
 
 // 지혜 스탯 조회 (초서 개수)
 export async function GET(request: NextRequest) {
   try {
     console.log('Wisdom stats API called');
     
-    const user = await getCurrentUser(request);
+    const user = await getCurrentUserFromSupabase(request);
     console.log('User found:', user ? 'yes' : 'no');
     
     if (!user) {
       console.log('No user found, returning 401');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // 데이터베이스 연결 테스트
-    try {
-      await prisma.$connect();
-      console.log('Database connected successfully');
-    } catch (dbError) {
-      console.error('Database connection failed:', dbError);
-      // 데이터베이스 연결 실패 시 기본값 반환
-      return NextResponse.json({ wisdom: 0 });
     }
 
     // 최근 30일간의 초서 개수 계산
@@ -31,15 +21,17 @@ export async function GET(request: NextRequest) {
     
     console.log('Date range:', { thirtyDaysAgo, currentDate, userId: user.id });
 
-    const wisdomCount = await prisma.wisdomNote.count({
-      where: {
-        userId: user.id,
-        date: {
-          gte: thirtyDaysAgo,
-          lte: currentDate,
-        },
-      },
-    });
+    const { count: wisdomCount, error } = await supabaseAdmin
+      .from('wisdom_notes')
+      .select('*', { count: 'exact' })
+      .eq('user_id', user.id)
+      .gte('date', thirtyDaysAgo.toISOString())
+      .lte('date', currentDate.toISOString());
+
+    if (error) {
+      console.error('지혜 스탯 조회 에러:', error);
+      return NextResponse.json({ wisdom: 0 });
+    }
 
     console.log('Wisdom count:', wisdomCount);
     return NextResponse.json({ wisdom: wisdomCount });

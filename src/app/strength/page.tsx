@@ -3,20 +3,20 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { strengthAPI } from '@/lib/api';
+import AuthGuard from '@/components/AuthGuard';
 
 interface StrengthRecord {
   id: string;
-  month: string;
   bench: number;
   squat: number;
   deadlift: number;
   total: number;
-  createdAt: string;
-  isBestRecord?: boolean;
+  created_at: string;
 }
 
-export default function StrengthPage() {
-  const { user, loading } = useAuth();
+function StrengthPageContent() {
+  const { user } = useAuth();
   const router = useRouter();
   const [records, setRecords] = useState<StrengthRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,24 +28,18 @@ export default function StrengthPage() {
   });
 
   useEffect(() => {
-    if (!user && !loading) {
-      router.push('/auth/login');
-      return;
-    }
     if (user) {
       fetchStrengthRecords();
     }
-  }, [user, loading, router]);
+  }, [user]);
 
   const fetchStrengthRecords = async () => {
     try {
-      const response = await fetch('/api/stats/strength');
-      if (response.ok) {
-        const data = await response.json();
-        setRecords(data.records || []);
-      }
+      const data = await strengthAPI.get();
+      setRecords(data.records || []);
     } catch (error) {
       // 힘 기록 로드 실패
+      console.error('Strength records fetch error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -54,22 +48,13 @@ export default function StrengthPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/stats/strength', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        setFormData({ bench: 0, squat: 0, deadlift: 0 });
-        setShowAddForm(false);
-        fetchStrengthRecords();
-      }
+      await strengthAPI.create(formData);
+      setFormData({ bench: 0, squat: 0, deadlift: 0 });
+      setShowAddForm(false);
+      fetchStrengthRecords();
     } catch (error) {
       // 힘 기록 생성 실패
+      console.error('Strength record creation error:', error);
     }
   };
 
@@ -79,28 +64,21 @@ export default function StrengthPage() {
     }
 
     try {
-      const response = await fetch(`/api/stats/strength/${recordId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        fetchStrengthRecords();
-        // 삭제 후 메인 페이지 스탯 새로고침을 위해 localStorage 업데이트
-        if (typeof window !== 'undefined') {
-          const currentStats = localStorage.getItem('likegame-stats');
-          if (currentStats) {
-            const stats = JSON.parse(currentStats);
-            // 힘 스탯을 0으로 초기화 (실제 값은 API에서 다시 계산됨)
-            stats.strength = 0;
-            localStorage.setItem('likegame-stats', JSON.stringify(stats));
-          }
+      await strengthAPI.delete(recordId);
+      fetchStrengthRecords();
+      // 삭제 후 메인 페이지 스탯 새로고침을 위해 localStorage 업데이트
+      if (typeof window !== 'undefined') {
+        const currentStats = localStorage.getItem('likegame-stats');
+        if (currentStats) {
+          const stats = JSON.parse(currentStats);
+          // 힘 스탯을 0으로 초기화 (실제 값은 API에서 다시 계산됨)
+          stats.strength = 0;
+          localStorage.setItem('likegame-stats', JSON.stringify(stats));
         }
-      } else {
-        alert('기록 삭제에 실패했습니다.');
       }
     } catch (error) {
       // 힘 기록 삭제 실패
+      console.error('Strength record deletion error:', error);
       alert('기록 삭제 중 오류가 발생했습니다.');
     }
   };
@@ -127,7 +105,20 @@ export default function StrengthPage() {
     }
   };
 
-  if (loading || isLoading) {
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+    } catch {
+      return '날짜 없음';
+    }
+  };
+
+  if (isLoading) {
     return (
       <div style={{
         display: 'flex',
@@ -150,14 +141,10 @@ export default function StrengthPage() {
           textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
           textAlign: 'center'
         }}>
-          시스템 로딩 중...
+          3대 운동 기록 로딩 중...
         </div>
       </div>
     );
-  }
-
-  if (!user) {
-    return null;
   }
 
   return (
@@ -218,61 +205,42 @@ export default function StrengthPage() {
             <div style={{
               fontSize: '0.8rem',
               fontWeight: 700,
-              color: '#ffff00',
+              color: '#ffd700',
               fontFamily: 'Press Start 2P, cursive'
             }}>{records.length > 0 ? Math.max(...records.map(r => r.total)) : 0}kg</div>
           </div>
         </div>
       </div>
 
-      {/* 힘 기록 추가 */}
+      {/* 기록 추가 버튼 */}
       <div style={{
-        background: 'rgba(255,0,102,0.05)',
+        background: 'rgba(255,0,0,0.05)',
         borderRadius: '8px',
         padding: '12px',
         marginBottom: '12px'
       }}>
-        <div style={{
-          fontSize: '0.9rem',
-          color: '#ffffff',
-          marginBottom: '8px',
-          textAlign: 'center',
-          fontWeight: 600,
-          fontFamily: 'Press Start 2P, cursive'
-        }}>
-          기록 추가
-        </div>
-        <div 
-          style={{
-            padding: '8px',
-            background: 'rgba(255,0,102,0.1)',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '0.8rem',
-            color: '#ffffff',
-            fontWeight: 600,
-            fontFamily: 'Press Start 2P, cursive',
-            textAlign: 'center',
-            transition: 'all 0.3s ease',
-            border: '2px solid rgba(255,0,102,0.3)'
-          }}
+        <button
           onClick={() => setShowAddForm(true)}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255,0,102,0.2)';
-            e.currentTarget.style.boxShadow = '0 0 10px rgba(255,0,102,0.5)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255,0,102,0.1)';
-            e.currentTarget.style.boxShadow = 'none';
+          style={{
+            width: '100%',
+            padding: '12px',
+            background: 'rgba(255,0,0,0.2)',
+            border: '2px solid rgba(255,0,0,0.5)',
+            color: '#ff0000',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            fontSize: '0.9rem',
+            fontFamily: 'Press Start 2P, cursive'
           }}
         >
-          새 기록
-        </div>
+          💪 새 기록 추가
+        </button>
       </div>
 
-      {/* 힘 기록 목록 */}
+      {/* 기록 목록 */}
       <div style={{
-        background: 'rgba(255,215,0,0.05)',
+        background: 'rgba(255,255,255,0.05)',
         borderRadius: '8px',
         padding: '12px'
       }}>
@@ -284,136 +252,129 @@ export default function StrengthPage() {
           fontWeight: 600,
           fontFamily: 'Press Start 2P, cursive'
         }}>
-          기록 목록
+          3대 운동 목록
         </div>
         
         {records.length === 0 ? (
           <div style={{
             textAlign: 'center',
             color: '#666',
-            fontSize: '0.75rem',
-            padding: '12px',
+            fontSize: '0.8rem',
+            padding: '20px',
             fontFamily: 'Orbitron, monospace'
           }}>
-            기록이 없습니다
+            아직 3대 운동 기록이 없습니다.
           </div>
         ) : (
-          <div style={{display: 'flex', flexDirection: 'column', gap: '6px'}}>
-            {records.map(record => {
-              const rank = getRank(record.total);
-              const rankColor = getRankColor(rank);
-              return (
-                <div key={record.id} style={{
-                  background: record.isBestRecord ? 'rgba(255,0,102,0.2)' : 'rgba(255,0,102,0.1)',
-                  borderRadius: '6px',
-                  padding: '8px',
-                  position: 'relative',
-                  border: record.isBestRecord ? '2px solid #ff0066' : '1px solid rgba(255,0,102,0.3)',
-                  transition: 'all 0.3s ease'
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            {records.map((record) => (
+              <div key={record.id} style={{
+                background: 'rgba(255,0,0,0.1)',
+                borderRadius: '6px',
+                padding: '12px',
+                border: '1px solid rgba(255,0,0,0.3)',
+                transition: 'all 0.3s ease'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  marginBottom: '8px'
                 }}>
-                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px'}}>
-                    <div style={{flex: 1}}>
-                      <div style={{
-                        fontWeight: 700,
-                        color: '#ff0066',
-                        fontSize: '0.75rem',
-                        marginBottom: '2px',
-                        fontFamily: 'Press Start 2P, cursive'
-                      }}>
-                        {record.isBestRecord ? `🏆 ${record.total}kg` : `${record.total}kg`}
-                      </div>
-                      <div style={{
-                        fontSize: '0.75rem',
-                        color: '#666',
-                        marginBottom: '4px',
-                        fontFamily: 'Orbitron, monospace'
-                      }}>
-                        {new Date(record.createdAt).toLocaleDateString('ko-KR', { 
-                          year: 'numeric', 
-                          month: '2-digit', 
-                          day: '2-digit' 
-                        })}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleDelete(record.id)}
-                      style={{
-                        background: 'rgba(255,0,102,0.2)',
-                        border: '1px solid rgba(255,0,102,0.3)',
-                        color: '#ff0066',
-                        fontWeight: 600,
-                        fontSize: '0.75rem',
-                        cursor: 'pointer',
-                        padding: '2px 4px',
-                        borderRadius: '4px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        minWidth: '32px',
-                        fontFamily: 'Press Start 2P, cursive',
-                        transition: 'all 0.3s ease'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(255,0,102,0.3)';
-                        e.currentTarget.style.boxShadow = '0 0 5px rgba(255,0,102,0.5)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'rgba(255,0,102,0.2)';
-                        e.currentTarget.style.boxShadow = 'none';
-                      }}
-                    >
-                      삭제
-                    </button>
-                  </div>
-                  
-                  {/* 개별 운동 기록 */}
-                  <div style={{
-                    display: 'flex',
-                    gap: '4px',
-                    marginBottom: '4px'
-                  }}>
+                  <div style={{flex: 1}}>
                     <div style={{
-                      flex: 1,
-                      textAlign: 'center',
-                      padding: '4px',
-                      background: 'rgba(255,0,102,0.1)',
-                      borderRadius: '4px',
                       fontSize: '0.75rem',
+                      color: '#666',
+                      marginBottom: '4px',
                       fontFamily: 'Orbitron, monospace'
                     }}>
-                      <div style={{color: '#ff0066', fontWeight: 600}}>벤치</div>
-                      <div style={{color: '#ffffff'}}>{record.bench}kg</div>
+                      📅 {formatDate(record.created_at)}
                     </div>
-                    <div style={{
-                      flex: 1,
-                      textAlign: 'center',
-                      padding: '4px',
-                      background: 'rgba(255,0,102,0.1)',
-                      borderRadius: '4px',
-                      fontSize: '0.75rem',
-                      fontFamily: 'Orbitron, monospace'
-                    }}>
-                      <div style={{color: '#ff0066', fontWeight: 600}}>스쿼트</div>
-                      <div style={{color: '#ffffff'}}>{record.squat}kg</div>
-                    </div>
-                    <div style={{
-                      flex: 1,
-                      textAlign: 'center',
-                      padding: '4px',
-                      background: 'rgba(255,0,102,0.1)',
-                      borderRadius: '4px',
-                      fontSize: '0.75rem',
-                      fontFamily: 'Orbitron, monospace'
-                    }}>
-                      <div style={{color: '#ff0066', fontWeight: 600}}>데드</div>
-                      <div style={{color: '#ffffff'}}>{record.deadlift}kg</div>
-                    </div>
-                  </div>
-                  
 
+                  </div>
+                  <button
+                    onClick={() => handleDelete(record.id)}
+                    style={{
+                      background: 'rgba(255,0,0,0.2)',
+                      border: '1px solid rgba(255,0,0,0.3)',
+                      color: '#ff0000',
+                      fontWeight: 600,
+                      fontSize: '0.75rem',
+                      cursor: 'pointer',
+                      padding: '2px 4px',
+                      borderRadius: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minWidth: '32px',
+                      fontFamily: 'Press Start 2P, cursive',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(255,0,0,0.3)';
+                      e.currentTarget.style.boxShadow = '0 0 5px rgba(255,0,0,0.5)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(255,0,0,0.2)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    삭제
+                  </button>
                 </div>
-              );
-            })}
+                
+                <div style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  borderRadius: '4px',
+                  padding: '8px',
+                  marginBottom: '6px'
+                }}>
+
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr 1fr',
+                    gap: '8px',
+                    fontSize: '0.75rem',
+                    color: '#ffffff',
+                    fontFamily: 'Orbitron, monospace'
+                  }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ color: '#888', marginBottom: '2px' }}>벤치</div>
+                      <div style={{ fontWeight: 'bold' }}>{record.bench}kg</div>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ color: '#888', marginBottom: '2px' }}>스쿼트</div>
+                      <div style={{ fontWeight: 'bold' }}>{record.squat}kg</div>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ color: '#888', marginBottom: '2px' }}>데드</div>
+                      <div style={{ fontWeight: 'bold' }}>{record.deadlift}kg</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style={{
+                  background: 'rgba(255,215,0,0.05)',
+                  borderRadius: '4px',
+                  padding: '8px'
+                }}>
+
+                  <div style={{
+                    fontSize: '0.9rem',
+                    color: '#ffd700',
+                    fontWeight: 'bold',
+                    fontFamily: 'Press Start 2P, cursive',
+                    textAlign: 'center'
+                  }}>
+                    {record.total}kg
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -434,20 +395,21 @@ export default function StrengthPage() {
         }}>
           <div style={{
             background: '#1a1a1a',
-            padding: '12px',
-            borderRadius: '15px',
+            padding: '20px',
+            borderRadius: '10px',
             border: '2px solid rgba(0,255,255,0.3)',
             width: '90%',
-            maxWidth: '500px'
+            maxWidth: '400px'
           }}>
-            <h2 style={{ 
-              color: '#00ffff', 
-              marginTop: '16px',
-              marginBottom: '16px',
-              textAlign: 'center'
+            <h3 style={{
+              color: '#00ffff',
+              marginTop: 0,
+              marginBottom: '20px',
+              textAlign: 'center',
+              fontFamily: 'Press Start 2P, cursive'
             }}>
-              힘 기록 추가
-            </h2>
+              새 기록 추가
+            </h3>
             
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: '15px' }}>
@@ -457,15 +419,18 @@ export default function StrengthPage() {
                 <input
                   type="number"
                   value={formData.bench}
-                  onChange={(e) => setFormData({...formData, bench: Number(e.target.value)})}
+                  onChange={(e) => setFormData({...formData, bench: parseInt(e.target.value) || 0})}
                   required
+                  min="0"
                   style={{
                     width: '100%',
-                    padding: '10px',
+                    padding: '8px',
                     background: 'rgba(255,255,255,0.1)',
                     border: '2px solid rgba(0,255,255,0.3)',
                     borderRadius: '6px',
-                    color: '#ffffff'
+                    color: '#ffffff',
+                    fontSize: '0.8rem',
+                    fontFamily: 'Press Start 2P, cursive'
                   }}
                 />
               </div>
@@ -477,15 +442,18 @@ export default function StrengthPage() {
                 <input
                   type="number"
                   value={formData.squat}
-                  onChange={(e) => setFormData({...formData, squat: Number(e.target.value)})}
+                  onChange={(e) => setFormData({...formData, squat: parseInt(e.target.value) || 0})}
                   required
+                  min="0"
                   style={{
                     width: '100%',
-                    padding: '10px',
+                    padding: '8px',
                     background: 'rgba(255,255,255,0.1)',
                     border: '2px solid rgba(0,255,255,0.3)',
                     borderRadius: '6px',
-                    color: '#ffffff'
+                    color: '#ffffff',
+                    fontSize: '0.8rem',
+                    fontFamily: 'Press Start 2P, cursive'
                   }}
                 />
               </div>
@@ -497,15 +465,18 @@ export default function StrengthPage() {
                 <input
                   type="number"
                   value={formData.deadlift}
-                  onChange={(e) => setFormData({...formData, deadlift: Number(e.target.value)})}
+                  onChange={(e) => setFormData({...formData, deadlift: parseInt(e.target.value) || 0})}
                   required
+                  min="0"
                   style={{
                     width: '100%',
-                    padding: '10px',
+                    padding: '8px',
                     background: 'rgba(255,255,255,0.1)',
                     border: '2px solid rgba(0,255,255,0.3)',
                     borderRadius: '6px',
-                    color: '#ffffff'
+                    color: '#ffffff',
+                    fontSize: '0.8rem',
+                    fontFamily: 'Press Start 2P, cursive'
                   }}
                 />
               </div>
@@ -515,28 +486,32 @@ export default function StrengthPage() {
                   type="submit"
                   style={{
                     flex: 1,
-                    padding: '12px',
+                    padding: '10px',
                     background: 'rgba(0,255,255,0.2)',
                     border: '2px solid rgba(0,255,255,0.5)',
                     color: '#00ffff',
                     borderRadius: '6px',
                     cursor: 'pointer',
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
+                    fontSize: '0.8rem',
+                    fontFamily: 'Press Start 2P, cursive'
                   }}
                 >
-                  저장
+                  추가
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowAddForm(false)}
                   style={{
                     flex: 1,
-                    padding: '12px',
+                    padding: '10px',
                     background: 'rgba(255,255,255,0.1)',
                     border: '2px solid rgba(255,255,255,0.3)',
                     color: '#ffffff',
                     borderRadius: '6px',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    fontFamily: 'Press Start 2P, cursive'
                   }}
                 >
                   취소
@@ -547,5 +522,13 @@ export default function StrengthPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function StrengthPage() {
+  return (
+    <AuthGuard>
+      <StrengthPageContent />
+    </AuthGuard>
   );
 } 

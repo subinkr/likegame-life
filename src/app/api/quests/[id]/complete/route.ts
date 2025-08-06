@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server-auth';
-import { prisma } from '@/lib/prisma';
+import { getCurrentUserFromSupabase } from '@/lib/auth';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export async function POST(
   request: NextRequest,
@@ -8,7 +8,7 @@ export async function POST(
 ) {
   let user;
   try {
-    user = await getCurrentUser(request);
+    user = await getCurrentUserFromSupabase(request);
     if (!user) {
       return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
     }
@@ -16,36 +16,28 @@ export async function POST(
     const { id: questId } = await params;
 
     // 퀘스트 존재 확인
-    const quest = await prisma.quest.findUnique({
-      where: { id: questId },
-      include: {
-        creator: {
-          select: {
-            id: true,
-            nickname: true,
-          },
-        },
-        acceptedByUser: {
-          select: {
-            id: true,
-            nickname: true,
-          },
-        },
-      },
-    });
+    const { data: quest, error: questError } = await supabaseAdmin
+      .from('quests')
+      .select(`
+        *,
+        creator:users!creator_id(id, nickname),
+        accepted_by_user:users!accepted_by_user_id(id, nickname)
+      `)
+      .eq('id', questId)
+      .single();
 
-    if (!quest) {
+    if (questError || !quest) {
       return NextResponse.json({ error: '퀘스트를 찾을 수 없습니다' }, { status: 404 });
     }
 
     // 퀘스트 생성자만 완료할 수 있음
-    if (quest.creatorId !== user.id) {
+    if (quest.creator_id !== user.id) {
       return NextResponse.json({ error: '퀘스트 생성자만 완료할 수 있습니다' }, { status: 403 });
     }
 
     // 수락된 퀘스트만 완료할 수 있음
-    if (!quest.acceptedBy) {
-      return NextResponse.json({ error: '수락되지 않은 퀘스트는 완료할 수 없습니다' }, { status: 400 });
+    if (!quest.accepted_by_user_id) {
+      return NextResponse.json({ error: '수락된 퀘스트만 완료할 수 있습니다' }, { status: 400 });
     }
 
     // 이미 완료된 퀘스트는 다시 완료할 수 없음
@@ -54,20 +46,23 @@ export async function POST(
     }
 
     // 퀘스트 완료
-    await prisma.quest.update({
-      where: { id: questId },
-      data: {
+    const { error: questUpdateError } = await supabaseAdmin
+      .from('quests')
+      .update({
         status: 'COMPLETED',
-        rewardPaid: true,
-      },
-    });
+      })
+      .eq('id', questId);
+
+    if (questUpdateError) {
+      console.error('퀘스트 완료 에러:', questUpdateError);
+      return NextResponse.json({ error: '퀘스트 완료에 실패했습니다' }, { status: 500 });
+    }
 
     return NextResponse.json({ 
-      message: `퀘스트가 완료되었습니다. ${quest.reward.toLocaleString()}원이 지급되었습니다.`,
+      message: `퀘스트가 완료되었습니다.`,
       quest: {
         ...quest,
         status: 'COMPLETED',
-        rewardPaid: true,
       }
     });
   } catch (error) {

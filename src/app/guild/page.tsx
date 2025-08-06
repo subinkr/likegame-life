@@ -2,6 +2,8 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { questsAPI, partiesAPI, chatAPI, apiRequest } from '@/lib/api';
+import AuthGuard from '@/components/AuthGuard';
 
 interface Quest {
   id: string;
@@ -11,12 +13,13 @@ interface Quest {
   reward: number;
   rewardPaid?: boolean;
   status: string;
+  creator_id: string;
   creator: {
     id: string;
     nickname: string;
   };
-  acceptedBy?: string;
-  acceptedByUser?: {
+  accepted_by_user_id?: string;
+  accepted_by_user?: {
     id: string;
     nickname: string;
   };
@@ -94,13 +97,10 @@ function GuildPageContent() {
 
   const fetchQuests = async () => {
     try {
-      const response = await fetch('/api/quests');
-      if (response.ok) {
-        const data = await response.json();
-        setQuests(data);
-      }
+      const data = await questsAPI.get();
+      setQuests(data);
     } catch (error) {
-      // 퀘스트 로드 실패
+      console.error('Error fetching quests:', error);
     } finally {
       setLoading(false);
     }
@@ -108,13 +108,10 @@ function GuildPageContent() {
 
   const fetchParties = async () => {
     try {
-      const response = await fetch('/api/parties');
-      if (response.ok) {
-        const data = await response.json();
-        setParties(data);
-      }
+      const data = await partiesAPI.get();
+      setParties(data);
     } catch (error) {
-      // 파티 로드 실패
+      console.error('Error fetching parties:', error);
     } finally {
       setLoading(false);
     }
@@ -123,137 +120,91 @@ function GuildPageContent() {
   const createQuest = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/quests', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newQuest),
-      });
-      
-      if (response.ok) {
-        setNewQuest({ title: '', description: '', location: '', reward: 0 });
-        setShowCreateQuest(false);
-        fetchQuests();
-      }
+      await questsAPI.create(newQuest);
+      setNewQuest({ title: '', description: '', location: '', reward: 0 });
+      setShowCreateQuest(false);
+      fetchQuests();
     } catch (error) {
-      // 퀘스트 생성 실패
+      console.error('Error creating quest:', error);
     }
   };
 
   const createParty = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/parties', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newParty),
-      });
-      
-      if (response.ok) {
-        setNewParty({ name: '', description: '', maxMembers: 4 });
-        setShowCreateParty(false);
-        fetchParties();
-      }
+      await partiesAPI.create(newParty);
+      setNewParty({ name: '', description: '', maxMembers: 4 });
+      setShowCreateParty(false);
+      fetchParties();
     } catch (error) {
-      // 파티 생성 실패
+      console.error('Error creating party:', error);
     }
   };
 
   const acceptQuest = async (questId: string) => {
     try {
-      const response = await fetch(`/api/quests/${questId}/accept`, {
-        method: 'POST',
-      });
-      
-      if (response.ok) {
-        fetchQuests();
-      }
+      await questsAPI.accept(questId);
+      fetchQuests();
     } catch (error) {
-      // 퀘스트 수락 실패
+      console.error('Error accepting quest:', error);
     }
   };
 
   const cancelQuest = async (questId: string) => {
+    // 확인 절차
+    if (!confirm('정말로 이 퀘스트를 취소하시겠습니까?')) {
+      return;
+    }
+
     try {
-      const response = await fetch(`/api/quests/${questId}/cancel`, {
-        method: 'POST',
-      });
-      
-      if (response.ok) {
-        fetchQuests();
-      }
+      await questsAPI.cancel(questId);
+      fetchQuests();
     } catch (error) {
-      // 퀘스트 취소 실패
+      console.error('Error canceling quest:', error);
     }
   };
 
   const completeQuest = async (questId: string) => {
     try {
-      const response = await fetch(`/api/quests/${questId}/complete`, {
-        method: 'POST',
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        alert(result.message); // 보상 지급 메시지 표시
-        fetchQuests();
-      } else {
-        const error = await response.json();
-        alert(error.error || '퀘스트 완료에 실패했습니다.');
-      }
+      await questsAPI.complete(questId);
+      fetchQuests();
     } catch (error) {
-      alert('퀘스트 완료에 실패했습니다.');
+      console.error('Error completing quest:', error);
     }
   };
 
-  const rejectQuest = async (questId: string) => {
+
+
+  const abandonQuest = async (questId: string) => {
+    // 확인 절차
+    if (!confirm('정말로 이 퀘스트를 포기하시겠습니까?')) {
+      return;
+    }
+
     try {
-      const response = await fetch(`/api/quests/${questId}/reject`, {
-        method: 'POST',
-      });
-      
-      if (response.ok) {
-        fetchQuests();
-      }
+      // 퀘스트 포기
+      await questsAPI.abandon(questId);
+      fetchQuests();
     } catch (error) {
-      // 퀘스트 거절 실패
+      console.error('Error abandoning quest:', error);
     }
   };
 
   const joinParty = async (partyId: string) => {
     try {
-      const response = await fetch(`/api/parties/${partyId}/join`, {
-        method: 'POST',
-      });
-      
-      if (response.ok) {
-        fetchParties();
-      }
+      await partiesAPI.join(partyId);
+      fetchParties();
     } catch (error) {
-      // 파티 참가 실패
+      console.error('Error joining party:', error);
     }
   };
 
   const leaveParty = async (partyId: string) => {
     try {
-      const response = await fetch(`/api/parties/${partyId}/leave`, {
-        method: 'POST',
-      });
-      
-      if (response.ok) {
-        fetchParties();
-        // 채팅방 목록도 새로고침 (채팅방에서도 나가게 되므로)
-        // 채팅방 목록을 새로고침하는 함수가 있다면 호출
-        // 예: fetchChatRooms();
-      } else {
-        const error = await response.json();
-        alert(error.error || '파티 나가기에 실패했습니다.');
-      }
+      await partiesAPI.leave(partyId);
+      fetchParties();
     } catch (error) {
-      alert('파티 나가기에 실패했습니다.');
+      console.error('Error leaving party:', error);
     }
   };
 
@@ -264,22 +215,10 @@ function GuildPageContent() {
     }
 
     try {
-      const response = await fetch(`/api/parties/${partyId}/kick`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ memberId, confirmed: true }),
-      });
-      
-      if (response.ok) {
-        fetchParties();
-      } else {
-        const error = await response.json();
-        alert(error.error || '멤버 추방에 실패했습니다.');
-      }
+      await partiesAPI.kick(partyId, memberId);
+      fetchParties();
     } catch (error) {
-      alert('멤버 추방에 실패했습니다.');
+      console.error('Error kicking member:', error);
     }
   };
 
@@ -290,21 +229,10 @@ function GuildPageContent() {
     }
 
     try {
-      const response = await fetch(`/api/parties/${partyId}/disband`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ confirmed: true }),
-      });
-      
-      if (response.ok) {
-        fetchParties();
-      } else {
-        const error = await response.json();
-        alert(error.error || '파티 해산에 실패했습니다.');
-      }
+      await partiesAPI.disband(partyId);
+      fetchParties();
     } catch (error) {
+      console.error('Error disbanding party:', error);
       alert('파티 해산에 실패했습니다.');
     }
   };
@@ -312,23 +240,60 @@ function GuildPageContent() {
   // 채팅방으로 이동하는 함수
   const goToChatRoom = async (type: 'quest' | 'party', id: string) => {
     try {
-      // 먼저 해당 퀘스트/파티의 채팅방 ID를 찾기
-      const endpoint = type === 'quest' 
-        ? `/api/chat/rooms/by-quest/${id}`
-        : `/api/chat/rooms/by-party/${id}`;
+      // 퀘스트인 경우: 생성자이거나 수락한 퀘스트인지 확인
+      if (type === 'quest') {
+        const quest = quests.find(q => q.id === id);
+        if (!quest) {
+          alert('퀘스트를 찾을 수 없습니다.');
+          return;
+        }
+        
+        const isCreator = quest.creator.id === user?.id;
+                            const isAcceptor = quest.accepted_by_user_id === user?.id;
+        
+        if (!isCreator && !isAcceptor) {
+          alert('퀘스트 채팅방에 접근할 수 없습니다.\n\n퀘스트 생성자이거나 수락한 후 채팅방에 입장할 수 있습니다.');
+          return;
+        }
+      }
       
-      const response = await fetch(endpoint);
+      // 파티인 경우: 파티 멤버인지 확인
+      if (type === 'party') {
+        const party = parties.find(p => p.id === id);
+        if (!party) {
+          alert('파티를 찾을 수 없습니다.');
+          return;
+        }
+        
+        const isMember = party.members.some(member => member.id === user?.id) || party.leader.id === user?.id;
+        if (!isMember) {
+          alert('파티 채팅방에 접근할 수 없습니다.\n\n파티에 참가한 후 채팅방에 입장할 수 있습니다.');
+          return;
+        }
+      }
       
-      if (response.ok) {
-        const chatRoom = await response.json();
+      // 권한 확인 후 채팅방으로 이동
+      const chatRoom = type === 'quest' 
+        ? await chatAPI.getRoomByQuest(id)
+        : await chatAPI.getRoomByParty(id);
+      
+      if (chatRoom) {
         router.push(`/chat/${chatRoom.id}`);
       } else {
-        console.error('채팅방을 찾을 수 없습니다:', response.status);
-        alert('채팅방을 찾을 수 없습니다. 퀘스트를 수락하거나 파티에 참가한 후 다시 시도해주세요.');
+        console.error('채팅방을 찾을 수 없습니다');
+        if (type === 'quest') {
+          alert('퀘스트 채팅방을 찾을 수 없습니다.\n\n퀘스트를 수락한 후 다시 시도해주세요.');
+        } else {
+          alert('파티 채팅방을 찾을 수 없습니다.\n\n파티에 참가한 후 다시 시도해주세요.');
+        }
       }
     } catch (error) {
       console.error('채팅방 이동 실패:', error);
-      alert('채팅방으로 이동하는데 실패했습니다.');
+      if (type === 'quest') {
+        alert('퀘스트 채팅방으로 이동하는데 실패했습니다.\n\n퀘스트를 수락한 후 다시 시도해주세요.');
+      } else {
+        alert('파티 채팅방으로 이동하는데 실패했습니다.\n\n파티에 참가한 후 다시 시도해주세요.');
+      }
     }
   };
 
@@ -449,22 +414,28 @@ function GuildPageContent() {
 
           {activeTab === 'quests' && (
             <div>
-              <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+              <div style={{ 
+                background: 'rgba(255,215,0,0.05)',
+                borderRadius: '8px',
+                padding: '12px',
+                marginBottom: '20px'
+              }}>
                 <button
                   onClick={() => setShowCreateQuest(true)}
                   style={{
-                    padding: '10px 20px',
-                    background: 'rgba(255,215,0,0.1)',
-                    border: '2px solid rgba(255,215,0,0.3)',
-                    color: '#ffffff',
+                    width: '100%',
+                    padding: '12px',
+                    background: 'rgba(255,215,0,0.2)',
+                    border: '2px solid rgba(255,215,0,0.5)',
+                    color: '#ffd700',
                     borderRadius: '8px',
                     cursor: 'pointer',
                     fontWeight: 'bold',
-                    fontSize: '0.8rem',
+                    fontSize: '0.9rem',
                     fontFamily: 'Press Start 2P, cursive'
                   }}
                 >
-                  퀘스트 생성
+                  ⚔️ 퀘스트 생성
                 </button>
               </div>
 
@@ -473,7 +444,7 @@ function GuildPageContent() {
                   .filter(quest => quest.status !== 'CANCELLED' && quest.status !== 'COMPLETED') // 취소된 퀘스트와 완료된 퀘스트 제외
                   .filter(quest => {
                     // 내가 받은 의뢰 (내가 수락한 퀘스트)
-                    const isAccepted = quest.acceptedBy === user?.id;
+                    const isAccepted = quest.accepted_by_user_id === user?.id;
                     // 내가 생성한 퀘스트 (모든 상태)
                     const isMyQuest = quest.creator.id === user?.id;
                     // 모집 중인 의뢰 (아직 수락되지 않은 퀘스트)
@@ -486,7 +457,7 @@ function GuildPageContent() {
                   .map((quest) => {
                     const statusStyle = getQuestStatusColor(quest.status);
                     const isCreator = quest.creator.id === user?.id;
-                    const isAccepted = quest.acceptedBy === user?.id;
+                    const isAccepted = quest.accepted_by_user_id === user?.id;
                   
                   return (
                     <div
@@ -599,9 +570,9 @@ function GuildPageContent() {
                         생성자: {quest.creator.nickname}
                       </p>
                       
-                      {quest.acceptedByUser && (
+                      {quest.accepted_by_user && (
                         <p style={{ margin: '8px 0', color: '#00ff00', fontSize: '0.9rem' }}>
-                          수락자: {quest.acceptedByUser.nickname}
+                          수락자: {quest.accepted_by_user.nickname}
                         </p>
                       )}
 
@@ -609,7 +580,10 @@ function GuildPageContent() {
                       <div style={{ marginTop: '15px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         {quest.status === 'OPEN' && quest.creator.id !== user?.id && (
                           <button
-                            onClick={() => acceptQuest(quest.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              acceptQuest(quest.id);
+                            }}
                             style={{
                               padding: '6px 12px',
                               background: 'rgba(0,255,0,0.2)',
@@ -627,7 +601,10 @@ function GuildPageContent() {
 
                         {isCreator && (quest.status === 'OPEN' || quest.status === 'IN_PROGRESS') && (
                           <button
-                            onClick={() => cancelQuest(quest.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              cancelQuest(quest.id);
+                            }}
                             style={{
                               padding: '6px 12px',
                               background: 'rgba(255,0,0,0.2)',
@@ -645,7 +622,10 @@ function GuildPageContent() {
 
                         {isCreator && quest.status === 'IN_PROGRESS' && (
                           <button
-                            onClick={() => completeQuest(quest.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              completeQuest(quest.id);
+                            }}
                             style={{
                               padding: '6px 12px',
                               background: 'rgba(0,255,255,0.2)',
@@ -661,21 +641,26 @@ function GuildPageContent() {
                           </button>
                         )}
 
-                        {quest.acceptedBy === user?.id && quest.status === 'IN_PROGRESS' && (
+
+
+                        {quest.accepted_by_user?.id === user?.id && quest.status === 'IN_PROGRESS' && (
                           <button
-                            onClick={() => rejectQuest(quest.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              abandonQuest(quest.id);
+                            }}
                             style={{
                               padding: '6px 12px',
-                              background: 'rgba(255,0,0,0.2)',
-                              border: '1px solid rgba(255,0,0,0.5)',
-                              color: '#ff0000',
+                              background: 'rgba(255,165,0,0.2)',
+                              border: '1px solid rgba(255,165,0,0.5)',
+                              color: '#ffa500',
                               borderRadius: '4px',
                               cursor: 'pointer',
                               fontWeight: 'bold',
                               fontSize: '0.8rem'
                             }}
                           >
-                            취소
+                            포기
                           </button>
                         )}
                       </div>
@@ -688,22 +673,28 @@ function GuildPageContent() {
 
           {activeTab === 'parties' && (
             <div>
-              <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+              <div style={{ 
+                background: 'rgba(0,255,0,0.05)',
+                borderRadius: '8px',
+                padding: '12px',
+                marginBottom: '20px'
+              }}>
                 <button
                   onClick={() => setShowCreateParty(true)}
                   style={{
-                    padding: '10px 20px',
-                    background: 'rgba(0,255,0,0.1)',
-                    border: '2px solid rgba(0,255,0,0.3)',
-                    color: '#ffffff',
+                    width: '100%',
+                    padding: '12px',
+                    background: 'rgba(0,255,0,0.2)',
+                    border: '2px solid rgba(0,255,0,0.5)',
+                    color: '#00ff00',
                     borderRadius: '8px',
                     cursor: 'pointer',
                     fontWeight: 'bold',
-                    fontSize: '0.8rem',
+                    fontSize: '0.9rem',
                     fontFamily: 'Press Start 2P, cursive'
                   }}
                 >
-                  파티 생성
+                  👥 파티 생성
                 </button>
               </div>
 
@@ -856,7 +847,10 @@ function GuildPageContent() {
                               {member.id === party.leader.id && '👑'}
                               {isLeader && member.id !== user?.id && (
                                 <button
-                                  onClick={() => kickMember(party.id, member.id)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    kickMember(party.id, member.id);
+                                  }}
                                   style={{
                                     background: 'none',
                                     border: 'none',
@@ -879,7 +873,10 @@ function GuildPageContent() {
                       <div style={{ marginTop: '15px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         {canJoin && (
                           <button
-                            onClick={() => joinParty(party.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              joinParty(party.id);
+                            }}
                             style={{
                               padding: '6px 12px',
                               background: 'rgba(0,255,255,0.2)',
@@ -911,7 +908,10 @@ function GuildPageContent() {
 
                         {isMember && !isLeader && (
                           <button
-                            onClick={() => leaveParty(party.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              leaveParty(party.id);
+                            }}
                             style={{
                               padding: '6px 12px',
                               background: 'rgba(255,165,0,0.2)',
@@ -929,7 +929,10 @@ function GuildPageContent() {
 
                         {isLeader && (
                           <button
-                            onClick={() => disbandParty(party.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              disbandParty(party.id);
+                            }}
                             style={{
                               padding: '6px 12px',
                               background: 'rgba(255,0,0,0.2)',
@@ -1246,21 +1249,23 @@ function GuildPageContent() {
 
 export default function GuildPage() {
   return (
-    <Suspense fallback={
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: 'calc(100vh - 130px)',
-        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
-        color: '#00ffff',
-        fontSize: '1rem',
-        fontFamily: 'Press Start 2P, cursive'
-      }}>
-        로딩 중...
-      </div>
-    }>
-      <GuildPageContent />
-    </Suspense>
+    <AuthGuard>
+      <Suspense fallback={
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 'calc(100vh - 130px)',
+          background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
+          color: '#00ffff',
+          fontSize: '1rem',
+          fontFamily: 'Press Start 2P, cursive'
+        }}>
+          로딩 중...
+        </div>
+      }>
+        <GuildPageContent />
+      </Suspense>
+    </AuthGuard>
   );
 } 

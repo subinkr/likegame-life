@@ -3,6 +3,8 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { wisdomAPI, booksAPI } from '@/lib/api';
+import AuthGuard from '@/components/AuthGuard';
 
 interface WisdomNote {
   id: string;
@@ -69,22 +71,16 @@ function WisdomNotesPageContent() {
         setIsLoadingMore(true);
       }
 
-      const response = await fetch(`/api/wisdom?page=${page}&limit=10`, {
-        credentials: 'include'
-      });
+      const response = await wisdomAPI.get(page, 10);
       
-      if (response.ok) {
-        const data = await response.json();
-        
-        if (append) {
-          setWisdomNotes(prev => [...prev, ...data.wisdomNotes]);
-        } else {
-          setWisdomNotes(data.wisdomNotes);
-        }
-        
-        setHasNextPage(data.pagination.hasNextPage);
-        setCurrentPage(page);
+      if (append) {
+        setWisdomNotes(prev => [...prev, ...(response.wisdomNotes || [])]);
+      } else {
+        setWisdomNotes(response.wisdomNotes || []);
       }
+      
+      setHasNextPage(response.pagination?.hasNextPage || false);
+      setCurrentPage(page);
     } catch (error) {
       console.error('Error fetching wisdom notes:', error);
     } finally {
@@ -95,11 +91,8 @@ function WisdomNotesPageContent() {
 
   const fetchBooks = async () => {
     try {
-      const response = await fetch('/api/books');
-      if (response.ok) {
-        const data = await response.json();
-        setBooks(data);
-      }
+      const response = await booksAPI.get();
+      setBooks(response || []);
     } catch (error) {
       console.error('Error fetching books:', error);
     }
@@ -108,31 +101,26 @@ function WisdomNotesPageContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/wisdom', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(formData),
+      await wisdomAPI.create({
+        bookId: formData.bookId,
+        quote: formData.quote,
+        impression: formData.impression,
       });
 
-      if (response.ok) {
-        setFormData({ bookId: '', quote: '', impression: '' });
-        setShowAddForm(false);
-        fetchWisdomNotes();
-      }
+      setFormData({ bookId: '', quote: '', impression: '' });
+      setShowAddForm(false);
+      fetchWisdomNotes();
     } catch (error) {
       console.error('Error creating wisdom note:', error);
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}. ${month}. ${day}.`;
   };
 
   const handleDelete = async (noteId: string) => {
@@ -141,14 +129,8 @@ function WisdomNotesPageContent() {
     }
 
     try {
-      const response = await fetch(`/api/wisdom/${noteId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        fetchWisdomNotes();
-      }
+      await wisdomAPI.delete(noteId);
+      fetchWisdomNotes();
     } catch (error) {
       console.error('Error deleting wisdom note:', error);
     }
@@ -163,20 +145,14 @@ function WisdomNotesPageContent() {
   const handleAddBook = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/books', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(bookFormData),
+      await booksAPI.create({
+        title: bookFormData.title,
+        author: bookFormData.author,
       });
 
-      if (response.ok) {
-        setBookFormData({ title: '', author: '' });
-        setShowAddBookForm(false);
-        fetchBooks();
-      }
+      setBookFormData({ title: '', author: '' });
+      setShowAddBookForm(false);
+      fetchBooks();
     } catch (error) {
       console.error('Error creating book:', error);
     }
@@ -402,75 +378,41 @@ function WisdomNotesPageContent() {
         padding: '12px',
         marginBottom: '12px'
       }}>
-        <div style={{
-          fontSize: '0.9rem',
-          color: '#ffffff',
-          marginBottom: '8px',
-          textAlign: 'center',
-          fontWeight: 600,
-          fontFamily: 'Press Start 2P, cursive'
-        }}>
-          초서 추가
-        </div>
-        <div style={{
-          display: 'flex',
-          gap: '8px'
-        }}>
-          <div 
-            style={{
-              flex: 1,
-              padding: '8px',
-              background: 'rgba(153,0,255,0.1)',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '0.8rem',
-              color: '#ffffff',
-              fontWeight: 600,
-              fontFamily: 'Press Start 2P, cursive',
-              textAlign: 'center',
-              transition: 'all 0.3s ease',
-              border: '2px solid rgba(153,0,255,0.3)'
-            }}
-            onClick={() => setShowAddForm(true)}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(153,0,255,0.2)';
-              e.currentTarget.style.boxShadow = '0 0 10px rgba(153,0,255,0.5)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(153,0,255,0.1)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          >
-            새 초서
-          </div>
-          <div 
-            style={{
-              flex: 1,
-              padding: '8px',
-              background: 'rgba(255,215,0,0.1)',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '0.8rem',
-              color: '#ffffff',
-              fontWeight: 600,
-              fontFamily: 'Press Start 2P, cursive',
-              textAlign: 'center',
-              transition: 'all 0.3s ease',
-              border: '2px solid rgba(255,215,0,0.3)'
-            }}
-            onClick={() => setShowAddBookForm(true)}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255,215,0,0.2)';
-              e.currentTarget.style.boxShadow = '0 0 10px rgba(255,215,0,0.5)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255,215,0,0.1)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          >
-            새 책
-          </div>
-        </div>
+        <button
+          onClick={() => setShowAddForm(true)}
+          style={{
+            width: '100%',
+            padding: '12px',
+            background: 'rgba(153,0,255,0.2)',
+            border: '2px solid rgba(153,0,255,0.5)',
+            color: '#9900ff',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            fontSize: '0.9rem',
+            fontFamily: 'Press Start 2P, cursive',
+            marginBottom: '8px'
+          }}
+        >
+          📝 새 초서 추가
+        </button>
+        <button
+          onClick={() => setShowAddBookForm(true)}
+          style={{
+            width: '100%',
+            padding: '12px',
+            background: 'rgba(255,215,0,0.2)',
+            border: '2px solid rgba(255,215,0,0.5)',
+            color: '#ffd700',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            fontSize: '0.9rem',
+            fontFamily: 'Press Start 2P, cursive'
+          }}
+        >
+          📚 새 책 추가
+        </button>
       </div>
 
       {/* 초서 목록 */}
@@ -571,15 +513,7 @@ function WisdomNotesPageContent() {
                   padding: '8px',
                   marginBottom: '6px'
                 }}>
-                  <div style={{
-                    fontSize: '0.75rem',
-                    color: '#9900ff',
-                    fontWeight: 600,
-                    marginBottom: '4px',
-                    fontFamily: 'Press Start 2P, cursive'
-                  }}>
-                    💬 인용
-                  </div>
+
                   <div style={{
                     fontSize: '0.75rem',
                     color: '#ffffff',
@@ -595,15 +529,7 @@ function WisdomNotesPageContent() {
                   borderRadius: '4px',
                   padding: '8px'
                 }}>
-                  <div style={{
-                    fontSize: '0.75rem',
-                    color: '#ffff00',
-                    fontWeight: 600,
-                    marginBottom: '4px',
-                    fontFamily: 'Press Start 2P, cursive'
-                  }}>
-                    💭 감상
-                  </div>
+
                   <div style={{
                     fontSize: '0.75rem',
                     color: '#ffffff',
@@ -667,7 +593,7 @@ function WisdomNotesPageContent() {
               marginBottom: '16px',
               textAlign: 'center'
             }}>
-              초서 추가
+              새 초서 추가
             </h2>
             
             <form onSubmit={handleSubmit}>
@@ -889,24 +815,25 @@ function WisdomNotesPageContent() {
     </div>
   );
 }
-
 export default function WisdomNotesPage() {
   return (
-    <Suspense fallback={
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: 'calc(100vh - 130px)',
-        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
-        color: '#00ffff',
-        fontSize: '1rem',
-        fontFamily: 'Press Start 2P, cursive'
-      }}>
-        로딩 중...
-      </div>
-    }>
-      <WisdomNotesPageContent />
-    </Suspense>
+    <AuthGuard>
+      <Suspense fallback={
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 'calc(100vh - 130px)',
+          background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
+          color: '#00ffff',
+          fontSize: '1rem',
+          fontFamily: 'Press Start 2P, cursive'
+        }}>
+          로딩 중...
+        </div>
+      }>
+        <WisdomNotesPageContent />
+      </Suspense>
+    </AuthGuard>
   );
 } 

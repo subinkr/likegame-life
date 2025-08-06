@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser } from './server-auth';
+import { getCurrentUserFromSupabase } from './auth';
 
 export async function requireAdmin(request: NextRequest) {
-  const user = await getCurrentUser(request);
+  const user = await getCurrentUserFromSupabase(request);
   
   if (!user) {
     return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
@@ -16,7 +16,7 @@ export async function requireAdmin(request: NextRequest) {
 }
 
 export async function requireResourceOwner(request: NextRequest, resourceUserId: string) {
-  const user = await getCurrentUser(request);
+  const user = await getCurrentUserFromSupabase(request);
   
   if (!user) {
     return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });

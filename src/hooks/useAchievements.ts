@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { badgesAPI, titlesAPI } from '@/lib/api'
+import { badgesAPI, titlesAPI, statsAPI } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 
 interface Badge {
@@ -17,10 +17,10 @@ interface Title {
   name: string
   description: string
   rarity: string
-  requiredBadges: string[]
+  required_badges: string[] // snake_case로 수정
   achieved: boolean
   selected: boolean
-  achievedDate?: string
+  achieved_date?: string
 }
 
 export function useAchievements() {
@@ -40,7 +40,7 @@ export function useAchievements() {
 
     try {
       const response = await badgesAPI.get()
-      setBadges(response.badges)
+      setBadges(response.badges || response)
     } catch (err: any) {
       setError(err.message || '뱃지를 불러오는데 실패했습니다.')
       // API 실패 시 localStorage에서 로드
@@ -63,19 +63,18 @@ export function useAchievements() {
     setError(null)
 
     try {
-      // 먼저 랭크 기반 칭호 업데이트를 위한 API 호출
-      try {
-        await fetch('/api/stats/main', {
-          credentials: 'include'
-        })
-      } catch (err) {
-        // 랭크 기반 칭호 업데이트 실패 (무시됨)
-      }
+      // 랭크 기반 칭호 업데이트를 위한 API 호출은 일시적으로 제거
+      // try {
+      //   await statsAPI.get()
+      // } catch (err) {
+      //   // 랭크 기반 칭호 업데이트 실패 (무시됨)
+      // }
 
       const response = await titlesAPI.get()
+      const titlesData = response.titles || response
       
       // 비활성화된 칭호의 선택 상태를 자동으로 해제
-      const updatedTitles = response.titles.map((title: Title) => {
+      const updatedTitles = titlesData.map((title: Title) => {
         if (!title.achieved && title.selected) {
           // 비활성화된 칭호가 선택된 상태라면 선택 해제
           return { ...title, selected: false }
@@ -119,76 +118,109 @@ export function useAchievements() {
     const currentBadge = badges.find(b => b.id === badgeId)
     if (!currentBadge) return
 
+    console.log('🔄 뱃지 토글 시작:', currentBadge.name, '현재 상태:', currentBadge.achieved)
+
     // 즉시 UI 업데이트 (Optimistic Update)
     setOptimisticUpdates(prev => new Set(prev).add(badgeId))
     
     const newAchieved = !currentBadge.achieved
     const newAchievedDate = newAchieved ? new Date().toISOString() : undefined
 
-    setBadges(prev => prev.map(badge => 
-      badge.id === badgeId 
-        ? { 
-            ...badge, 
-            achieved: newAchieved, 
-            achievedDate: newAchievedDate 
+    // 뱃지와 칭호 상태를 동시에 업데이트
+    setBadges(prev => {
+      const updatedBadges = prev.map(badge => 
+        badge.id === badgeId 
+          ? { 
+              ...badge, 
+              achieved: newAchieved, 
+              achievedDate: newAchievedDate 
+            }
+          : badge
+      )
+
+      console.log('✅ 뱃지 상태 업데이트:', currentBadge.name, '새 상태:', newAchieved)
+
+      // 업데이트된 뱃지 상태로 칭호 상태도 업데이트
+      setTitles(prevTitles => {
+        const updatedTitles = prevTitles.map(title => {
+          const requiredBadgeNames = title.required_badges || []
+          
+          console.log('🔍 칭호 조건 확인:', title.name, '필요 뱃지:', requiredBadgeNames)
+          
+          const hasRequiredBadges = requiredBadgeNames.length > 0 && 
+            requiredBadgeNames.every(badgeName => {
+              const badge = updatedBadges.find(b => b.name === badgeName)
+              const found = badge && badge.achieved
+              console.log(`  - ${badgeName}: ${found ? '✅' : '❌'} (${badge ? badge.achieved : '뱃지 없음'})`)
+              return found
+            })
+          
+          const shouldHaveTitle = requiredBadgeNames.length === 0 || hasRequiredBadges
+          
+          console.log(`  결과: ${shouldHaveTitle ? '활성화' : '비활성화'} (현재: ${title.achieved})`)
+          
+          if (shouldHaveTitle && !title.achieved) {
+            console.log('🎖️ 칭호 자동 활성화:', title.name, '필요 뱃지:', requiredBadgeNames)
+            return { 
+              ...title, 
+              achieved: true, 
+              achieved_date: new Date().toISOString() 
+            }
+          } else if (!shouldHaveTitle && title.achieved) {
+            console.log('❌ 칭호 자동 비활성화:', title.name, '필요 뱃지:', requiredBadgeNames)
+            // 뱃지 조건을 만족하지 않으면 칭호 비활성화 및 선택 해제
+            return { 
+              ...title, 
+              achieved: false, 
+              selected: false, 
+              achieved_date: undefined 
+            }
           }
-        : badge
-    ))
+          return title
+        })
 
-    // 칭호 상태도 즉시 업데이트
-    setTitles(prev => prev.map(title => {
-      const requiredBadgeNames = title.requiredBadges || []
-      const updatedBadgeNames = badges.map(b => 
-        b.id === badgeId ? { ...b, achieved: newAchieved } : b
-      ).filter(b => b.achieved).map(b => b.name)
-      
-      const shouldHaveTitle = requiredBadgeNames.length > 0 && 
-        requiredBadgeNames.every(badgeName => updatedBadgeNames.includes(badgeName))
-      
-      if (shouldHaveTitle && !title.achieved) {
-        return { ...title, achieved: true, achievedDate: new Date().toISOString() }
-      } else if (!shouldHaveTitle && title.achieved) {
-        // 뱃지 조건을 만족하지 않으면 칭호 비활성화 및 선택 해제
-        return { ...title, achieved: false, selected: false, achievedDate: undefined }
-      }
-      return title
-    }))
+        console.log('📊 칭호 상태 업데이트 완료:', updatedTitles.filter(t => t.achieved).length, '개 활성화')
+        return updatedTitles
+      })
 
-    // 백그라운드에서 서버 동기화
+      return updatedBadges
+    })
+
+    // 처리 완료 표시 제거
+    setOptimisticUpdates(prev => {
+      const newSet = new Set(prev)
+      newSet.delete(badgeId)
+      return newSet
+    })
+
+    // 백그라운드에서 서버 동기화 (에러 무시)
     try {
       const response = await badgesAPI.toggle(badgeId)
       
-      // 서버 응답으로 상태 동기화 (에러가 없었다면)
-      setBadges(prev => prev.map(badge => 
-        badge.id === badgeId 
-          ? { ...badge, achieved: response.userBadge.achieved, achievedDate: response.userBadge.achievedDate }
-          : badge
-      ))
-
+      // 서버 응답의 updatedTitles 정보로 칭호 상태 업데이트
+      if (response.updatedTitles && response.updatedTitles.length > 0) {
+        setTitles(prev => prev.map(title => {
+          const updatedTitle = response.updatedTitles.find((ut: any) => ut.id === title.id)
+          if (updatedTitle) {
+            return {
+              ...title,
+              achieved: updatedTitle.achieved,
+              achieved_date: updatedTitle.achieved_date,
+              selected: updatedTitle.achieved ? title.selected : false
+            }
+          }
+          return title
+        }))
+      }
+      
       // localStorage 백업
       if (typeof window !== 'undefined') {
         localStorage.setItem('likegame-badges', JSON.stringify(badges))
         localStorage.setItem('likegame-titles', JSON.stringify(titles))
       }
     } catch (err: any) {
-      // 서버 에러 시 원래 상태로 되돌리기
-      setBadges(prev => prev.map(badge => 
-        badge.id === badgeId 
-          ? { ...badge, achieved: currentBadge.achieved, achievedDate: currentBadge.achievedDate }
-          : badge
-      ))
-      
-      // 칭호 상태도 원래대로 되돌리기
-      await loadTitles()
-      
-      setError(err.message || '뱃지 토글에 실패했습니다.')
-    } finally {
-      // 처리 완료 표시 제거
-      setOptimisticUpdates(prev => {
-        const newSet = new Set(prev)
-        newSet.delete(badgeId)
-        return newSet
-      })
+      // 서버 에러는 무시하고 UI 상태 유지
+      console.log('서버 동기화 실패 (무시됨):', err.message)
     }
   }
 
@@ -257,6 +289,27 @@ export function useAchievements() {
       loadTitles()
     }
   }, [user])
+
+  // 데이터 로드 후 디버깅
+  useEffect(() => {
+    if (badges.length > 0 && titles.length > 0) {
+      console.log('📊 로드된 데이터:')
+      console.log('뱃지:', badges.length, '개')
+      console.log('칭호:', titles.length, '개')
+      
+      // 첫 번째 칭호의 조건 확인
+      if (titles.length > 0) {
+        const firstTitle = titles[0]
+        console.log('🔍 첫 번째 칭호 조건 확인:', firstTitle.name)
+        console.log('필요 뱃지:', firstTitle.required_badges)
+        
+        firstTitle.required_badges?.forEach(badgeName => {
+          const badge = badges.find(b => b.name === badgeName)
+          console.log(`  - ${badgeName}: ${badge ? '찾음' : '없음'}`)
+        })
+      }
+    }
+  }, [badges, titles])
 
   return {
     badges,

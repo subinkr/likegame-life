@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseAdmin } from '@/lib/supabase';
 import { requireAdmin } from '@/lib/admin-auth';
 
 export async function GET(request: NextRequest) {
@@ -7,9 +7,15 @@ export async function GET(request: NextRequest) {
     const authError = await requireAdmin(request);
     if (authError) return authError;
 
-    const titles = await prisma.title.findMany({
-      orderBy: { name: 'asc' }
-    });
+    const { data: titles, error } = await supabaseAdmin
+      .from('titles')
+      .select('*')
+      .order('name', { ascending: true });
+
+    if (error) {
+      console.error('칭호 조회 에러:', error);
+      return NextResponse.json({ error: '칭호를 불러오는데 실패했습니다.' }, { status: 500 });
+    }
 
     return NextResponse.json({ titles });
   } catch (error) {
@@ -30,14 +36,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '필수 필드가 누락되었습니다.' }, { status: 400 });
     }
 
-    const title = await prisma.title.create({
-      data: {
+    const { data: title, error } = await supabaseAdmin
+      .from('titles')
+      .insert({
         name,
         description,
         rarity,
-        requiredBadges: requiredBadges || []
-      }
-    });
+        required_badges: requiredBadges || []
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('칭호 생성 에러:', error);
+      return NextResponse.json({ error: '칭호 생성에 실패했습니다.' }, { status: 500 });
+    }
 
     return NextResponse.json({ title });
   } catch (error) {

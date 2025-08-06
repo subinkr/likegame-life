@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth';
+import { supabaseAdmin } from '@/lib/supabase';
+import { getCurrentUserFromSupabase } from '@/lib/auth';
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = request.cookies.get('likegame-token')?.value;
-    if (!token) {
-      return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
-    }
-
-    const user = await verifyToken(token);
+    const user = await getCurrentUserFromSupabase(request);
     if (!user) {
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
@@ -26,15 +21,22 @@ export async function PUT(
       return NextResponse.json({ error: '필수 필드가 누락되었습니다.' }, { status: 400 });
     }
 
-    const title = await prisma.title.update({
-      where: { id: id },
-      data: {
+    const { data: title, error: titleError } = await supabaseAdmin
+      .from('titles')
+      .update({
         name,
         description,
         rarity,
-        requiredBadges: requiredBadges || []
-      }
-    });
+        required_badges: requiredBadges || []
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (titleError) {
+      console.error('칭호 수정 에러:', titleError);
+      return NextResponse.json({ error: '칭호 수정에 실패했습니다.' }, { status: 500 });
+    }
 
     return NextResponse.json({ title });
   } catch (error) {
@@ -48,12 +50,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = request.cookies.get('likegame-token')?.value;
-    if (!token) {
-      return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
-    }
-
-    const user = await verifyToken(token);
+    const user = await getCurrentUserFromSupabase(request);
     if (!user) {
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
@@ -61,14 +58,25 @@ export async function DELETE(
     const { id } = await params;
 
     // 먼저 관련된 UserTitle 레코드들을 삭제
-    await prisma.userTitle.deleteMany({
-      where: { titleId: id }
-    });
+    const { error: userTitleDeleteError } = await supabaseAdmin
+      .from('user_titles')
+      .delete()
+      .eq('title_id', id);
+
+    if (userTitleDeleteError) {
+      console.error('사용자 칭호 삭제 에러:', userTitleDeleteError);
+    }
 
     // 그 다음 Title을 삭제
-    await prisma.title.delete({
-      where: { id: id }
-    });
+    const { error: titleDeleteError } = await supabaseAdmin
+      .from('titles')
+      .delete()
+      .eq('id', id);
+
+    if (titleDeleteError) {
+      console.error('칭호 삭제 에러:', titleDeleteError);
+      return NextResponse.json({ error: '칭호 삭제에 실패했습니다.' }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
