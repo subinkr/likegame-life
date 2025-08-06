@@ -59,7 +59,6 @@ export async function PUT(
       .single();
 
     if (skillUpdateError) {
-      console.error('스킬 수정 에러:', skillUpdateError);
       return NextResponse.json(
         { error: '서버 오류가 발생했습니다.' },
         { status: 500 }
@@ -80,7 +79,6 @@ export async function PUT(
     })
 
   } catch (error) {
-    console.error('스킬 수정 에러:', error)
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }
@@ -126,7 +124,6 @@ export async function DELETE(
       .eq('id', skillId);
 
     if (deleteError) {
-      console.error('스킬 삭제 에러:', deleteError);
       return NextResponse.json(
         { error: '서버 오류가 발생했습니다.' },
         { status: 500 }
@@ -138,7 +135,6 @@ export async function DELETE(
     })
 
   } catch (error) {
-    console.error('스킬 삭제 에러:', error)
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }

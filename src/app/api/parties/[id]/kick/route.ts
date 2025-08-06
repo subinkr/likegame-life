@@ -40,11 +40,8 @@ export async function POST(
       .single();
 
     if (partyError || !party) {
-      console.error('파티 조회 에러:', partyError);
       return NextResponse.json({ error: '파티를 찾을 수 없습니다' }, { status: 404 });
     }
-
-    console.log('파티 정보:', { partyId, members: party.members, memberId });
 
     // 파티장만 추방할 수 있음
     if (party.leader_id !== user.id) {
@@ -63,11 +60,6 @@ export async function POST(
     });
     
     if (!member) {
-      console.error('멤버를 찾을 수 없음:', { 
-        memberId, 
-        members: party.members,
-        memberIds: party.members?.map((m: any) => m.user?.id || m.user_id)
-      });
       return NextResponse.json({ error: '추방할 멤버를 찾을 수 없습니다' }, { status: 404 });
     }
 
@@ -79,7 +71,6 @@ export async function POST(
       .eq('user_id', memberId);
 
     if (memberDeleteError) {
-      console.error('멤버 추방 에러:', memberDeleteError);
       return NextResponse.json({ error: '멤버 추방에 실패했습니다' }, { status: 500 });
     }
 
@@ -91,7 +82,6 @@ export async function POST(
       .single();
 
     if (chatRoomError) {
-      console.error('채팅방 조회 에러:', chatRoomError);
       return NextResponse.json({ error: '멤버 추방에 실패했습니다' }, { status: 500 });
     }
 
@@ -104,7 +94,7 @@ export async function POST(
         .eq('user_id', memberId);
 
       if (chatParticipantError) {
-        console.error('채팅방 참가자 삭제 에러:', chatParticipantError);
+        // 채팅방 참가자 삭제 에러 무시
       }
 
       // 시스템 메시지 생성 (멤버가 추방됨)
@@ -117,13 +107,12 @@ export async function POST(
         });
 
       if (messageError) {
-        console.error('시스템 메시지 생성 에러:', messageError);
+        // 시스템 메시지 생성 에러 무시
       }
     }
 
     return NextResponse.json({ message: '멤버가 추방되었습니다' });
   } catch (error) {
-    console.error('멤버 추방 실패:', error);
     return NextResponse.json({ error: '멤버 추방에 실패했습니다' }, { status: 500 });
   }
 } 

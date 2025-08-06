@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAchievements } from '@/hooks/useAchievements';
 import Link from 'next/link';
@@ -31,8 +31,7 @@ function AchievementsPageContent() {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const { badges, titles, loading, error: achievementsError, toggleBadge, selectTitle, loadBadges, loadTitles, optimisticUpdates } = useAchievements();
+  const { badges, titles, loading, toggleBadge, selectTitle, optimisticUpdates } = useAchievements();
   
   // URL 파라미터에서 탭 상태 읽기
   const tabParam = searchParams.get('tab');

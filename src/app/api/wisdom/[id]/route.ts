@@ -33,13 +33,11 @@ export async function DELETE(
       .eq('id', id);
 
     if (deleteError) {
-      console.error('초서 삭제 에러:', deleteError);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 
     return NextResponse.json({ message: 'Wisdom note deleted successfully' });
   } catch (error) {
-    console.error('Error deleting wisdom note:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 } 

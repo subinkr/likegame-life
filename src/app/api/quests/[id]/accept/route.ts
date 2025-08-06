@@ -73,7 +73,6 @@ export async function POST(
       .single();
 
     if (questUpdateError) {
-      console.error('퀘스트 업데이트 에러:', questUpdateError);
       return NextResponse.json(
         { error: '서버 오류가 발생했습니다.' },
         { status: 500 }
@@ -88,7 +87,6 @@ export async function POST(
       .single();
 
     if (chatRoomError || !chatRoom) {
-      console.error('퀘스트 채팅방을 찾을 수 없습니다:', chatRoomError);
       return NextResponse.json(
         { error: '퀘스트 채팅방을 찾을 수 없습니다.' },
         { status: 500 }
@@ -104,7 +102,6 @@ export async function POST(
       });
 
     if (participantError) {
-      console.error('채팅방 참가자 추가 에러:', participantError);
       return NextResponse.json(
         { error: '서버 오류가 발생했습니다.' },
         { status: 500 }
@@ -121,7 +118,7 @@ export async function POST(
       });
 
     if (messageError) {
-      console.error('시스템 메시지 생성 에러:', messageError);
+      // 시스템 메시지 생성 에러 무시
     }
 
     return NextResponse.json({
@@ -130,7 +127,6 @@ export async function POST(
     })
 
   } catch (error) {
-    console.error('퀘스트 수락 에러:', error)
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }

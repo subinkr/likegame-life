@@ -13,13 +13,11 @@ export async function GET(request: NextRequest) {
       .order('name', { ascending: true });
 
     if (error) {
-      console.error('칭호 조회 에러:', error);
       return NextResponse.json({ error: '칭호를 불러오는데 실패했습니다.' }, { status: 500 });
     }
 
     return NextResponse.json({ titles });
   } catch (error) {
-    console.error('Error fetching titles:', error);
     return NextResponse.json({ error: '칭호를 불러오는데 실패했습니다.' }, { status: 500 });
   }
 }
@@ -48,13 +46,11 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('칭호 생성 에러:', error);
       return NextResponse.json({ error: '칭호 생성에 실패했습니다.' }, { status: 500 });
     }
 
     return NextResponse.json({ title });
   } catch (error) {
-    console.error('Error creating title:', error);
     return NextResponse.json({ error: '칭호 생성에 실패했습니다.' }, { status: 500 });
   }
 } 

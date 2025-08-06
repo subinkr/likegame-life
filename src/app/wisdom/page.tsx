@@ -82,7 +82,7 @@ function WisdomNotesPageContent() {
       setHasNextPage(response.pagination?.hasNextPage || false);
       setCurrentPage(page);
     } catch (error) {
-      console.error('Error fetching wisdom notes:', error);
+      // Error fetching wisdom notes
     } finally {
       setIsLoading(false);
       setIsLoadingMore(false);
@@ -94,7 +94,7 @@ function WisdomNotesPageContent() {
       const response = await booksAPI.get();
       setBooks(response || []);
     } catch (error) {
-      console.error('Error fetching books:', error);
+      // Error fetching books
     }
   };
 
@@ -111,7 +111,7 @@ function WisdomNotesPageContent() {
       setShowAddForm(false);
       fetchWisdomNotes();
     } catch (error) {
-      console.error('Error creating wisdom note:', error);
+      // Error creating wisdom note
     }
   };
 
@@ -132,7 +132,7 @@ function WisdomNotesPageContent() {
       await wisdomAPI.delete(noteId);
       fetchWisdomNotes();
     } catch (error) {
-      console.error('Error deleting wisdom note:', error);
+      // Error deleting wisdom note
     }
   };
 
@@ -154,7 +154,7 @@ function WisdomNotesPageContent() {
       setShowAddBookForm(false);
       fetchBooks();
     } catch (error) {
-      console.error('Error creating book:', error);
+      // Error creating book
     }
   };
 

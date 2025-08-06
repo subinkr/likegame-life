@@ -6,10 +6,7 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'dummy-servi
 
 // 환경 변수가 설정되지 않은 경우 경고
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-  console.warn('⚠️ Supabase 환경 변수가 설정되지 않았습니다.')
-  console.warn('실시간 채팅 기능을 사용하려면 .env.local 파일에 환경 변수를 설정해주세요.')
-  console.warn('NEXT_PUBLIC_SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? '✅ 설정됨' : '❌ 누락')
-  console.warn('NEXT_PUBLIC_SUPABASE_ANON_KEY:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '✅ 설정됨' : '❌ 누락')
+  // Supabase 환경 변수가 설정되지 않았습니다.
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -36,7 +33,6 @@ export class RealtimeManager {
   subscribeToChatRoom(roomId: string, onMessage: (message: any) => void, onPresenceChange?: (presence: any) => void) {
     // 환경 변수가 설정되지 않은 경우 더미 함수 실행
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-      console.warn('⚠️ 환경 변수가 설정되지 않아 실시간 기능이 비활성화되었습니다.')
       return
     }
 
@@ -58,7 +54,6 @@ export class RealtimeManager {
           filter: `chat_room_id=eq.${roomId}`
         },
         (payload) => {
-          console.log('💬 Realtime 메시지 수신:', payload)
           onMessage(payload.new)
         }
       )
@@ -68,7 +63,7 @@ export class RealtimeManager {
           event: 'sync'
         },
         () => {
-          console.log('👥 Presence 동기화')
+          // Presence 동기화
         }
       )
       .on(
@@ -77,7 +72,6 @@ export class RealtimeManager {
           event: 'join'
         },
         ({ key, newPresences }) => {
-          console.log('👥 사용자 참가:', key, newPresences)
           onPresenceChange?.({ type: 'join', key, presences: newPresences })
         }
       )
@@ -87,14 +81,13 @@ export class RealtimeManager {
           event: 'leave'
         },
         ({ key, leftPresences }) => {
-          console.log('👥 사용자 퇴장:', key, leftPresences)
           onPresenceChange?.({ type: 'leave', key, presences: leftPresences })
         }
       )
 
     // 채널 구독
     channel.subscribe((status) => {
-      console.log('📡 Realtime 채널 상태:', status)
+      // Realtime 채널 상태
     })
 
     this.channels.set(channelKey, channel)
@@ -109,7 +102,6 @@ export class RealtimeManager {
     if (channel) {
       supabase.removeChannel(channel)
       this.channels.delete(channelKey)
-      console.log('📡 채팅방 구독 해제:', roomId)
     }
   }
 
@@ -124,7 +116,6 @@ export class RealtimeManager {
         user_nickname: userData.nickname,
         online_at: new Date().toISOString()
       })
-      console.log('👤 Presence 설정:', presence)
     }
   }
 
@@ -132,7 +123,6 @@ export class RealtimeManager {
   unsubscribeAll() {
     for (const [key, channel] of this.channels.entries()) {
       supabase.removeChannel(channel)
-      console.log('📡 채널 구독 해제:', key)
     }
     this.channels.clear()
   }

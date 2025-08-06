@@ -1,10 +1,8 @@
 'use client';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function ShopPage() {
   const { user } = useAuth();
-  const router = useRouter();
 
   if (!user) {
     return (

@@ -26,7 +26,6 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (error && error.code !== 'PGRST116') { // PGRST116는 결과가 없을 때
-      console.error('활성 퀘스트 조회 에러:', error);
       return NextResponse.json(
         { error: '퀘스트 정보를 불러오는데 실패했습니다.' },
         { status: 500 }
@@ -47,7 +46,6 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('활성 퀘스트 조회 실패:', error);
     return NextResponse.json(
       { error: '퀘스트 정보를 불러오는데 실패했습니다.' },
       { status: 500 }

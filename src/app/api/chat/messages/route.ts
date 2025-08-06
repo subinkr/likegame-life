@@ -36,7 +36,6 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (userError) {
-      console.error('사용자 정보 조회 실패:', userError);
       return NextResponse.json({ error: '사용자 정보를 찾을 수 없습니다.' }, { status: 404 });
     }
 
@@ -53,7 +52,6 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (messageError) {
-      console.error('메시지 저장 실패:', messageError);
       return NextResponse.json({ error: '메시지 저장에 실패했습니다.' }, { status: 500 });
     }
 
@@ -79,7 +77,6 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('채팅 메시지 전송 오류:', error);
     return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
   }
 } 

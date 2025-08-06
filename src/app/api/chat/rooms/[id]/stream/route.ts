@@ -1,24 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUserFromSupabase } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase';
-
-// SSE 스트림을 위한 메시지 저장소
-const messageStreams = new Map<string, Set<ReadableStreamDefaultController>>();
-
-// 메시지 브로드캐스트 함수
-export function broadcastMessage(roomId: string, message: any) {
-  const controllers = messageStreams.get(roomId);
-  if (controllers) {
-    const data = `data: ${JSON.stringify(message)}\n\n`;
-    controllers.forEach(controller => {
-      try {
-        controller.enqueue(new TextEncoder().encode(data));
-      } catch (error) {
-        console.error('SSE 전송 실패:', error);
-      }
-    });
-  }
-}
+import { addStreamController, removeStreamController } from '@/lib/chat-utils';
 
 export async function GET(
   request: NextRequest,
@@ -70,20 +53,11 @@ export async function GET(
         controller.enqueue(new TextEncoder().encode('data: {"type": "connected"}\n\n'));
 
         // 스트림에 컨트롤러 추가
-        if (!messageStreams.has(id)) {
-          messageStreams.set(id, new Set());
-        }
-        messageStreams.get(id)!.add(controller);
+        addStreamController(id, controller);
 
         // 연결 해제 시 정리
         request.signal.addEventListener('abort', () => {
-          const controllers = messageStreams.get(id);
-          if (controllers) {
-            controllers.delete(controller);
-            if (controllers.size === 0) {
-              messageStreams.delete(id);
-            }
-          }
+          removeStreamController(id, controller);
         });
       }
     });
@@ -98,7 +72,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('SSE 스트림 생성 실패:', error);
+    // SSE 스트림 생성 실패 무시
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }

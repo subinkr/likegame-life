@@ -370,4 +370,129 @@ SELECT
   s.created_at,
   s.updated_at
 FROM skills s
-LEFT JOIN skills p ON s.parent_skill_id = p.id; 
+LEFT JOIN skills p ON s.parent_skill_id = p.id;
+
+-- 22. 실시간 채팅 기능
+
+-- 시스템 메시지 자동 생성 함수
+CREATE OR REPLACE FUNCTION create_system_message()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- 사용자가 채팅방에 참가할 때 시스템 메시지 생성
+  IF TG_OP = 'INSERT' THEN
+    INSERT INTO chat_messages (chat_room_id, user_id, content, user_nickname, created_at)
+    VALUES (
+      NEW.chat_room_id,
+      NEW.user_id,
+      'SYSTEM_JOIN',
+      (SELECT nickname FROM users WHERE id = NEW.user_id),
+      NOW()
+    );
+  END IF;
+  
+  -- 사용자가 채팅방에서 나갈 때 시스템 메시지 생성
+  IF TG_OP = 'DELETE' THEN
+    INSERT INTO chat_messages (chat_room_id, user_id, content, user_nickname, created_at)
+    VALUES (
+      OLD.chat_room_id,
+      OLD.user_id,
+      'SYSTEM_LEAVE',
+      (SELECT nickname FROM users WHERE id = OLD.user_id),
+      NOW()
+    );
+  END IF;
+  
+  RETURN COALESCE(NEW, OLD);
+END;
+$$ LANGUAGE plpgsql;
+
+-- 시스템 메시지 트리거
+CREATE TRIGGER trigger_create_system_message
+  AFTER INSERT OR DELETE ON chat_room_participants
+  FOR EACH ROW
+  EXECUTE FUNCTION create_system_message();
+
+-- 브로드캐스트 함수 (실시간 채팅)
+CREATE OR REPLACE FUNCTION public.broadcast_chat_message()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- 새 메시지가 삽입될 때 채팅방의 모든 참가자에게 브로드캐스트
+  PERFORM net.http_post(
+    url := 'https://ahjlfxdrohvdkiznfyir.supabase.co/realtime/v1/broadcast',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', 'Bearer ' || current_setting('request.header.apikey')
+    ),
+    body := jsonb_build_object(
+      'channel', 'chat_room_' || NEW.chat_room_id,
+      'event', 'new_message',
+      'payload', jsonb_build_object(
+        'id', NEW.id,
+        'content', NEW.content,
+        'user_nickname', (SELECT nickname FROM users WHERE id = NEW.user_id),
+        'created_at', NEW.created_at,
+        'chat_room_id', NEW.chat_room_id
+      )
+    )
+  );
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 브로드캐스트 트리거
+CREATE TRIGGER broadcast_chat_message_trigger
+  AFTER INSERT ON chat_messages
+  FOR EACH ROW
+  EXECUTE FUNCTION public.broadcast_chat_message();
+
+-- 채팅방 참가자 목록 조회 함수
+CREATE OR REPLACE FUNCTION get_chat_room_participants(room_id UUID)
+RETURNS TABLE (
+  user_id UUID,
+  nickname TEXT,
+  joined_at TIMESTAMP WITH TIME ZONE
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    crp.user_id,
+    u.nickname,
+    crp.created_at as joined_at
+  FROM chat_room_participants crp
+  JOIN users u ON crp.user_id = u.id
+  WHERE crp.chat_room_id = room_id
+  ORDER BY crp.created_at;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 채팅방 목록 조회 뷰
+CREATE OR REPLACE VIEW chat_rooms_with_participants AS
+SELECT 
+  cr.id,
+  cr.name,
+  cr.type,
+  cr.created_at,
+  cr.updated_at,
+  COUNT(crp.user_id) as participant_count,
+  ARRAY_AGG(
+    JSON_BUILD_OBJECT(
+      'id', u.id,
+      'nickname', u.nickname
+    )
+  ) FILTER (WHERE u.id IS NOT NULL) as participants
+FROM chat_rooms cr
+LEFT JOIN chat_room_participants crp ON cr.id = crp.chat_room_id
+LEFT JOIN users u ON crp.user_id = u.id
+GROUP BY cr.id, cr.name, cr.type, cr.created_at, cr.updated_at;
+
+-- 23. Realtime 활성화
+-- Supabase Dashboard에서 다음 설정을 활성화하세요:
+-- 1. Database > Replication > Enable realtime for chat_messages table
+-- 2. Database > Replication > Enable realtime for chat_rooms table
+-- 3. Database > Replication > Enable realtime for chat_room_participants table
+
+-- Replication 활성화 (선택사항 - Supabase 대시보드에서 실행)
+-- ALTER PUBLICATION supabase_realtime ADD TABLE chat_messages;
+-- ALTER PUBLICATION supabase_realtime ADD TABLE chat_rooms;
+-- ALTER PUBLICATION supabase_realtime ADD TABLE chat_room_participants; 

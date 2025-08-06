@@ -55,7 +55,6 @@ export async function PUT(
       .single()
 
     if (updateError) {
-      console.error('뱃지 업데이트 에러:', updateError)
       return NextResponse.json(
         { error: '서버 오류가 발생했습니다.' },
         { status: 500 }
@@ -68,7 +67,6 @@ export async function PUT(
     })
 
   } catch (error) {
-    console.error('뱃지 수정 에러:', error)
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }
@@ -113,7 +111,6 @@ export async function DELETE(
       .eq('id', id)
 
     if (deleteError) {
-      console.error('뱃지 삭제 에러:', deleteError)
       return NextResponse.json(
         { error: '서버 오류가 발생했습니다.' },
         { status: 500 }
@@ -125,7 +122,6 @@ export async function DELETE(
     })
 
   } catch (error) {
-    console.error('뱃지 삭제 에러:', error)
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }
@@ -187,7 +183,6 @@ export async function POST(
         .single()
 
       if (updateError) {
-        console.error('뱃지 업데이트 에러:', updateError)
         return NextResponse.json(
           { error: '서버 오류가 발생했습니다.' },
           { status: 500 }
@@ -209,7 +204,6 @@ export async function POST(
         .single()
 
       if (createError) {
-        console.error('뱃지 생성 에러:', createError)
         return NextResponse.json(
           { error: '서버 오류가 발생했습니다.' },
           { status: 500 }
@@ -356,7 +350,6 @@ export async function POST(
     })
 
   } catch (error) {
-    console.error('뱃지 토글 에러:', error)
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }

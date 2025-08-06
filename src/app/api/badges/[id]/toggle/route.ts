@@ -58,7 +58,6 @@ export async function POST(
         .single()
 
       if (updateError) {
-        console.error('뱃지 업데이트 에러:', updateError)
         return NextResponse.json(
           { error: '서버 오류가 발생했습니다.' },
           { status: 500 }
@@ -82,7 +81,6 @@ export async function POST(
         .single()
 
       if (createError) {
-        console.error('뱃지 생성 에러:', createError)
         return NextResponse.json(
           { error: '서버 오류가 발생했습니다.' },
           { status: 500 }
@@ -102,7 +100,6 @@ export async function POST(
       .eq('achieved', true)
 
     if (userBadgesError) {
-      console.error('사용자 뱃지 조회 에러:', userBadgesError)
       return NextResponse.json(
         { error: '서버 오류가 발생했습니다.' },
         { status: 500 }
@@ -117,7 +114,6 @@ export async function POST(
       .select('*')
 
     if (titlesError) {
-      console.error('칭호 조회 에러:', titlesError)
       return NextResponse.json(
         { error: '서버 오류가 발생했습니다.' },
         { status: 500 }
@@ -150,7 +146,7 @@ export async function POST(
           })
 
         if (insertError) {
-          console.error('칭호 생성 에러:', insertError)
+          // 칭호 생성 에러 무시
         }
       } else if (!shouldHaveTitle && existingUserTitle) {
         // 뱃지 조건을 만족하지 않으면 칭호 비활성화 및 선택 해제
@@ -165,7 +161,7 @@ export async function POST(
           .eq('title_id', title.id)
 
         if (updateError) {
-          console.error('칭호 업데이트 에러:', updateError)
+          // 칭호 업데이트 에러 무시
         }
       }
     }
@@ -176,7 +172,6 @@ export async function POST(
     })
 
   } catch (error) {
-    console.error('뱃지 토글 에러:', error)
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }

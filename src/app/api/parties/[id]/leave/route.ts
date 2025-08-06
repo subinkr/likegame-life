@@ -52,7 +52,6 @@ export async function POST(
       .eq('user_id', user.id);
 
     if (memberDeleteError) {
-      console.error('파티 멤버 삭제 에러:', memberDeleteError);
       return NextResponse.json({ error: '파티 나가기에 실패했습니다' }, { status: 500 });
     }
 
@@ -67,7 +66,6 @@ export async function POST(
       .single();
 
     if (chatRoomError) {
-      console.error('채팅방 조회 에러:', chatRoomError);
       return NextResponse.json({ error: '파티 나가기에 실패했습니다' }, { status: 500 });
     }
 
@@ -80,10 +78,7 @@ export async function POST(
         .eq('user_id', user.id);
 
       if (chatParticipantError) {
-        console.error('채팅방 참가자 삭제 에러:', chatParticipantError);
         // 채팅방 참가자 삭제 실패해도 파티 나가기는 성공으로 처리
-      } else {
-        console.log('✅ 채팅방 참가자 삭제 성공:', user.id);
       }
 
       // 시스템 메시지 생성 (사용자가 나감)
@@ -96,7 +91,7 @@ export async function POST(
         });
 
       if (messageError) {
-        console.error('시스템 메시지 생성 에러:', messageError);
+        // 시스템 메시지 생성 에러
       }
     }
 
@@ -106,7 +101,6 @@ export async function POST(
     });
 
   } catch (error) {
-    console.error('파티 나가기 실패:', error);
     return NextResponse.json({ error: '파티 나가기에 실패했습니다' }, { status: 500 });
   }
 } 

@@ -33,7 +33,7 @@ function AgilityPageContent() {
       const data = await agilityAPI.get();
       setRecords(data);
     } catch (error) {
-      console.error('Error fetching agility records:', error);
+      // Error fetching agility records
     } finally {
       setIsLoading(false);
     }
@@ -47,7 +47,7 @@ function AgilityPageContent() {
       setShowAddForm(false);
       fetchAgilityRecords();
     } catch (error) {
-      console.error('Error creating agility record:', error);
+      // Error creating agility record
     }
   };
 
@@ -60,7 +60,6 @@ function AgilityPageContent() {
       await agilityAPI.delete(recordId);
       fetchAgilityRecords();
     } catch (error) {
-      console.error('Error deleting agility record:', error);
       alert('기록 삭제 중 오류가 발생했습니다.');
     }
   };

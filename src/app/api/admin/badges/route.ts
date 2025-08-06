@@ -13,7 +13,6 @@ export async function GET(request: NextRequest) {
       .order('name', { ascending: true });
 
     if (error) {
-      console.error('뱃지 조회 에러:', error);
       return NextResponse.json({ error: '업적을 불러오는데 실패했습니다.' }, { status: 500 });
     }
 
@@ -47,7 +46,6 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('뱃지 생성 에러:', error);
       return NextResponse.json({ error: '업적 생성에 실패했습니다.' }, { status: 500 });
     }
 

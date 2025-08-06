@@ -26,7 +26,7 @@ export async function GET(
       .single();
 
     if (error) {
-      console.error('채팅방 조회 에러:', error);
+      // 채팅방 조회 에러 무시
       return NextResponse.json(
         { error: '채팅방을 찾을 수 없습니다.' },
         { status: 404 }
@@ -93,7 +93,7 @@ export async function GET(
 
     return NextResponse.json(chatRoom);
   } catch (error) {
-    console.error('채팅방 조회 실패:', error);
+    // 채팅방 조회 실패 무시
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }

@@ -39,7 +39,6 @@ function StrengthPageContent() {
       setRecords(data.records || []);
     } catch (error) {
       // 힘 기록 로드 실패
-      console.error('Strength records fetch error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -54,7 +53,6 @@ function StrengthPageContent() {
       fetchStrengthRecords();
     } catch (error) {
       // 힘 기록 생성 실패
-      console.error('Strength record creation error:', error);
     }
   };
 
@@ -78,7 +76,6 @@ function StrengthPageContent() {
       }
     } catch (error) {
       // 힘 기록 삭제 실패
-      console.error('Strength record deletion error:', error);
       alert('기록 삭제 중 오류가 발생했습니다.');
     }
   };

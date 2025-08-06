@@ -34,13 +34,11 @@ export async function PUT(
       .single();
 
     if (error) {
-      console.error('뱃지 업데이트 에러:', error);
       return NextResponse.json({ error: '업적 수정에 실패했습니다.' }, { status: 500 });
     }
 
     return NextResponse.json({ badge });
   } catch (error) {
-    console.error('Error updating badge:', error);
     return NextResponse.json({ error: '업적 수정에 실패했습니다.' }, { status: 500 });
   }
 }
@@ -64,7 +62,6 @@ export async function DELETE(
       .eq('badge_id', id);
 
     if (deleteUserBadgesError) {
-      console.error('사용자 뱃지 삭제 에러:', deleteUserBadgesError);
       return NextResponse.json({ error: '업적 삭제에 실패했습니다.' }, { status: 500 });
     }
 
@@ -75,13 +72,11 @@ export async function DELETE(
       .eq('id', id);
 
     if (deleteBadgeError) {
-      console.error('뱃지 삭제 에러:', deleteBadgeError);
       return NextResponse.json({ error: '업적 삭제에 실패했습니다.' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting badge:', error);
     return NextResponse.json({ error: '업적 삭제에 실패했습니다.' }, { status: 500 });
   }
 } 

@@ -42,7 +42,6 @@ export async function POST(
       .eq('achieved', true);
 
     if (userBadgesError) {
-      console.error('사용자 뱃지 조회 에러:', userBadgesError);
       return NextResponse.json(
         { error: '서버 오류가 발생했습니다.' },
         { status: 500 }
@@ -70,7 +69,7 @@ export async function POST(
       .eq('selected', true);
 
     if (deselectError) {
-      console.error('기존 칭호 해제 에러:', deselectError);
+      // 기존 칭호 해제 에러 무시
     }
 
     // 기존 사용자 칭호 상태 확인
@@ -101,7 +100,6 @@ export async function POST(
         .single();
 
       if (updateError) {
-        console.error('칭호 업데이트 에러:', updateError);
         return NextResponse.json(
           { error: '서버 오류가 발생했습니다.' },
           { status: 500 }
@@ -126,7 +124,6 @@ export async function POST(
         .single();
 
       if (createError) {
-        console.error('칭호 생성 에러:', createError);
         return NextResponse.json(
           { error: '서버 오류가 발생했습니다.' },
           { status: 500 }
@@ -141,7 +138,6 @@ export async function POST(
     })
 
   } catch (error) {
-    console.error('칭호 선택 에러:', error)
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }

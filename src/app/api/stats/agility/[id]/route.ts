@@ -38,13 +38,11 @@ export async function DELETE(
       .eq('id', recordId);
 
     if (deleteError) {
-      console.error('Error deleting agility record:', deleteError);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 
     return NextResponse.json({ message: 'Record deleted successfully' });
   } catch (error) {
-    console.error('Error deleting agility record:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

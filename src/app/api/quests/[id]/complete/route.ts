@@ -54,7 +54,6 @@ export async function POST(
       .eq('id', questId);
 
     if (questUpdateError) {
-      console.error('퀘스트 완료 에러:', questUpdateError);
       return NextResponse.json({ error: '퀘스트 완료에 실패했습니다' }, { status: 500 });
     }
 
@@ -66,12 +65,6 @@ export async function POST(
       }
     });
   } catch (error) {
-    console.error('퀘스트 완료 실패:', error);
-    console.error('에러 상세:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      userId: user?.id
-    });
     return NextResponse.json({ error: '퀘스트 완료에 실패했습니다' }, { status: 500 });
   }
 } 

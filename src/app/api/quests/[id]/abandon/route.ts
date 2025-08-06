@@ -56,7 +56,6 @@ export async function POST(
       .eq('id', questId);
 
     if (questUpdateError) {
-      console.error('퀘스트 포기 에러:', questUpdateError);
       return NextResponse.json(
         { error: '서버 오류가 발생했습니다.' },
         { status: 500 }
@@ -71,7 +70,7 @@ export async function POST(
       .single();
 
     if (chatRoomError) {
-      console.error('퀘스트 채팅방 조회 에러:', chatRoomError);
+      // 퀘스트 채팅방 조회 에러 무시
     } else if (questChatRoom) {
       // 채팅방에서 참가자 제거
       const { error: participantError } = await supabaseAdmin
@@ -81,9 +80,7 @@ export async function POST(
         .eq('user_id', user.id);
 
       if (participantError) {
-        console.error('채팅방 참가자 제거 에러:', participantError);
-      } else {
-        console.log('✅ 퀘스트 채팅방에서 참가자 제거 성공:', user.id);
+        // 채팅방 참가자 제거 에러 무시
       }
 
       // 시스템 메시지 생성 (사용자가 포기)
@@ -96,7 +93,7 @@ export async function POST(
         });
 
       if (messageError) {
-        console.error('시스템 메시지 생성 에러:', messageError);
+        // 시스템 메시지 생성 에러 무시
       }
     }
 
@@ -106,7 +103,6 @@ export async function POST(
     })
 
   } catch (error) {
-    console.error('퀘스트 포기 에러:', error)
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }

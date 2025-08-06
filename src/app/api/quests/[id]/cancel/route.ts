@@ -50,7 +50,6 @@ export async function POST(
       .eq('id', questId);
 
     if (questUpdateError) {
-      console.error('퀘스트 취소 에러:', questUpdateError);
       return NextResponse.json({ error: '퀘스트 취소에 실패했습니다' }, { status: 500 });
     }
 
@@ -62,7 +61,7 @@ export async function POST(
       .single();
 
     if (chatRoomError) {
-      console.error('퀘스트 채팅방 조회 에러:', chatRoomError);
+      // 퀘스트 채팅방 조회 에러 무시
     } else if (questChatRoom) {
       // 채팅방 메시지 삭제
       const { error: messagesError } = await supabaseAdmin
@@ -71,7 +70,7 @@ export async function POST(
         .eq('chat_room_id', questChatRoom.id);
 
       if (messagesError) {
-        console.error('채팅방 메시지 삭제 에러:', messagesError);
+        // 채팅방 메시지 삭제 에러 무시
       }
 
       // 채팅방 참가자 삭제
@@ -81,7 +80,7 @@ export async function POST(
         .eq('chat_room_id', questChatRoom.id);
 
       if (participantsError) {
-        console.error('채팅방 참가자 삭제 에러:', participantsError);
+        // 채팅방 참가자 삭제 에러 무시
       }
 
       // 채팅방 삭제
@@ -91,9 +90,7 @@ export async function POST(
         .eq('id', questChatRoom.id);
 
       if (chatRoomDeleteError) {
-        console.error('채팅방 삭제 에러:', chatRoomDeleteError);
-      } else {
-        console.log('✅ 퀘스트 채팅방 삭제 성공:', questChatRoom.id);
+        // 채팅방 삭제 에러 무시
       }
     }
 
@@ -106,7 +103,6 @@ export async function POST(
       }
     });
   } catch (error) {
-    console.error('퀘스트 취소 실패:', error);
     return NextResponse.json({ error: '퀘스트 취소에 실패했습니다' }, { status: 500 });
   }
 } 

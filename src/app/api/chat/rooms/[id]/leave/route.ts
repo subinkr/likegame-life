@@ -41,7 +41,6 @@ export async function POST(
       .single();
 
     if (chatRoomError) {
-      console.error('채팅방 조회 에러:', chatRoomError);
       return NextResponse.json(
         { error: '채팅방을 찾을 수 없습니다.' },
         { status: 404 }
@@ -56,7 +55,6 @@ export async function POST(
       .eq('user_id', user.id);
 
     if (leaveError) {
-      console.error('채팅방 나가기 에러:', leaveError);
       return NextResponse.json(
         { error: '채팅방을 나가는데 실패했습니다.' },
         { status: 500 }
@@ -72,8 +70,7 @@ export async function POST(
         .eq('user_id', user.id);
 
       if (partyLeaveError) {
-        console.error('파티 나가기 에러:', partyLeaveError);
-        // 파티 나가기 실패해도 채팅방은 나간 상태이므로 경고만 로그
+        // 파티 나가기 에러 무시
       }
     }
 
@@ -86,18 +83,16 @@ export async function POST(
         .single();
 
       if (questError) {
-        console.error('퀘스트 조회 에러:', questError);
+        // 퀘스트 조회 에러 무시
       } else if (quest && quest.creator_id === user.id) {
         // 완료된 퀘스트는 삭제하지 않음
         if (quest.status === 'COMPLETED') {
-          console.log('완료된 퀘스트 채팅방에서 생성자가 나감:', chatRoom.quest_id);
           return NextResponse.json({
             message: '완료된 퀘스트 채팅방을 나갔습니다.'
           });
         }
         
         // 진행 중인 퀘스트 생성자가 나가는 경우 퀘스트 삭제
-        console.log('퀘스트 생성자가 채팅방을 나가므로 퀘스트 삭제:', chatRoom.quest_id);
         
         // 퀘스트 삭제
         const { error: questDeleteError } = await supabaseAdmin
@@ -106,9 +101,7 @@ export async function POST(
           .eq('id', chatRoom.quest_id);
 
         if (questDeleteError) {
-          console.error('퀘스트 삭제 에러:', questDeleteError);
-        } else {
-          console.log('✅ 퀘스트 삭제 성공:', chatRoom.quest_id);
+          // 퀘스트 삭제 에러 무시
         }
 
         // 채팅방 메시지 삭제
@@ -118,7 +111,7 @@ export async function POST(
           .eq('chat_room_id', id);
 
         if (messagesError) {
-          console.error('채팅방 메시지 삭제 에러:', messagesError);
+          // 채팅방 메시지 삭제 에러 무시
         }
 
         // 채팅방 참가자 삭제
@@ -128,7 +121,7 @@ export async function POST(
           .eq('chat_room_id', id);
 
         if (participantsError) {
-          console.error('채팅방 참가자 삭제 에러:', participantsError);
+          // 채팅방 참가자 삭제 에러 무시
         }
 
         // 채팅방 삭제
@@ -138,9 +131,7 @@ export async function POST(
           .eq('id', id);
 
         if (chatRoomDeleteError) {
-          console.error('채팅방 삭제 에러:', chatRoomDeleteError);
-        } else {
-          console.log('✅ 채팅방 삭제 성공:', id);
+          // 채팅방 삭제 에러 무시
         }
 
         return NextResponse.json({
@@ -154,7 +145,6 @@ export async function POST(
       message: '채팅방을 나갔습니다.'
     });
   } catch (error) {
-    console.error('채팅방 나가기 실패:', error);
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }

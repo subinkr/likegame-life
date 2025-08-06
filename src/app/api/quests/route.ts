@@ -23,7 +23,6 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('퀘스트 조회 에러:', error);
       return NextResponse.json(
         { error: '서버 오류가 발생했습니다.' },
         { status: 500 }
@@ -33,7 +32,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(quests)
 
   } catch (error) {
-    console.error('퀘스트 조회 에러:', error)
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }
@@ -89,7 +87,6 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (questError) {
-      console.error('퀘스트 생성 에러:', questError);
       return NextResponse.json(
         { error: '서버 오류가 발생했습니다.' },
         { status: 500 }
@@ -97,12 +94,6 @@ export async function POST(request: NextRequest) {
     }
 
     // 퀘스트 생성 후 채팅방 생성
-    console.log('채팅방 생성 시작:', {
-      name: quest.title,
-      type: 'QUEST',
-      created_by: user.id,
-      quest_id: quest.id
-    });
 
     const { data: chatRoom, error: chatError } = await supabaseAdmin
       .from('chat_rooms')
@@ -116,12 +107,8 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (chatError) {
-      console.error('채팅방 생성 에러:', chatError);
-      // 채팅방 생성 실패해도 퀘스트는 생성된 상태로 반환
-      console.warn('퀘스트는 생성되었지만 채팅방 생성에 실패했습니다.');
+      // 채팅방 생성 에러 무시
     } else {
-      console.log('채팅방 생성 성공:', chatRoom);
-      
       // 퀘스트 생성자를 채팅방에 추가
       const { error: participantError } = await supabaseAdmin
         .from('chat_room_participants')
@@ -131,9 +118,7 @@ export async function POST(request: NextRequest) {
         });
 
       if (participantError) {
-        console.error('채팅방 참가자 추가 에러:', participantError);
-      } else {
-        console.log('퀘스트 생성자가 채팅방에 추가됨');
+        // 채팅방 참가자 추가 에러 무시
       }
     }
 
@@ -144,7 +129,6 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('퀘스트 생성 에러:', error)
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }

@@ -18,7 +18,7 @@ interface Skill {
 function SkillsPageContent() {
   const { user } = useAuth();
   const router = useRouter();
-  const { skills, loading, error: skillsError, createSkill, deleteSkill } = useSkills();
+  const { skills, loading, createSkill, deleteSkill } = useSkills();
   const [newSkill, setNewSkill] = useState<Skill>({
     id: '',
     name: '',

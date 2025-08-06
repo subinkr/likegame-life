@@ -34,13 +34,11 @@ export async function PUT(
       .single();
 
     if (titleError) {
-      console.error('칭호 수정 에러:', titleError);
       return NextResponse.json({ error: '칭호 수정에 실패했습니다.' }, { status: 500 });
     }
 
     return NextResponse.json({ title });
   } catch (error) {
-    console.error('Error updating title:', error);
     return NextResponse.json({ error: '칭호 수정에 실패했습니다.' }, { status: 500 });
   }
 }
@@ -64,7 +62,7 @@ export async function DELETE(
       .eq('title_id', id);
 
     if (userTitleDeleteError) {
-      console.error('사용자 칭호 삭제 에러:', userTitleDeleteError);
+      // 사용자 칭호 삭제 에러 무시
     }
 
     // 그 다음 Title을 삭제
@@ -74,13 +72,11 @@ export async function DELETE(
       .eq('id', id);
 
     if (titleDeleteError) {
-      console.error('칭호 삭제 에러:', titleDeleteError);
       return NextResponse.json({ error: '칭호 삭제에 실패했습니다.' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting title:', error);
     return NextResponse.json({ error: '칭호 삭제에 실패했습니다.' }, { status: 500 });
   }
 } 

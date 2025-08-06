@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
       .order('id', { ascending: true });
 
     if (error) {
-      console.error('Error fetching titles:', error);
+      // 칭호 조회 에러 무시
       return NextResponse.json({ error: 'Failed to fetch titles' }, { status: 500 });
     }
 
@@ -30,7 +30,6 @@ export async function GET(request: NextRequest) {
       .eq('user_id', user.id);
 
     if (userTitlesError) {
-      console.error('사용자 칭호 조회 에러:', userTitlesError);
       return NextResponse.json({ error: 'Failed to fetch user titles' }, { status: 500 });
     }
 
@@ -45,7 +44,6 @@ export async function GET(request: NextRequest) {
       .eq('achieved', true);
 
     if (userBadgesError) {
-      console.error('사용자 뱃지 조회 에러:', userBadgesError);
       return NextResponse.json({ error: 'Failed to fetch user badges' }, { status: 500 });
     }
 
@@ -72,7 +70,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ titles: titlesWithStatus });
   } catch (error) {
-    console.error('Titles API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -99,13 +96,11 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Error creating title:', error);
       return NextResponse.json({ error: 'Failed to create title' }, { status: 500 });
     }
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Titles API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

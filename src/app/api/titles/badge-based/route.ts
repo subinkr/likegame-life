@@ -24,14 +24,11 @@ export async function POST(request: NextRequest) {
       .eq('achieved', true);
 
     if (userBadgesError) {
-      console.error('사용자 뱃지 조회 에러:', userBadgesError);
       return NextResponse.json(
         { error: '서버 오류가 발생했습니다.' },
         { status: 500 }
       );
     }
-
-    console.log('사용자 달성 뱃지:', (userBadges || []).map((ub: any) => ub.badge.name))
 
     // 뱃지 조합에 따른 칭호 결정
     const badgeNames = (userBadges || []).map((ub: any) => ub.badge.name)
@@ -64,7 +61,7 @@ export async function POST(request: NextRequest) {
       requiredBadges = badgeNames
     }
 
-    console.log('뱃지 기반 칭호 생성:', { titleName, titleDescription, requiredBadges, badgeCount })
+    // 뱃지 기반 칭호 생성
 
     // 기존 칭호가 있는지 확인
     const { data: existingTitle, error: existingTitleError } = await supabaseAdmin
@@ -89,7 +86,6 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (newTitleError) {
-        console.error('칭호 생성 에러:', newTitleError);
         return NextResponse.json(
           { error: '서버 오류가 발생했습니다.' },
           { status: 500 }
@@ -107,7 +103,7 @@ export async function POST(request: NextRequest) {
       .eq('user_id', user.id);
 
     if (deleteError) {
-      console.error('기존 칭호 삭제 에러:', deleteError);
+      // 기존 칭호 삭제 에러 무시
     }
 
     // 새로운 칭호 획득
@@ -123,14 +119,11 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (insertError) {
-      console.error('새 칭호 획득 에러:', insertError);
       return NextResponse.json(
         { error: '서버 오류가 발생했습니다.' },
         { status: 500 }
       );
     }
-
-    console.log('뱃지 기반 칭호 생성 완료:', { titleName, titleDescription })
 
     return NextResponse.json({
       title: titleToUse,
@@ -139,7 +132,6 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('뱃지 기반 칭호 생성 에러:', error)
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }

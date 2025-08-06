@@ -24,7 +24,6 @@ export async function GET(request: NextRequest) {
       .gte('created_at', thirtyDaysAgo.toISOString());
 
     if (agilityError) {
-      console.error('Error fetching agility data:', agilityError);
       return NextResponse.json({ error: 'Failed to fetch agility data' }, { status: 500 });
     }
 
@@ -38,7 +37,6 @@ export async function GET(request: NextRequest) {
       .gte('created_at', thirtyDaysAgo.toISOString());
 
     if (wisdomError) {
-      console.error('Error fetching wisdom data:', wisdomError);
       return NextResponse.json({ error: 'Failed to fetch wisdom data' }, { status: 500 });
     }
 
@@ -51,7 +49,6 @@ export async function GET(request: NextRequest) {
       .gte('created_at', thirtyDaysAgo.toISOString());
 
     if (agilityRankError) {
-      console.error('Error fetching agility rank data:', agilityRankError);
       return NextResponse.json({ error: 'Failed to fetch rank data' }, { status: 500 });
     }
 
@@ -75,7 +72,6 @@ export async function GET(request: NextRequest) {
       .gte('created_at', thirtyDaysAgo.toISOString());
 
     if (wisdomRankError) {
-      console.error('Error fetching wisdom rank data:', wisdomRankError);
       return NextResponse.json({ error: 'Failed to fetch wisdom rank data' }, { status: 500 });
     }
 
@@ -100,7 +96,6 @@ export async function GET(request: NextRequest) {
       totalUsers: Math.max(sortedUsers.length, sortedWisdomUsers.length)
     });
   } catch (error) {
-    console.error('Stats main API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

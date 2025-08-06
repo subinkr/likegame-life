@@ -13,11 +13,6 @@ export async function GET(
     }
 
     const { id: partyId } = await params;
-    
-    console.log('파티 ID로 채팅방 조회:', {
-      partyId,
-      userId: user.id
-    });
 
     // 파티 ID로 채팅방 찾기
     const { data: chatRoom, error } = await supabaseAdmin
@@ -32,10 +27,6 @@ export async function GET(
       .single();
 
     if (error || !chatRoom) {
-      console.log('파티 채팅방을 찾을 수 없음:', {
-        partyId,
-        userId: user.id
-      });
       return NextResponse.json({ error: '채팅방을 찾을 수 없습니다' }, { status: 404 });
     }
 
@@ -46,14 +37,8 @@ export async function GET(
       participants: (chatRoom.participants || []).map((p: any) => p.user),
     };
 
-    console.log('파티 채팅방 찾음:', {
-      chatRoomId: chatRoom.id,
-      partyId
-    });
-
     return NextResponse.json(formattedChatRoom);
   } catch (error) {
-    console.error('파티 채팅방 조회 실패:', error);
     return NextResponse.json({ error: '채팅방 정보를 불러오는데 실패했습니다' }, { status: 500 });
   }
 } 

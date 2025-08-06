@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUserFromSupabase } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase';
-import { broadcastMessage } from '../stream/route';
+import { broadcastMessage } from '@/lib/chat-utils';
 
 // 메시지 목록 조회
 export async function GET(
@@ -45,7 +45,6 @@ export async function GET(
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error('메시지 조회 에러:', error);
       return NextResponse.json(
         { error: '메시지를 불러오는데 실패했습니다.' },
         { status: 500 }
@@ -61,7 +60,6 @@ export async function GET(
 
     return NextResponse.json(formattedMessages);
   } catch (error) {
-    console.error('메시지 조회 실패:', error);
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }
@@ -123,7 +121,6 @@ export async function POST(
       .single();
 
     if (error) {
-      console.error('메시지 전송 에러:', error);
       return NextResponse.json(
         { error: '메시지 전송에 실패했습니다.' },
         { status: 500 }
@@ -143,14 +140,13 @@ export async function POST(
         type: 'new_message',
         message: formattedMessage
       });
-      console.log('✅ SSE 메시지 브로드캐스트 성공:', formattedMessage.id);
+      // SSE 메시지 브로드캐스트 성공
     } catch (broadcastError) {
-      console.error('SSE 브로드캐스트 실패:', broadcastError);
+      // SSE 브로드캐스트 실패 무시
     }
 
     return NextResponse.json(formattedMessage);
   } catch (error) {
-    console.error('메시지 전송 실패:', error);
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }

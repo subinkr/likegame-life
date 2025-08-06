@@ -32,7 +32,6 @@ function ChatListPageContent() {
       const response = await apiRequest('/chat/rooms');
       setChatRooms(response);
     } catch (error) {
-      console.error('채팅방 목록 로드 실패:', error);
       setChatRooms([]);
     } finally {
       setLoading(false);

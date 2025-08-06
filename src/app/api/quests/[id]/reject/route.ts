@@ -48,7 +48,6 @@ export async function POST(
       .eq('id', questId);
 
     if (questUpdateError) {
-      console.error('퀘스트 거절 에러:', questUpdateError);
       return NextResponse.json({ error: '퀘스트 거절에 실패했습니다' }, { status: 500 });
     }
 
@@ -60,7 +59,7 @@ export async function POST(
         .eq('id', quest.chat_room.id);
 
       if (chatRoomDeleteError) {
-        console.error('채팅방 삭제 에러:', chatRoomDeleteError);
+        // 채팅방 삭제 에러 무시
       }
     }
 
@@ -73,7 +72,6 @@ export async function POST(
       }
     });
   } catch (error) {
-    console.error('퀘스트 거절 실패:', error);
     return NextResponse.json({ error: '퀘스트 거절에 실패했습니다' }, { status: 500 });
   }
 } 

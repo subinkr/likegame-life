@@ -50,7 +50,6 @@ export async function POST(
       });
 
     if (memberError) {
-      console.error('파티 참가 에러:', memberError);
       return NextResponse.json({ error: '파티 참가에 실패했습니다' }, { status: 500 });
     }
 
@@ -62,7 +61,6 @@ export async function POST(
       .single();
 
     if (chatRoomError) {
-      console.error('채팅방 조회 에러:', chatRoomError);
       return NextResponse.json({ error: '파티 참가에 실패했습니다' }, { status: 500 });
     }
 
@@ -84,7 +82,6 @@ export async function POST(
           });
 
         if (participantError) {
-          console.error('채팅방 참가자 추가 에러:', participantError);
           return NextResponse.json({ error: '파티 참가에 실패했습니다' }, { status: 500 });
         }
       }
@@ -99,13 +96,12 @@ export async function POST(
         });
 
       if (messageError) {
-        console.error('시스템 메시지 생성 에러:', messageError);
+        // 시스템 메시지 생성 에러 무시
       }
     }
 
     return NextResponse.json({ message: '파티 참가가 완료되었습니다' });
   } catch (error) {
-    console.error('파티 참가 실패:', error);
     return NextResponse.json({ error: '파티 참가에 실패했습니다' }, { status: 500 });
   }
 } 

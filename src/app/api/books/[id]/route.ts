@@ -31,7 +31,7 @@ export async function GET(
 
     return NextResponse.json(book);
   } catch (error) {
-    console.error('Error fetching book:', error);
+    // 책 조회 에러 무시
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -78,13 +78,11 @@ export async function PUT(
       .single();
 
     if (updateError) {
-      console.error('책 수정 에러:', updateError);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 
     return NextResponse.json(updatedBook);
   } catch (error) {
-    console.error('Error updating book:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -119,13 +117,11 @@ export async function DELETE(
       .eq('id', id);
 
     if (deleteError) {
-      console.error('책 삭제 에러:', deleteError);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 
     return NextResponse.json({ message: 'Book deleted successfully' });
   } catch (error) {
-    console.error('Error deleting book:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 } 

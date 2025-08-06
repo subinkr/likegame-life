@@ -60,14 +60,11 @@ function ChatRoomPageContent() {
   const setupRealtimeSubscription = async () => {
     if (!id || !user) return;
 
-    console.log('🔄 SSE 실시간 채팅 구독 설정 중...', { roomId: id, userId: user.id });
-
     // SSE 연결 (인증 토큰 포함)
     const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token;
     
     if (!token) {
-      console.error('❌ 인증 토큰이 없습니다.');
       return;
     }
 
@@ -75,41 +72,37 @@ function ChatRoomPageContent() {
     const eventSource = new EventSource(`/api/chat/rooms/${id}/stream?token=${encodeURIComponent(token)}`);
 
     eventSource.onopen = () => {
-      console.log('✅ SSE 연결 성공!');
+      // SSE 연결 성공
     };
 
     eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log('💬 SSE 메시지 수신:', data);
 
         if (data.type === 'connected') {
-          console.log('✅ SSE 연결 확인됨');
+          // SSE 연결 확인됨
         } else if (data.type === 'new_message') {
           // 새 메시지를 기존 메시지 목록에 추가
           setMessages((prevMessages) => {
             // 이미 존재하는 메시지인지 확인
             const exists = prevMessages.some(msg => msg.id === data.message.id);
             if (exists) {
-              console.log('⚠️ 중복 메시지 무시:', data.message.id);
               return prevMessages;
             }
             
-            console.log('✅ 새 메시지 추가:', data.message);
             return [...prevMessages, data.message];
           });
         }
       } catch (error) {
-        console.error('SSE 메시지 파싱 실패:', error);
+        // SSE 메시지 파싱 실패
       }
     };
 
     eventSource.onerror = (error) => {
-      console.error('❌ SSE 연결 에러:', error);
+      // SSE 연결 에러
     };
 
     return () => {
-      console.log('🔄 SSE 연결 해제:', id);
       eventSource.close();
     };
   };
@@ -125,7 +118,7 @@ function ChatRoomPageContent() {
         setParty(partyResponse);
       }
     } catch (error) {
-      console.error('채팅방 정보 로드 실패:', error);
+      // 채팅방 정보 로드 실패
     }
   };
 
@@ -134,7 +127,7 @@ function ChatRoomPageContent() {
       const response = await apiRequest(`/chat/rooms/${id}/messages`);
       setMessages(response);
     } catch (error) {
-      console.error('메시지 로드 실패:', error);
+      // 메시지 로드 실패
     } finally {
       setLoading(false);
     }
@@ -165,7 +158,7 @@ function ChatRoomPageContent() {
       setNewMessage('');
       // SSE로 새 메시지가 자동으로 추가됨
     } catch (error) {
-      console.error('메시지 전송 실패:', error);
+      // 메시지 전송 실패
     }
   };
 
@@ -205,11 +198,9 @@ function ChatRoomPageContent() {
               await apiRequest(`/quests/${chatRoom.quest_id}/cancel`, {
                 method: 'POST'
               });
-              console.log('✅ 퀘스트 취소 완료');
               router.push('/chat');
               return;
             } catch (error) {
-              console.error('퀘스트 취소 실패:', error);
               alert('퀘스트 취소에 실패했습니다.');
               return;
             }
@@ -235,19 +226,17 @@ function ChatRoomPageContent() {
               await apiRequest(`/quests/${chatRoom.quest_id}/abandon`, {
                 method: 'POST'
               });
-              console.log('✅ 퀘스트 포기 완료');
               router.push('/chat');
               return;
             } catch (error) {
-              console.error('퀘스트 포기 실패:', error);
               alert('퀘스트 포기에 실패했습니다.');
               return;
             }
           }
         }
-      } catch (error) {
-        console.error('퀘스트 정보 조회 실패:', error);
-      }
+              } catch (error) {
+          // 퀘스트 정보 조회 실패
+        }
     }
 
     // 파티 채팅방인 경우 파티에서도 나가는지 확인
@@ -264,18 +253,16 @@ function ChatRoomPageContent() {
       });
       router.push('/chat');
     } catch (error) {
-      console.error('채팅방 나가기 실패:', error);
       // 퀘스트 채팅방이고 완료된 상태라면 성공으로 처리
       if (chatRoom?.quest_id) {
         try {
           const questResponse = await apiRequest(`/quests/${chatRoom.quest_id}`);
           if (questResponse.status === 'COMPLETED') {
-            console.log('✅ 완료된 퀘스트 채팅방에서 나가기 성공');
             router.push('/chat');
             return;
           }
         } catch (questError) {
-          console.error('퀘스트 정보 조회 실패:', questError);
+          // 퀘스트 정보 조회 실패
         }
       }
       alert('채팅방을 나가는데 실패했습니다.');

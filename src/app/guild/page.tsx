@@ -99,8 +99,6 @@ function GuildPageContent() {
     try {
       const data = await questsAPI.get();
       setQuests(data);
-    } catch (error) {
-      console.error('Error fetching quests:', error);
     } finally {
       setLoading(false);
     }
@@ -110,14 +108,12 @@ function GuildPageContent() {
     try {
       const data = await partiesAPI.get();
       setParties(data);
-    } catch (error) {
-      console.error('Error fetching parties:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const createQuest = async (e: React.FormEvent) => {
+    const createQuest = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await questsAPI.create(newQuest);
@@ -125,11 +121,11 @@ function GuildPageContent() {
       setShowCreateQuest(false);
       fetchQuests();
     } catch (error) {
-      console.error('Error creating quest:', error);
+      alert('퀘스트 생성에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
-  const createParty = async (e: React.FormEvent) => {
+    const createParty = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await partiesAPI.create(newParty);
@@ -137,20 +133,20 @@ function GuildPageContent() {
       setShowCreateParty(false);
       fetchParties();
     } catch (error) {
-      console.error('Error creating party:', error);
+      alert('파티 생성에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
-  const acceptQuest = async (questId: string) => {
+    const acceptQuest = async (questId: string) => {
     try {
       await questsAPI.accept(questId);
       fetchQuests();
     } catch (error) {
-      console.error('Error accepting quest:', error);
+      alert('퀘스트 수락에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
-  const cancelQuest = async (questId: string) => {
+    const cancelQuest = async (questId: string) => {
     // 확인 절차
     if (!confirm('정말로 이 퀘스트를 취소하시겠습니까?')) {
       return;
@@ -160,16 +156,16 @@ function GuildPageContent() {
       await questsAPI.cancel(questId);
       fetchQuests();
     } catch (error) {
-      console.error('Error canceling quest:', error);
+      alert('퀘스트 취소에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
-  const completeQuest = async (questId: string) => {
+    const completeQuest = async (questId: string) => {
     try {
       await questsAPI.complete(questId);
       fetchQuests();
     } catch (error) {
-      console.error('Error completing quest:', error);
+      alert('퀘스트 완료 처리에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -186,7 +182,7 @@ function GuildPageContent() {
       await questsAPI.abandon(questId);
       fetchQuests();
     } catch (error) {
-      console.error('Error abandoning quest:', error);
+      alert('퀘스트 포기에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -195,7 +191,7 @@ function GuildPageContent() {
       await partiesAPI.join(partyId);
       fetchParties();
     } catch (error) {
-      console.error('Error joining party:', error);
+      alert('파티 참가에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -204,7 +200,7 @@ function GuildPageContent() {
       await partiesAPI.leave(partyId);
       fetchParties();
     } catch (error) {
-      console.error('Error leaving party:', error);
+      alert('파티 탈퇴에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -218,7 +214,7 @@ function GuildPageContent() {
       await partiesAPI.kick(partyId, memberId);
       fetchParties();
     } catch (error) {
-      console.error('Error kicking member:', error);
+      alert('멤버 추방에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -232,7 +228,6 @@ function GuildPageContent() {
       await partiesAPI.disband(partyId);
       fetchParties();
     } catch (error) {
-      console.error('Error disbanding party:', error);
       alert('파티 해산에 실패했습니다.');
     }
   };
@@ -280,7 +275,6 @@ function GuildPageContent() {
       if (chatRoom) {
         router.push(`/chat/${chatRoom.id}`);
       } else {
-        console.error('채팅방을 찾을 수 없습니다');
         if (type === 'quest') {
           alert('퀘스트 채팅방을 찾을 수 없습니다.\n\n퀘스트를 수락한 후 다시 시도해주세요.');
         } else {
@@ -288,7 +282,6 @@ function GuildPageContent() {
         }
       }
     } catch (error) {
-      console.error('채팅방 이동 실패:', error);
       if (type === 'quest') {
         alert('퀘스트 채팅방으로 이동하는데 실패했습니다.\n\n퀘스트를 수락한 후 다시 시도해주세요.');
       } else {

@@ -20,7 +20,6 @@ export async function GET(request: NextRequest) {
       .order('acquired_date', { ascending: false })
 
     if (error) {
-      console.error('스킬 조회 에러:', error)
       return NextResponse.json(
         { error: '서버 오류가 발생했습니다.' },
         { status: 500 }
@@ -38,7 +37,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ skills: transformedSkills })
 
   } catch (error) {
-    console.error('스킬 조회 에러:', error)
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }
@@ -81,7 +79,6 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('스킬 생성 에러:', error)
       return NextResponse.json(
         { error: '서버 오류가 발생했습니다.' },
         { status: 500 }
@@ -102,7 +99,6 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('스킬 생성 에러:', error)
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }

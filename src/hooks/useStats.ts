@@ -47,7 +47,7 @@ export function useStats() {
       if (err.message === '인증이 필요합니다.') {
         return
       }
-      console.error('Main stats API error:', err)
+      // Main stats API error
       setStats({ strength: 0, agility: 0, wisdom: 0 })
       setError(err.message || '스탯을 불러오는데 실패했습니다.')
       // API 실패 시 localStorage에서 로드
@@ -84,7 +84,7 @@ export function useStats() {
       }, 1000)
       
     } catch (err: any) {
-      console.error('Stats update error:', err)
+      // Stats update error
       setError(err.message || '스탯 업데이트에 실패했습니다.')
       // API 실패 시 로컬 상태만 업데이트
       setStats(newStats)

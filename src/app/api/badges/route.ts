@@ -20,7 +20,6 @@ export async function GET(request: NextRequest) {
       .order('name', { ascending: true })
 
     if (badgesError) {
-      console.error('뱃지 조회 에러:', badgesError)
       return NextResponse.json(
         { error: '서버 오류가 발생했습니다.' },
         { status: 500 }
@@ -37,7 +36,6 @@ export async function GET(request: NextRequest) {
       .eq('user_id', user.id)
 
     if (userBadgesError) {
-      console.error('사용자 뱃지 조회 에러:', userBadgesError)
       return NextResponse.json(
         { error: '서버 오류가 발생했습니다.' },
         { status: 500 }
@@ -57,7 +55,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ badges: badgesWithStatus })
 
   } catch (error) {
-    console.error('뱃지 조회 에러:', error)
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }

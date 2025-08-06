@@ -47,7 +47,6 @@ export async function POST(
       .eq('party_id', partyId);
 
     if (chatRoomDeleteError) {
-      console.error('채팅방 삭제 에러:', chatRoomDeleteError);
       return NextResponse.json({ error: '파티 해산에 실패했습니다' }, { status: 500 });
     }
 
@@ -58,7 +57,6 @@ export async function POST(
       .eq('party_id', partyId);
 
     if (memberDeleteError) {
-      console.error('파티 멤버 삭제 에러:', memberDeleteError);
       return NextResponse.json({ error: '파티 해산에 실패했습니다' }, { status: 500 });
     }
 
@@ -69,13 +67,11 @@ export async function POST(
       .eq('id', partyId);
 
     if (partyDeleteError) {
-      console.error('파티 삭제 에러:', partyDeleteError);
       return NextResponse.json({ error: '파티 해산에 실패했습니다' }, { status: 500 });
     }
 
     return NextResponse.json({ message: '파티가 해산되었습니다' });
   } catch (error) {
-    console.error('파티 해산 실패:', error);
     return NextResponse.json({ error: '파티 해산에 실패했습니다' }, { status: 500 });
   }
 } 

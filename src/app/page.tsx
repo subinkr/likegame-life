@@ -1,6 +1,5 @@
 'use client';
-import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from '@/contexts/AuthContext';
 import { useStats } from '@/hooks/useStats';
@@ -36,9 +35,9 @@ interface Badge {
 function HomeContent() {
   const { user } = useAuth();
   const router = useRouter();
-  const { stats, loading: statsLoading, error: statsError, updateStats, loadStats, getCurrentMonth, getLastMonth } = useStats();
-  const { badges, titles, loading: achievementsLoading, error: achievementsError, toggleBadge, selectTitle } = useAchievements();
-  const { skills, loading: skillsLoading, error: skillsError } = useSkills();
+  const { stats, loading: statsLoading, loadStats, getCurrentMonth } = useStats();
+  const { badges, titles, loading: achievementsLoading, toggleBadge, selectTitle } = useAchievements();
+  const { skills, loading: skillsLoading } = useSkills();
   
   // stats가 undefined일 때를 대비한 안전장치
   const safeStats = stats || { strength: 0, agility: 0, wisdom: 0 };
@@ -59,12 +58,7 @@ function HomeContent() {
     return true; // required_badges가 없으면 활성화된 것으로 간주
   });
   
-  // 페이지 로드 시 스탯만 확인 (칭호는 업적 페이지에서 활성화)
-  useEffect(() => {
-    if (user && stats && !statsLoading) {
-      // 스탯 로드 완료
-    }
-  }, [user, stats, statsLoading]);
+
 
   // 페이지 포커스 시 스탯 새로고침
   useEffect(() => {
@@ -79,34 +73,7 @@ function HomeContent() {
     return () => window.removeEventListener('focus', handleFocus);
   }, [user, loadStats, statsLoading]);
 
-  // 월별 초기화 시스템
-  const getCurrentMonthStats = () => {
-    if (typeof window !== 'undefined') {
-      const savedStats = localStorage.getItem('likegame-stats');
-      if (savedStats) {
-        try {
-          const statsData = JSON.parse(savedStats);
-          const currentMonth = getCurrentMonth();
-          return statsData[currentMonth] || { strength: 0, agility: 0, wisdom: 0, month: currentMonth };
-        } catch {}
-      }
-    }
-    return { strength: 0, agility: 0, wisdom: 0, month: getCurrentMonth() };
-  };
 
-  const getLastMonthStats = () => {
-    if (typeof window !== 'undefined') {
-      const savedStats = localStorage.getItem('likegame-stats');
-      if (savedStats) {
-        try {
-          const statsData = JSON.parse(savedStats);
-          const lastMonth = getLastMonth();
-          return statsData[lastMonth] || { strength: 0, agility: 0, wisdom: 0, month: lastMonth };
-        } catch {}
-      }
-    }
-    return { strength: 0, agility: 0, wisdom: 0, month: getLastMonth() };
-  };
 
   // 스탯 등급 계산
   const getRank = (value: number, type: 'strength' | 'agility' | 'wisdom') => {
@@ -220,27 +187,7 @@ function HomeContent() {
     );
   }
 
-  // 등급 값을 숫자로 변환하는 함수
-  const getRankValue = (rank: string) => {
-    switch (rank) {
-      case 'S': return 6;
-      case 'A': return 5;
-      case 'B': return 4;
-      case 'C': return 3;
-      case 'D': return 2;
-      case 'E': return 1;
-      case 'F': return 0;
-      default: return 0;
-    }
-  };
 
-  // 유저 랭크 계산 함수
-  const getUserRank = () => {
-    const strengthRank = getRank(safeStats.strength, 'strength');
-    const agilityRank = getRank(safeStats.agility, 'agility');
-    const wisdomRank = getRank(safeStats.wisdom, 'wisdom');
-    return `${strengthRank}${agilityRank}${wisdomRank}`;
-  };
 
   return (
     <div style={{
