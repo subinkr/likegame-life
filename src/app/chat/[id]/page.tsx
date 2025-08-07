@@ -120,8 +120,8 @@ function ChatRoomPageContent() {
     // 스크롤 위치와 관계없이 헤더를 항상 표시
     setShowHeader(true);
     
-    // 스크롤이 위쪽 100px 이내에 도달하면 이전 메시지 로드
-    if (scrollTop < 100 && hasMoreMessages && !loadingMore) {
+    // 스크롤이 위쪽 200px 이내에 도달하면 이전 메시지 로드
+    if (scrollTop < 200 && hasMoreMessages && !loadingMore) {
       console.log('Scroll near top, triggering load more...');
       loadMoreMessages();
     }

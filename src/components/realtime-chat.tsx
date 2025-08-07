@@ -46,12 +46,12 @@ export const RealtimeChat = ({
     if (!messagesContainerRef.current) return;
     
     const { scrollTop } = messagesContainerRef.current;
-    console.log('Chat scroll position:', scrollTop, 'hasMore:', hasMore, 'loadingMore:', loadingMore);
+    console.log('Chat scroll position:', scrollTop, 'hasMore:', hasMore, 'loadingMore:', loadingMore, 'onLoadMore exists:', !!onLoadMore);
     
     // 부모 컴포넌트에 스크롤 위치 전달
     onScroll?.(scrollTop);
     
-    if (scrollTop < 100 && hasMore && !loadingMore) { // 스크롤이 위쪽 100px 이내에 도달하면 더 로드
+    if (scrollTop < 200 && hasMore && !loadingMore) { // 스크롤이 위쪽 200px 이내에 도달하면 더 로드
       console.log('Scroll near top, triggering load more...');
       onLoadMore?.();
     }
@@ -63,7 +63,7 @@ export const RealtimeChat = ({
       container.addEventListener('scroll', handleScroll);
       return () => container.removeEventListener('scroll', handleScroll);
     }
-  }, []);
+  }, [hasMore, loadingMore, onLoadMore]);
 
   useEffect(() => {
     scrollToBottom()
