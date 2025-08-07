@@ -1,7 +1,8 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? window.location.origin + '/api' : '/api')
+import { NextRequest, NextResponse } from 'next/server';
+import { getCurrentUserFromSupabase } from './auth';
+import { supabase } from './supabase';
 
-// Supabase 클라이언트 import
-import { supabase } from './auth'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? window.location.origin + '/api' : '/api')
 
 // API 요청 헬퍼 함수
 export const apiRequest = async (endpoint: string, options: RequestInit = {}) => {

@@ -38,73 +38,120 @@ function ChatRoomPageContent() {
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
+  const [sseConnected, setSseConnected] = useState(false);
+  const eventSourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
     if (id) {
       fetchChatRoom();
       fetchMessages();
-      let cleanup: (() => void) | undefined;
+      let eventSource: EventSource | null = null;
       
       setupRealtimeSubscription().then((cleanupFn) => {
-        cleanup = cleanupFn;
+        eventSource = cleanupFn;
+        eventSourceRef.current = cleanupFn;
       });
       
       return () => {
-        if (cleanup) {
-          cleanup();
+        if (eventSource) {
+          eventSource.close();
+          eventSourceRef.current = null;
         }
       };
     }
   }, [id]);
 
-  const setupRealtimeSubscription = async () => {
-    if (!id || !user) return;
+  const setupRealtimeSubscription = async (): Promise<EventSource | null> => {
+    if (!id || !user) return null;
+
+    // 기존 연결이 있으면 닫기
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
 
     // SSE 연결 (인증 토큰 포함)
     const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token;
     
     if (!token) {
-      return;
+      console.error('No auth token available for SSE connection');
+      return null;
     }
 
     // EventSource는 헤더를 직접 설정할 수 없으므로 URL 파라미터로 토큰 전달
     const eventSource = new EventSource(`/api/chat/rooms/${id}/stream?token=${encodeURIComponent(token)}`);
 
     eventSource.onopen = () => {
-      // SSE 연결 성공
+      console.log('SSE connection opened for room:', id);
+      setSseConnected(true);
     };
 
     eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
+        console.log('SSE message received:', data);
 
         if (data.type === 'connected') {
-          // SSE 연결 확인됨
+          console.log('SSE connection confirmed for room:', id);
+          setSseConnected(true);
         } else if (data.type === 'new_message') {
+          console.log('New message received via SSE:', data.message);
+          
+          // 내가 보낸 메시지는 SSE로 받지 않음 (Optimistic Update로 이미 표시됨)
+          if (data.message.user_nickname === (user.user_metadata?.nickname || user.email?.split('@')[0] || '나')) {
+            console.log('Skipping my own message received via SSE');
+            return;
+          }
+          
           // 새 메시지를 기존 메시지 목록에 추가
           setMessages((prevMessages) => {
-            // 이미 존재하는 메시지인지 확인
+            // ID 기반 중복 체크만 사용 (내용+시간 체크는 제거)
             const exists = prevMessages.some(msg => msg.id === data.message.id);
+            
             if (exists) {
+              console.log('Duplicate message detected by ID, skipping');
               return prevMessages;
             }
             
-            return [...prevMessages, data.message];
+            // 시간순으로 정렬하여 추가
+            const newMessages = [...prevMessages, data.message];
+            newMessages.sort((a, b) => 
+              new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+            );
+            
+            console.log('Message added to state, total messages:', newMessages.length);
+            return newMessages;
           });
         }
       } catch (error) {
-        // SSE 메시지 파싱 실패
+        console.error('SSE message parsing error:', error);
       }
     };
 
     eventSource.onerror = (error) => {
-      // SSE 연결 에러
+      console.error('SSE connection error for room:', id, error);
+      setSseConnected(false);
+      eventSource.close();
+      eventSourceRef.current = null;
+      
+      // 1초 후 재연결 시도 (더 빠른 재연결)
+      setTimeout(() => {
+        console.log('Attempting to reconnect SSE for room:', id);
+        setupRealtimeSubscription();
+      }, 1000);
     };
 
-    return () => {
-      eventSource.close();
-    };
+    console.log('SSE connection setup completed for room:', id);
+    return eventSource;
+  };
+
+  // SSE 연결 상태 확인 및 재연결
+  const checkAndReconnectSSE = async () => {
+    if (!sseConnected && eventSourceRef.current === null) {
+      console.log('SSE not connected, attempting to reconnect...');
+      await setupRealtimeSubscription();
+    }
   };
 
   const fetchChatRoom = async () => {
@@ -147,18 +194,55 @@ function ChatRoomPageContent() {
     e.preventDefault();
     if (!newMessage.trim() || !user) return;
 
+    const messageContent = newMessage.trim();
+    setNewMessage('');
+
+    console.log('Sending message:', messageContent);
+
+    // Optimistic Update: 즉시 로컬에 메시지 추가
+    const optimisticMessage = {
+      id: `temp_${Date.now()}_${Math.random()}`, // 임시 ID
+      content: messageContent,
+      user_nickname: user.user_metadata?.nickname || user.email?.split('@')[0] || '나',
+      created_at: new Date().toISOString()
+    };
+
+    console.log('Adding optimistic message:', optimisticMessage);
+    setMessages(prevMessages => [...prevMessages, optimisticMessage]);
+
     try {
-      await apiRequest(`/chat/rooms/${id}/messages`, {
+      const response = await apiRequest(`/chat/rooms/${id}/messages`, {
         method: 'POST',
         body: JSON.stringify({
-          content: newMessage
+          content: messageContent
         })
       });
       
-      setNewMessage('');
-      // SSE로 새 메시지가 자동으로 추가됨
+      console.log('Message sent successfully, server response:', response);
+      
+      // 서버 응답으로 임시 메시지를 실제 메시지로 교체
+      setMessages(prevMessages => {
+        const filtered = prevMessages.filter(msg => msg.id !== optimisticMessage.id);
+        const updated = [...filtered, response];
+        console.log('Replaced optimistic message with server response, total messages:', updated.length);
+        return updated;
+      });
+
+      // 메시지 전송 후 SSE 연결 상태 확인 및 재연결
+      setTimeout(() => {
+        console.log('Checking SSE connection status after message send...');
+        console.log('SSE connected:', sseConnected);
+        console.log('EventSource ref:', eventSourceRef.current);
+        checkAndReconnectSSE();
+      }, 1000);
     } catch (error) {
-      // 메시지 전송 실패
+      console.error('Message send failed:', error);
+      // 전송 실패 시 임시 메시지 제거
+      setMessages(prevMessages => 
+        prevMessages.filter(msg => msg.id !== optimisticMessage.id)
+      );
+      // 에러 메시지 표시
+      alert('메시지 전송에 실패했습니다. 다시 시도해주세요.');
     }
   };
 

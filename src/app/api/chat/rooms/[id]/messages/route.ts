@@ -121,11 +121,14 @@ export async function POST(
       .single();
 
     if (error) {
+      console.error('Database insert error:', error);
       return NextResponse.json(
         { error: '메시지 전송에 실패했습니다.' },
         { status: 500 }
       );
     }
+
+    console.log('Message saved to database:', message);
 
     const formattedMessage = {
       id: message.id,
@@ -134,15 +137,18 @@ export async function POST(
       created_at: message.created_at,
     };
 
+    console.log('Formatted message for broadcast:', formattedMessage);
+
     // SSE 브로드캐스트
     try {
+      console.log('Calling broadcastMessage for room:', id);
       broadcastMessage(id, {
         type: 'new_message',
         message: formattedMessage
       });
-      // SSE 메시지 브로드캐스트 성공
+      console.log('SSE broadcast completed for room:', id);
     } catch (broadcastError) {
-      // SSE 브로드캐스트 실패 무시
+      console.error('SSE broadcast failed for room:', id, broadcastError);
     }
 
     return NextResponse.json(formattedMessage);

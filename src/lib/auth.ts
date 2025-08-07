@@ -1,25 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
 import { NextRequest } from 'next/server'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
-// 서버 사이드용 Supabase 클라이언트 (쿠키 지원)
-const createServerSupabaseClient = (request: NextRequest) => {
-  return createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    },
-    global: {
-      headers: {
-        cookie: request.headers.get('cookie') || ''
-      }
-    }
-  })
-}
+import { supabase, createServerSupabaseClient } from './supabase'
 
 // Supabase auth를 사용한 사용자 인증 함수
 export const getCurrentUserFromSupabase = async (request: NextRequest) => {
