@@ -46,7 +46,6 @@ export const ChatMessageItem = ({ message, isOwnMessage, showHeader }: ChatMessa
         <div style={{
           padding: '8px 12px',
           borderRadius: '12px',
-          fontSize: '0.875rem',
           width: 'fit-content',
           backgroundColor: isOwnMessage ? '#00ffff' : '#2a2a2a',
           color: isOwnMessage ? '#000' : '#fff',
