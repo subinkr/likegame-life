@@ -33,15 +33,39 @@ export async function GET(
       );
     }
 
-    // 메시지 목록 조회
-    const { data: messages, error } = await supabaseAdmin
+    // URL 파라미터에서 페이지네이션 정보 가져오기
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const offset = parseInt(searchParams.get('offset') || '0');
+    const before = searchParams.get('before'); // 특정 메시지 ID 이전의 메시지들
+
+    let query = supabaseAdmin
       .from('chat_messages')
       .select(`
         *,
         user:users(nickname)
       `)
       .eq('chat_room_id', id)
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    // before 파라미터가 있으면 해당 메시지 이전의 메시지들을 가져옴
+    if (before) {
+      const { data: beforeMessage } = await supabaseAdmin
+        .from('chat_messages')
+        .select('created_at')
+        .eq('id', before)
+        .single();
+      
+      if (beforeMessage) {
+        query = query.lt('created_at', beforeMessage.created_at);
+      }
+    } else if (offset > 0) {
+      // offset이 있으면 해당 위치부터 가져옴
+      query = query.range(offset, offset + limit - 1);
+    }
+
+    const { data: messages, error } = await query;
 
     if (error) {
       return NextResponse.json(
@@ -57,7 +81,14 @@ export async function GET(
       created_at: message.created_at,
     }));
 
-    return NextResponse.json(formattedMessages);
+    // 응답에 페이지네이션 정보 포함
+    const response = {
+      messages: formattedMessages,
+      hasMore: formattedMessages.length === limit,
+      total: formattedMessages.length
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },

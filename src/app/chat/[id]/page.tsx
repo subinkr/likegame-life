@@ -30,6 +30,8 @@ function ChatRoomPageContent() {
   const [party, setParty] = useState<Party | null>(null);
   const [loading, setLoading] = useState(true);
   const [initialMessages, setInitialMessages] = useState<ChatMessage[]>([]);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -52,13 +54,19 @@ function ChatRoomPageContent() {
     }
   };
 
-  const fetchMessages = async () => {
+  const fetchMessages = async (beforeId?: string) => {
     try {
-      console.log('Fetching messages for room:', id);
-      const response = await apiRequest(`/chat/rooms/${id}/messages`);
+      console.log('Fetching messages for room:', id, 'before:', beforeId);
+      
+      let url = `/chat/rooms/${id}/messages?limit=20`;
+      if (beforeId) {
+        url += `&before=${beforeId}`;
+      }
+      
+      const response = await apiRequest(url);
       console.log('Messages API response:', response);
       
-      const messages: ChatMessage[] = response.map((msg: any) => ({
+      const messages: ChatMessage[] = response.messages.map((msg: any) => ({
         id: msg.id,
         content: msg.content,
         user: {
@@ -67,12 +75,32 @@ function ChatRoomPageContent() {
         createdAt: msg.created_at
       }));
       
-      console.log('Processed initial messages:', messages);
-      setInitialMessages(messages);
+      console.log('Processed messages:', messages);
+      
+      if (beforeId) {
+        // 이전 메시지들을 기존 메시지 앞에 추가
+        setInitialMessages(prev => [...messages, ...prev]);
+      } else {
+        // 초기 로딩
+        setInitialMessages(messages);
+      }
+      
+      setHasMoreMessages(response.hasMore);
     } catch (error) {
       console.error('Error fetching messages:', error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const loadMoreMessages = async () => {
+    if (loadingMore || !hasMoreMessages || initialMessages.length === 0) return;
+    
+    setLoadingMore(true);
+    const oldestMessageId = initialMessages[0]?.id;
+    if (oldestMessageId) {
+      await fetchMessages(oldestMessageId);
     }
   };
 
@@ -258,6 +286,9 @@ function ChatRoomPageContent() {
           onMessage={(messages) => {
             console.log('Messages updated:', messages);
           }}
+          onLoadMore={loadMoreMessages}
+          hasMore={hasMoreMessages}
+          loadingMore={loadingMore}
         />
       </div>
     </div>

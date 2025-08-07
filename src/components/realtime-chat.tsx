@@ -7,16 +7,23 @@ interface RealtimeChatProps {
   username: string
   onMessage?: (messages: ChatMessage[]) => void
   messages?: ChatMessage[]
+  onLoadMore?: () => void
+  hasMore?: boolean
+  loadingMore?: boolean
 }
 
 export const RealtimeChat = ({ 
   roomName, 
   username, 
   onMessage, 
-  messages: initialMessages = [] 
+  messages: initialMessages = [],
+  onLoadMore,
+  hasMore = false,
+  loadingMore = false
 }: RealtimeChatProps) => {
   const [inputValue, setInputValue] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const [showHeaders, setShowHeaders] = useState(true)
 
   const { messages, sendMessage, isConnected } = useRealtimeChat({
@@ -31,6 +38,24 @@ export const RealtimeChat = ({
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
+
+  // 무한스크롤 처리
+  const handleScroll = () => {
+    if (!messagesContainerRef.current || !hasMore || loadingMore) return;
+    
+    const { scrollTop } = messagesContainerRef.current;
+    if (scrollTop < 100) { // 스크롤이 위쪽 100px 이내에 있으면 더 로드
+      onLoadMore?.();
+    }
+  };
+
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
+  }, [hasMore, loadingMore, onLoadMore]);
 
   useEffect(() => {
     scrollToBottom()
@@ -76,16 +101,19 @@ export const RealtimeChat = ({
       </div>
 
       {/* Scrollable Messages Area */}
-      <div style={{
-        flex: 1,
-        overflowY: 'auto',
-        padding: '16px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '16px',
-        background: '#f8fafc',
-        minHeight: 0 // Important for flex child scrolling
-      }}>
+      <div 
+        ref={messagesContainerRef}
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: '16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '16px',
+          background: '#f8fafc',
+          minHeight: 0 // Important for flex child scrolling
+        }}
+      >
         {allMessages.length === 0 ? (
           <div style={{
             display: 'flex',
@@ -106,14 +134,38 @@ export const RealtimeChat = ({
             </div>
           </div>
         ) : (
-          allMessages.map((message, index) => (
-            <ChatMessageItem
-              key={message.id}
-              message={message}
-              isOwnMessage={message.user.name === username}
-              showHeader={shouldShowHeader(message, index)}
-            />
-          ))
+          <>
+            {/* 로딩 인디케이터 */}
+            {loadingMore && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                padding: '16px',
+                color: '#64748b',
+                fontSize: '14px'
+              }}>
+                <div style={{
+                  width: '20px',
+                  height: '20px',
+                  border: '2px solid #e2e8f0',
+                  borderTop: '2px solid #3b82f6',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite',
+                  marginRight: '8px'
+                }}></div>
+                이전 메시지 로딩 중...
+              </div>
+            )}
+            
+            {allMessages.map((message, index) => (
+              <ChatMessageItem
+                key={message.id}
+                message={message}
+                isOwnMessage={message.user.name === username}
+                showHeader={shouldShowHeader(message, index)}
+              />
+            ))}
+          </>
         )}
         <div ref={messagesEndRef} />
       </div>
