@@ -26,6 +26,28 @@ export default function RegisterPage() {
     }
 
     try {
+      // 먼저 이메일 중복 확인
+      const checkResponse = await fetch('/api/auth/check-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const checkResult = await checkResponse.json();
+
+      if (!checkResponse.ok) {
+        throw new Error(checkResult.error || '이메일 확인 중 오류가 발생했습니다.');
+      }
+
+      if (checkResult.exists) {
+        setError('이미 가입된 이메일입니다. 다른 이메일을 사용하거나 로그인해주세요.');
+        setLoading(false);
+        return;
+      }
+
+      // 이메일이 중복되지 않으면 회원가입 진행
       await signUp({ email, password, nickname });
       alert('📧 이메일 확인이 필요합니다.\n\n가입하신 이메일로 확인 메일을 보냈습니다.\n이메일을 확인하고 링크를 클릭해주세요.');
       router.push('/auth/login');
