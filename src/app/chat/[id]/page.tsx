@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiRequest } from '@/lib/api';
@@ -33,6 +33,7 @@ function ChatRoomPageContent() {
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [showHeader, setShowHeader] = useState(false);
+  const scrollPositionRef = useRef<number>(0);
 
   useEffect(() => {
     if (id) {
@@ -117,23 +118,23 @@ function ChatRoomPageContent() {
 
   // 스크롤 위치 유지를 위한 useEffect
   useEffect(() => {
-    if (loadingMore && initialMessages.length > 0) {
-      // 새 메시지들이 추가된 후 스크롤 위치 조정
+    if (loadingMore) {
+      // 로딩 시작 시 스크롤 위치 저장
       const messagesContainer = document.querySelector('[data-messages-container]');
       if (messagesContainer) {
-        const scrollHeight = messagesContainer.scrollHeight;
-        const clientHeight = messagesContainer.clientHeight;
-        const scrollTop = messagesContainer.scrollTop;
-        
-        // 새 메시지들이 추가된 후 스크롤 위치를 조정
+        scrollPositionRef.current = messagesContainer.scrollTop;
+      }
+    } else if (scrollPositionRef.current > 0) {
+      // 로딩 완료 후 스크롤 위치 복원
+      const messagesContainer = document.querySelector('[data-messages-container]');
+      if (messagesContainer) {
         setTimeout(() => {
-          const newScrollHeight = messagesContainer.scrollHeight;
-          const heightDifference = newScrollHeight - scrollHeight;
-          messagesContainer.scrollTop = scrollTop + heightDifference;
+          messagesContainer.scrollTop = scrollPositionRef.current;
+          scrollPositionRef.current = 0; // 리셋
         }, 100);
       }
     }
-  }, [initialMessages.length, loadingMore]);
+  }, [loadingMore]);
 
   // 더 불러오기 버튼 클릭 처리
   const handleLoadMore = () => {
