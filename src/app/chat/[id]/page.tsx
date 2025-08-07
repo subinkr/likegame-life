@@ -508,43 +508,55 @@ function ChatRoomPageContent() {
             아직 메시지가 없습니다.
           </div>
         ) : (
-          messages.map((message) => (
-            <div
-              key={message.id}
-              style={{
-                background: 'rgba(0,255,255,0.1)',
-                border: '1px solid rgba(0,255,255,0.3)',
-                borderRadius: '8px',
-                padding: '8px',
-                maxWidth: '80%',
-                alignSelf: message.user_nickname === user?.email?.split('@')[0] ? 'flex-end' : 'flex-start'
-              }}
-            >
-              <div style={{
-                fontSize: '0.8rem',
-                color: '#00ffff',
-                marginBottom: '4px',
-                fontWeight: 'bold'
-              }}>
-                {message.user_nickname}
+          messages.map((message) => {
+            // 현재 사용자의 닉네임 확인
+            const currentUserNickname = user?.user_metadata?.nickname || user?.email?.split('@')[0] || '나';
+            const isMyMessage = message.user_nickname === currentUserNickname;
+            
+            console.log('Message alignment check:', {
+              messageUser: message.user_nickname,
+              currentUser: currentUserNickname,
+              isMyMessage: isMyMessage
+            });
+            
+            return (
+              <div
+                key={message.id}
+                style={{
+                  background: 'rgba(0,255,255,0.1)',
+                  border: '1px solid rgba(0,255,255,0.3)',
+                  borderRadius: '8px',
+                  padding: '8px',
+                  maxWidth: '80%',
+                  alignSelf: isMyMessage ? 'flex-end' : 'flex-start'
+                }}
+              >
+                <div style={{
+                  fontSize: '0.8rem',
+                  color: '#00ffff',
+                  marginBottom: '4px',
+                  fontWeight: 'bold'
+                }}>
+                  {message.user_nickname}
+                </div>
+                <div style={{
+                  color: '#ffffff',
+                  fontSize: '0.9rem',
+                  wordBreak: 'break-word'
+                }}>
+                  {message.content}
+                </div>
+                <div style={{
+                  fontSize: '0.7rem',
+                  color: '#888888',
+                  marginTop: '4px',
+                  textAlign: 'right'
+                }}>
+                  {new Date(message.created_at).toLocaleTimeString()}
+                </div>
               </div>
-              <div style={{
-                color: '#ffffff',
-                fontSize: '0.9rem',
-                wordBreak: 'break-word'
-              }}>
-                {message.content}
-              </div>
-              <div style={{
-                fontSize: '0.7rem',
-                color: '#888888',
-                marginTop: '4px',
-                textAlign: 'right'
-              }}>
-                {new Date(message.created_at).toLocaleTimeString()}
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
         {/* 자동 스크롤을 위한 타겟 */}
         <div ref={messagesEndRef} />
