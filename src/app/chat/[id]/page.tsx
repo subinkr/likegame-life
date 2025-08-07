@@ -120,9 +120,9 @@ function ChatRoomPageContent() {
     // 스크롤 위치와 관계없이 헤더를 항상 표시
     setShowHeader(true);
     
-    // 스크롤이 맨 위에 도달했을 때 이전 메시지 로드
-    if (scrollTop === 0 && hasMoreMessages && !loadingMore) {
-      console.log('Scroll reached top, triggering load more...');
+    // 스크롤이 위쪽 100px 이내에 도달하면 이전 메시지 로드
+    if (scrollTop < 100 && hasMoreMessages && !loadingMore) {
+      console.log('Scroll near top, triggering load more...');
       loadMoreMessages();
     }
   };
