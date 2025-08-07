@@ -12,6 +12,8 @@ export function broadcastMessage(roomId: string, message: any) {
     const data = `data: ${JSON.stringify(message)}\n\n`;
     let successCount = 0;
     let errorCount = 0;
+    const deadControllers: ReadableStreamDefaultController[] = [];
+    
     Array.from(controllers).forEach((controller, index) => {
       try {
         console.log(`[BROADCAST] Sending to controller ${index + 1}/${controllers.size}`);
@@ -21,10 +23,16 @@ export function broadcastMessage(roomId: string, message: any) {
       } catch (error) {
         errorCount++;
         console.error(`[BROADCAST] Error sending to controller ${index + 1}:`, error);
+        deadControllers.push(controller);
       }
     });
 
-    console.log(`[BROADCAST] Room ${roomId} result: ${successCount} success, ${errorCount} errors, total ${controllers.size} connections`);
+    // 죽은 컨트롤러 정리
+    deadControllers.forEach(deadController => {
+      removeStreamController(roomId, deadController);
+    });
+
+    console.log(`[BROADCAST] Room ${roomId} result: ${successCount} success, ${errorCount} errors, ${deadControllers.length} dead controllers removed, total ${controllers.size} connections`);
   } else {
     console.log(`[BROADCAST] No active connections found for room ${roomId}`);
   }

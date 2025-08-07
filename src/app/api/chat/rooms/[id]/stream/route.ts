@@ -55,8 +55,20 @@ export async function GET(
         // 스트림에 컨트롤러 추가
         addStreamController(id, controller);
 
+        // 하트비트 전송 (30초마다)
+        const heartbeatInterval = setInterval(() => {
+          try {
+            controller.enqueue(new TextEncoder().encode('data: {"type": "heartbeat"}\n\n'));
+          } catch (error) {
+            console.error('Heartbeat send error:', error);
+            clearInterval(heartbeatInterval);
+            removeStreamController(id, controller);
+          }
+        }, 30000);
+
         // 연결 해제 시 정리
         request.signal.addEventListener('abort', () => {
+          clearInterval(heartbeatInterval);
           removeStreamController(id, controller);
         });
       }
