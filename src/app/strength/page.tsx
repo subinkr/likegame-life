@@ -309,10 +309,11 @@ function StrengthPageContent() {
                         fontWeight: 600,
                         fontSize: '0.75rem',
                         cursor: 'pointer',
-                        padding: '3px 6px',
+                        padding: '8px 12px',
                         borderRadius: '4px',
                         fontFamily: 'Press Start 2P, cursive',
-                        transition: 'all 0.3s ease'
+                        transition: 'all 0.3s ease',
+                        minWidth: '60px'
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.background = 'rgba(255,0,0,0.3)';

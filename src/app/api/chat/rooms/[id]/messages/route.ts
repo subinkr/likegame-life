@@ -94,8 +94,10 @@ export async function GET(
 
     return NextResponse.json(response);
   } catch (error) {
+    console.error('Unexpected error in POST /api/chat/rooms/[id]/messages:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     return NextResponse.json(
-      { error: '서버 오류가 발생했습니다.' },
+      { error: '서버 오류가 발생했습니다.', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
@@ -146,6 +148,12 @@ export async function POST(
     }
 
     // 메시지 저장 (user_nickname 필드 제거)
+    console.log('Attempting to insert message with data:', {
+      chat_room_id: id,
+      user_id: user.id,
+      content: content.trim(),
+    });
+
     const { data: message, error } = await supabaseAdmin
       .from('chat_messages')
       .insert({
@@ -161,8 +169,14 @@ export async function POST(
 
     if (error) {
       console.error('Database insert error:', error);
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
       return NextResponse.json(
-        { error: '메시지 전송에 실패했습니다.' },
+        { error: '메시지 전송에 실패했습니다.', details: error.message },
         { status: 500 }
       );
     }

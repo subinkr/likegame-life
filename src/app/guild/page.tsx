@@ -665,7 +665,7 @@ function GuildPageContent() {
                       </div>
 
                       {/* 액션 버튼들 */}
-                      <div style={{ marginTop: '4px', display: 'flex', gap: '2px', flexWrap: 'wrap' }}>
+                      <div style={{ marginTop: '6px', display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                         {quest.status === 'OPEN' && quest.creator.id !== user?.id && (
                           <button
                             onClick={(e) => {
@@ -673,14 +673,15 @@ function GuildPageContent() {
                               acceptQuest(quest.id);
                             }}
                             style={{
-                              padding: '3px 8px',
+                              padding: '8px 12px',
                               background: 'rgba(0,255,0,0.2)',
                               border: '1px solid rgba(0,255,0,0.5)',
                               color: '#00ff00',
                               borderRadius: '4px',
                               cursor: 'pointer',
                               fontWeight: 'bold',
-                              fontSize: '0.75rem'
+                              fontSize: '0.75rem',
+                              minWidth: '60px'
                             }}
                           >
                             수락
@@ -694,14 +695,15 @@ function GuildPageContent() {
                               cancelQuest(quest.id);
                             }}
                             style={{
-                              padding: '3px 8px',
+                              padding: '8px 12px',
                               background: 'rgba(255,0,0,0.2)',
                               border: '1px solid rgba(255,0,0,0.5)',
                               color: '#ff0000',
                               borderRadius: '4px',
                               cursor: 'pointer',
                               fontWeight: 'bold',
-                              fontSize: '0.75rem'
+                              fontSize: '0.75rem',
+                              minWidth: '60px'
                             }}
                           >
                             취소
@@ -984,7 +986,7 @@ function GuildPageContent() {
                       </div>
                       
                       {/* 액션 버튼들 */}
-                      <div style={{ marginTop: '4px', display: 'flex', gap: '2px', flexWrap: 'wrap' }}>
+                      <div style={{ marginTop: '6px', display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                         {canJoin && (
                           <button
                             onClick={(e) => {
@@ -1008,7 +1010,7 @@ function GuildPageContent() {
 
                         {!canJoin && !isMember && (
                           <div style={{
-                            padding: '3px 8px',
+                            padding: '8px 12px',
                             background: 'rgba(255,0,0,0.1)',
                             border: '1px solid rgba(255,0,0,0.3)',
                             color: '#ff0000',
@@ -1048,14 +1050,15 @@ function GuildPageContent() {
                               disbandParty(party.id);
                             }}
                             style={{
-                              padding: '6px 12px',
+                              padding: '8px 12px',
                               background: 'rgba(255,0,0,0.2)',
                               border: '1px solid rgba(255,0,0,0.5)',
                               color: '#ff0000',
                               borderRadius: '4px',
                               cursor: 'pointer',
                               fontWeight: 'bold',
-                              fontSize: '0.8rem'
+                              fontSize: '0.75rem',
+                              minWidth: '60px'
                             }}
                           >
                             해산
