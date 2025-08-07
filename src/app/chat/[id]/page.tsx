@@ -389,18 +389,18 @@ function ChatRoomPageContent() {
   }
 
   return (
-    <div style={{
+    <div className="chat-page-mobile" style={{
       background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
       padding: '8px',
       display: 'flex',
       flexDirection: 'column',
-      height: '100vh',
       position: 'fixed',
       top: 0,
       left: 0,
       right: 0,
       bottom: 0,
-      zIndex: 1000
+      zIndex: 1000,
+      overflow: 'hidden'
     }}>
       {/* 채팅방 헤더 */}
       <div style={{

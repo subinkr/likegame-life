@@ -33,16 +33,21 @@ export default function ClientLayout({
   return (
     <div style={{ 
       minHeight: '100vh',
+      height: '100vh',
       position: 'relative',
       display: 'flex',
-      flexDirection: 'column'
+      flexDirection: 'column',
+      overflow: 'hidden'
     }}>
       {!isAuthPage && !isChatPage && <AppBar />}
       <main style={{ 
         flex: 1,
         width: '100%',
         marginTop: (isAuthPage || isChatPage) ? '0' : '60px',
-        marginBottom: (isAuthPage || isChatPage) ? '0' : '60px'
+        marginBottom: (isAuthPage || isChatPage) ? '0' : '60px',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column'
       }}>
         {children}
       </main>

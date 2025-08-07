@@ -17,6 +17,34 @@ body {
   padding: 0;
 }
 
+/* 모바일 사파리 주소창 대응 */
+@supports (height: 100dvh) {
+  html, body {
+    height: 100dvh;
+  }
+}
+
+/* 모바일에서 더 나은 뷰포트 처리 */
+@supports (height: 100dvh) {
+  .mobile-full-height {
+    height: 100dvh;
+    min-height: 100dvh;
+  }
+}
+
+/* 채팅 페이지 모바일 최적화 */
+.chat-page-mobile {
+  height: 100vh;
+  min-height: 100vh;
+}
+
+@supports (height: 100dvh) {
+  .chat-page-mobile {
+    height: 100dvh;
+    min-height: 100dvh;
+  }
+}
+
 /* 스크롤바 숨기기 */
 ::-webkit-scrollbar {
   width: 0px;
