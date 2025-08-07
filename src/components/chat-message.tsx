@@ -7,6 +7,43 @@ interface ChatMessageItemProps {
 }
 
 export const ChatMessageItem = ({ message, isOwnMessage, showHeader }: ChatMessageItemProps) => {
+  // 시스템 메시지인 경우 전용 디자인 적용
+  if (message.isSystemMessage) {
+    return (
+      <div style={{
+        display: 'flex',
+        marginTop: '12px',
+        marginBottom: '12px',
+        justifyContent: 'center'
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '8px 16px',
+          background: '#f3f4f6',
+          borderRadius: '20px',
+          border: '1px solid #e5e7eb',
+          fontSize: '12px',
+          color: '#6b7280',
+          fontWeight: 500
+        }}>
+          <span style={{ fontSize: '14px' }}>
+            {message.systemType === 'JOIN' ? '👋' : message.systemType === 'LEAVE' ? '👋' : 'ℹ️'}
+          </span>
+          <span>
+            {message.systemType === 'JOIN' 
+              ? `${message.user.name}님이 입장했습니다`
+              : message.systemType === 'LEAVE'
+              ? `${message.user.name}님이 퇴장했습니다`
+              : message.content
+            }
+          </span>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={{
       display: 'flex',

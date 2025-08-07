@@ -8,6 +8,8 @@ export interface ChatMessage {
     name: string
   }
   createdAt: string
+  isSystemMessage?: boolean
+  systemType?: 'JOIN' | 'LEAVE' | 'OTHER'
 }
 
 interface UseRealtimeChatProps {
@@ -117,7 +119,9 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
             user: {
               name: messageUsername
             },
-            createdAt: newMessage.created_at
+            createdAt: newMessage.created_at,
+            isSystemMessage: newMessage.is_system_message || false,
+            systemType: newMessage.system_type || undefined
           }
 
           console.log('✅ Processing message for this room:', chatMessage)

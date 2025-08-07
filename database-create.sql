@@ -176,6 +176,8 @@ CREATE TABLE chat_messages (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   content TEXT NOT NULL,
   user_nickname TEXT,
+  is_system_message BOOLEAN DEFAULT FALSE,
+  system_type TEXT CHECK (system_type IN ('JOIN', 'LEAVE', 'OTHER')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -370,24 +372,28 @@ RETURNS TRIGGER AS $$
 BEGIN
   -- 사용자가 채팅방에 참가할 때 시스템 메시지 생성
   IF TG_OP = 'INSERT' THEN
-    INSERT INTO chat_messages (chat_room_id, user_id, content, user_nickname, created_at)
+    INSERT INTO chat_messages (chat_room_id, user_id, content, user_nickname, is_system_message, system_type, created_at)
     VALUES (
       NEW.chat_room_id,
       NEW.user_id,
-      'SYSTEM_JOIN',
+      (SELECT nickname FROM users WHERE id = NEW.user_id) || '님이 입장했습니다',
       (SELECT nickname FROM users WHERE id = NEW.user_id),
+      TRUE,
+      'JOIN',
       NOW()
     );
   END IF;
   
   -- 사용자가 채팅방에서 나갈 때 시스템 메시지 생성
   IF TG_OP = 'DELETE' THEN
-    INSERT INTO chat_messages (chat_room_id, user_id, content, user_nickname, created_at)
+    INSERT INTO chat_messages (chat_room_id, user_id, content, user_nickname, is_system_message, system_type, created_at)
     VALUES (
       OLD.chat_room_id,
       OLD.user_id,
-      'SYSTEM_LEAVE',
+      (SELECT nickname FROM users WHERE id = OLD.user_id) || '님이 퇴장했습니다',
       (SELECT nickname FROM users WHERE id = OLD.user_id),
+      TRUE,
+      'LEAVE',
       NOW()
     );
   END IF;

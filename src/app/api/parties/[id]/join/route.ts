@@ -92,7 +92,9 @@ export async function POST(
         .insert({
           chat_room_id: chatRoom.id,
           user_id: user.id,
-          content: 'SYSTEM_JOIN',
+          content: `${user.nickname || user.email}님이 입장했습니다`,
+          is_system_message: true,
+          system_type: 'JOIN'
         });
 
       if (messageError) {
