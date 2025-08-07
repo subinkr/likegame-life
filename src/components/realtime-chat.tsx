@@ -41,45 +41,21 @@ export const RealtimeChat = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  // 무한스크롤 처리
-  const handleScroll = () => {
-    console.log('Scroll event triggered!');
-    if (!messagesContainerRef.current) {
-      console.log('No messages container ref');
-      return;
-    }
-    
-    const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
-    console.log('Chat scroll position:', scrollTop, 'scrollHeight:', scrollHeight, 'clientHeight:', clientHeight, 'hasMore:', hasMore, 'loadingMore:', loadingMore, 'onLoadMore exists:', !!onLoadMore);
-    
-    // 부모 컴포넌트에 스크롤 위치 전달
-    onScroll?.(scrollTop);
-    
-    if (scrollTop < 200 && hasMore && !loadingMore) { // 스크롤이 위쪽 200px 이내에 도달하면 더 로드
-      console.log('Scroll near top, triggering load more...');
+  // 더 불러오기 버튼 클릭 처리
+  const handleLoadMore = () => {
+    console.log('Load more button clicked');
+    if (hasMore && !loadingMore) {
+      console.log('Triggering load more...');
       onLoadMore?.();
     }
   };
 
-  useEffect(() => {
-    console.log('Setting up scroll listener...');
-    const container = messagesContainerRef.current;
-    if (container) {
-      console.log('Container found, adding scroll listener');
-      console.log('Container dimensions:', {
-        scrollHeight: container.scrollHeight,
-        clientHeight: container.clientHeight,
-        scrollTop: container.scrollTop
-      });
-      container.addEventListener('scroll', handleScroll);
-      return () => {
-        console.log('Removing scroll listener');
-        container.removeEventListener('scroll', handleScroll);
-      };
-    } else {
-      console.log('Container not found');
-    }
-  }, [hasMore, loadingMore, onLoadMore]);
+  // 스크롤 위치를 부모 컴포넌트에 전달
+  const handleScroll = () => {
+    if (!messagesContainerRef.current) return;
+    const { scrollTop } = messagesContainerRef.current;
+    onScroll?.(scrollTop);
+  };
 
   useEffect(() => {
     scrollToBottom()
@@ -124,6 +100,33 @@ export const RealtimeChat = ({
         {isConnected ? '🟢 실시간 연결됨' : '🔴 연결 중...'}
       </div>
 
+      {/* Load More Button */}
+      {hasMore && (
+        <div style={{
+          padding: '12px 16px',
+          textAlign: 'center',
+          borderBottom: '1px solid #e2e8f0',
+          background: '#ffffff'
+        }}>
+          <button
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: loadingMore ? '#94a3b8' : '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: '14px',
+              cursor: loadingMore ? 'not-allowed' : 'pointer',
+              fontWeight: '500'
+            }}
+          >
+            {loadingMore ? '불러오는 중...' : '이전 메시지 20개 더 불러오기'}
+          </button>
+        </div>
+      )}
+
       {/* Scrollable Messages Area */}
       <div 
         ref={messagesContainerRef}
@@ -136,8 +139,7 @@ export const RealtimeChat = ({
           flexDirection: 'column',
           gap: '16px',
           background: '#f8fafc',
-          minHeight: 0, // Important for flex child scrolling
-          maxHeight: '60vh' // 강제로 스크롤 가능하게 만들기
+          minHeight: 0 // Important for flex child scrolling
         }}
       >
         {allMessages.length === 0 ? (

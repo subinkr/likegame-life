@@ -114,15 +114,11 @@ function ChatRoomPageContent() {
     }
   };
 
-  // 채팅 스크롤 이벤트 처리
-  const handleChatScroll = (scrollTop: number) => {
-    console.log('Chat scroll position:', scrollTop);
-    // 스크롤 위치와 관계없이 헤더를 항상 표시
-    setShowHeader(true);
-    
-    // 스크롤이 위쪽 200px 이내에 도달하면 이전 메시지 로드
-    if (scrollTop < 200 && hasMoreMessages && !loadingMore) {
-      console.log('Scroll near top, triggering load more...');
+  // 더 불러오기 버튼 클릭 처리
+  const handleLoadMore = () => {
+    console.log('Load more button clicked');
+    if (hasMoreMessages && !loadingMore) {
+      console.log('Triggering load more...');
       loadMoreMessages();
     }
   };
@@ -309,10 +305,9 @@ function ChatRoomPageContent() {
           onMessage={(messages) => {
             console.log('Messages updated:', messages);
           }}
-          onLoadMore={loadMoreMessages}
-          hasMore={hasMoreMessages}
-          loadingMore={loadingMore}
-          onScroll={handleChatScroll}
+                      onLoadMore={handleLoadMore}
+            hasMore={hasMoreMessages}
+            loadingMore={loadingMore}
         />
       </div>
     </div>
