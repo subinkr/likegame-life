@@ -81,7 +81,7 @@ function ChatRoomPageContent() {
         // 이전 메시지들을 기존 메시지 앞에 추가
         setInitialMessages(prev => [...messages, ...prev]);
       } else {
-        // 초기 로딩
+        // 초기 로딩 - 최신 메시지가 아래쪽에 오도록
         setInitialMessages(messages);
       }
       
