@@ -117,10 +117,10 @@ function ChatRoomPageContent() {
   // 채팅 스크롤 이벤트 처리
   const handleChatScroll = (scrollTop: number) => {
     console.log('Chat scroll position:', scrollTop);
-    const shouldShow = scrollTop > 10; // 더 낮은 임계값으로 헤더 표시
-    setShowHeader(shouldShow);
+    // 헤더를 항상 표시 (스크롤 위치와 관계없이)
+    setShowHeader(true);
     
-    // 헤더가 나타날 때 이전 메시지 로드 (조건부 헤더가 나타나지 않을 때도 작동)
+    // 스크롤 위치에 따라 이전 메시지 로드
     if (scrollTop > 20 && hasMoreMessages && !loadingMore) {
       console.log('Scroll threshold reached, triggering load more...');
       loadMoreMessages();
