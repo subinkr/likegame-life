@@ -85,19 +85,26 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
   useEffect(() => {
     console.log('Setting up Realtime subscription for room:', roomName)
     console.log('Username:', username)
+    console.log('Supabase client:', !!supabase)
     
     // Subscribe to realtime changes
     const channel = supabase
-      .channel(`chat:${roomName}`)
+      .channel(`chat_messages:${roomName}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'chat_messages',
         filter: `chat_room_id=eq.${roomName}`
       }, (payload) => {
+        console.log('=== REALTIME EVENT RECEIVED ===')
         console.log('Realtime payload received:', payload)
-        console.log('Realtime message received:', payload)
+        console.log('Payload event type:', payload.eventType)
+        console.log('Payload new record:', payload.new)
+        console.log('Payload old record:', payload.old)
+        
         const newMessage = payload.new as any
+        console.log('Extracted new message:', newMessage)
+        
         const chatMessage: ChatMessage = {
           id: newMessage.id,
           content: newMessage.content,
@@ -112,6 +119,7 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
         console.log('Message username:', newMessage.user_nickname)
         console.log('Message content:', newMessage.content)
         console.log('Message created_at:', newMessage.created_at)
+        console.log('Username comparison:', newMessage.user_nickname !== username)
 
         // Don't add if it's our own message (already added optimistically)
         if (newMessage.user_nickname !== username) {
@@ -130,9 +138,11 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
         if (onMessage) {
           onMessage([...messages, chatMessage])
         }
+        console.log('=== END REALTIME EVENT ===')
       })
       .subscribe((status) => {
         console.log('Realtime subscription status:', status)
+        console.log('Channel name:', `chat_messages:${roomName}`)
         setIsConnected(status === 'SUBSCRIBED')
       })
 
