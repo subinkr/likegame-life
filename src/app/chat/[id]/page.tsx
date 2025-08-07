@@ -109,6 +109,8 @@ function ChatRoomPageContent() {
     
     if (oldestMessageId) {
       await fetchMessages(oldestMessageId);
+    } else {
+      setLoadingMore(false);
     }
   };
 
