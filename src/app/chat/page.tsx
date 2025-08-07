@@ -78,7 +78,6 @@ function ChatListPageContent() {
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
       padding: '16px',
       display: 'flex',
       flexDirection: 'column',

@@ -265,6 +265,7 @@ function AchievementsPageContent() {
 
   // 로딩 중이거나 로그인되지 않은 경우
   if (loading || !user) {
+    const loadingEmoji = activeTab === 'titles' ? '👑' : '🎖️';
     return (
       <div style={{
         position: 'fixed',
@@ -284,7 +285,7 @@ function AchievementsPageContent() {
           fontSize: '3rem',
           animation: 'pulse 2s ease-in-out infinite',
           filter: 'drop-shadow(0 0 15px rgba(255, 215, 0, 0.8))'
-        }}>🏆</div>
+        }}>{loadingEmoji}</div>
         <div style={{ 
           color: '#ffd700', 
           fontSize: '1rem',
@@ -305,7 +306,6 @@ function AchievementsPageContent() {
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
       padding: '16px',
       color: '#ffffff'
     }}>
