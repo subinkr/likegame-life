@@ -58,8 +58,20 @@ export const RealtimeChat = ({
   };
 
   useEffect(() => {
-    scrollToBottom()
-  }, [allMessages])
+    // 새 메시지가 추가되었을 때만 스크롤을 맨 아래로
+    // 이전 메시지를 불러올 때는 스크롤 위치를 유지
+    if (allMessages.length > 0 && !loadingMore) {
+      // 마지막 메시지가 새로 추가된 것인지 확인
+      const lastMessage = allMessages[allMessages.length - 1];
+      const isNewMessage = lastMessage && lastMessage.id && 
+        (!initialMessages.length || lastMessage.id !== initialMessages[initialMessages.length - 1]?.id);
+      
+      // 새 메시지이고 현재 사용자가 보낸 메시지가 아닌 경우에만 스크롤
+      if (isNewMessage && lastMessage.user.name !== username) {
+        scrollToBottom();
+      }
+    }
+  }, [allMessages, loadingMore, initialMessages, username])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
