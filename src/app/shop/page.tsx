@@ -35,10 +35,11 @@ export default function ShopPage() {
 
   return (
     <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
+      minHeight: 'calc(100dvh - 120px)',
       padding: '16px',
-      color: '#ffffff'
+      color: '#ffffff',
+      marginTop: '60px',
+      marginBottom: '60px'
     }}>
       {/* 상점 요약 */}
       <div style={{

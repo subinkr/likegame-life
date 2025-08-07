@@ -130,10 +130,11 @@ function AgilityPageContent() {
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
       padding: '16px',
       color: '#ffffff',
-      minHeight: 'calc(100vh - 130px)'
+      minHeight: 'calc(100dvh - 120px)',
+      marginTop: '60px',
+      marginBottom: '60px'
     }}>
       {/* 민첩 요약 */}
       <div style={{

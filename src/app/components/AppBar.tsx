@@ -95,7 +95,7 @@ function AppBarContent() {
 
   const getPageDescription = () => {
     switch (pathname) {
-      case '/': return '30일 내 3대 운동 최고 기록으로 랭크를 올리세요.';
+      case '/': return '내 능력과 성취를 한눈에 확인하세요.';
       case '/skills': return '자격증을 등록하세요.';
       case '/achievements': 
         const tab = searchParams.get('tab');

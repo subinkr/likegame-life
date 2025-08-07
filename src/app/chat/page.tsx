@@ -81,13 +81,17 @@ function ChatListPageContent() {
       padding: '16px',
       display: 'flex',
       flexDirection: 'column',
-      gap: '16px'
+      gap: '16px',
+      minHeight: 'calc(100dvh - 120px)',
+      marginTop: '60px',
+      marginBottom: '60px'
     }}>
       {/* 스크롤 가능한 메인 콘텐츠 영역 */}
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '16px'
+        gap: '16px',
+        flex: 1
       }}>
         {/* 채팅방 목록 */}
         <div style={{
