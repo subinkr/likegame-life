@@ -43,6 +43,8 @@ function ChatRoomPageContent() {
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastMessageTimeRef = useRef<number>(Date.now());
+  const connectionAttemptsRef = useRef<number>(0);
+  const lastHeartbeatRef = useRef<number>(Date.now());
 
   useEffect(() => {
     if (id) {
@@ -56,9 +58,16 @@ function ChatRoomPageContent() {
         const now = Date.now();
         const timeSinceLastMessage = now - lastMessageTimeRef.current;
         
-        // 2분 이상 메시지가 없으면 연결 상태 확인
-        if (timeSinceLastMessage > 120000 && sseConnected) {
-          console.log('No messages for 2 minutes, checking connection...');
+        // 30초마다 연결 상태 확인
+        const currentTime = Date.now();
+        const timeSinceLastHeartbeat = currentTime - lastHeartbeatRef.current;
+        const timeSinceLastMessage = currentTime - lastMessageTimeRef.current;
+        
+        // 1분 이상 하트비트가 없거나 2분 이상 메시지가 없으면 재연결
+        if ((timeSinceLastHeartbeat > 60000 || timeSinceLastMessage > 120000) && sseConnected) {
+          console.log('Connection appears to be stale, reconnecting...');
+          console.log('Time since last heartbeat:', timeSinceLastHeartbeat);
+          console.log('Time since last message:', timeSinceLastMessage);
           checkAndReconnectSSE();
         }
       }, 30000);
@@ -136,9 +145,11 @@ function ChatRoomPageContent() {
           if (data.type === 'connected') {
             console.log('SSE connection confirmed for room:', id);
             setSseConnected(true);
+            connectionAttemptsRef.current = 0; // 연결 성공 시 시도 횟수 리셋
           } else if (data.type === 'heartbeat') {
             console.log('SSE heartbeat received for room:', id);
             setSseConnected(true);
+            lastHeartbeatRef.current = Date.now();
           } else if (data.type === 'new_message') {
             console.log('New message received via SSE:', data.message);
             
@@ -179,12 +190,20 @@ function ChatRoomPageContent() {
         eventSource.close();
         eventSourceRef.current = null;
         
-        // 재연결 시도 (지수 백오프 적용)
-        const reconnectDelay = Math.min(1000 * Math.pow(2, 3), 30000); // 최대 30초
-        reconnectTimeoutRef.current = setTimeout(() => {
-          console.log('Attempting to reconnect SSE for room:', id);
-          setupRealtimeSubscription();
-        }, reconnectDelay);
+        // 연결 시도 횟수 증가
+        connectionAttemptsRef.current += 1;
+        
+        // 지수 백오프로 재연결 시도 (최대 5회)
+        if (connectionAttemptsRef.current <= 5) {
+          const reconnectDelay = Math.min(1000 * Math.pow(2, connectionAttemptsRef.current - 1), 30000);
+          console.log(`Reconnection attempt ${connectionAttemptsRef.current}/5 in ${reconnectDelay}ms`);
+          reconnectTimeoutRef.current = setTimeout(() => {
+            console.log('Attempting to reconnect SSE for room:', id);
+            setupRealtimeSubscription();
+          }, reconnectDelay);
+        } else {
+          console.log('Max reconnection attempts reached, stopping');
+        }
       };
 
       console.log('SSE connection setup completed for room:', id);
@@ -205,9 +224,11 @@ function ChatRoomPageContent() {
     console.log('Checking SSE connection status...');
     console.log('SSE connected:', sseConnected);
     console.log('EventSource exists:', !!eventSourceRef.current);
+    console.log('Connection attempts:', connectionAttemptsRef.current);
     
     if (!sseConnected || !eventSourceRef.current) {
       console.log('SSE not connected, attempting to reconnect...');
+      connectionAttemptsRef.current = 0; // 재연결 시도 횟수 리셋
       await setupRealtimeSubscription();
     } else {
       console.log('SSE connection appears to be healthy');
