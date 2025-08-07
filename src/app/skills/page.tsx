@@ -158,22 +158,13 @@ function SkillsPageContent() {
       padding: '8px',
       display: 'flex',
       flexDirection: 'column',
-      gap: '8px',
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      overflow: 'hidden'
+      gap: '8px'
     }}>
       {/* 스크롤 가능한 메인 콘텐츠 영역 */}
       <div style={{
-        flex: 1,
-        overflowY: 'auto',
         display: 'flex',
         flexDirection: 'column',
-        gap: '8px',
-        minHeight: 0
+        gap: '8px'
       }}>
         {/* 스킬 통계 */}
         <div style={{

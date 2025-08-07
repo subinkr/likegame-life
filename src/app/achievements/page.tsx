@@ -307,22 +307,13 @@ function AchievementsPageContent() {
     <div style={{
       background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
       padding: '8px',
-      color: '#ffffff',
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      overflow: 'hidden'
+      color: '#ffffff'
     }}>
       {/* 스크롤 가능한 메인 콘텐츠 영역 */}
       <div style={{
-        flex: 1,
-        overflowY: 'auto',
         display: 'flex',
         flexDirection: 'column',
-        gap: '8px',
-        minHeight: 0
+        gap: '8px'
       }}>
         {/* 탭 선택 */}
         <div style={{
