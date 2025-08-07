@@ -50,9 +50,7 @@ export const RealtimeChat = ({
 
   // 더 불러오기 버튼 클릭 처리
   const handleLoadMore = () => {
-    console.log('Load more button clicked');
     if (hasMore && !loadingMore) {
-      console.log('Triggering load more...');
       onLoadMore?.();
     }
   };

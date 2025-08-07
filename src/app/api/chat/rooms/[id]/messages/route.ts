@@ -109,11 +109,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log('POST API route called for room:', await params);
-    console.log('Request headers:', Object.fromEntries(request.headers.entries()));
-    
     const user = await getCurrentUserFromSupabase(request);
-    console.log('User from auth:', user);
     
     if (!user) {
       return NextResponse.json(
@@ -148,11 +144,6 @@ export async function POST(
     }
 
     // 메시지 저장 (user_nickname 필드 제거)
-    console.log('Attempting to insert message with data:', {
-      chat_room_id: id,
-      user_id: user.id,
-      content: content.trim(),
-    });
 
     const { data: message, error } = await supabaseAdmin
       .from('chat_messages')
@@ -168,20 +159,11 @@ export async function POST(
       .single();
 
     if (error) {
-      console.error('Database insert error:', error);
-      console.error('Error details:', {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint
-      });
       return NextResponse.json(
-        { error: '메시지 전송에 실패했습니다.', details: error.message },
+        { error: '메시지 전송에 실패했습니다.' },
         { status: 500 }
       );
     }
-
-    console.log('Message saved to database:', message);
 
     const formattedMessage = {
       id: message.id,
@@ -193,8 +175,6 @@ export async function POST(
       isSystemMessage: message.is_system_message || false,
       systemType: message.system_type || undefined
     };
-
-    console.log('Message saved successfully:', formattedMessage);
 
     return NextResponse.json(formattedMessage);
   } catch (error) {

@@ -36,7 +36,6 @@ function ChatRoomPageContent() {
   const [initialMessages, setInitialMessages] = useState<ChatMessage[]>([]);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [showHeader, setShowHeader] = useState(false);
   const scrollPositionRef = useRef<number>(0);
 
   useEffect(() => {
@@ -62,15 +61,12 @@ function ChatRoomPageContent() {
 
   const fetchMessages = async (beforeId?: string) => {
     try {
-      console.log('Fetching messages for room:', id, 'before:', beforeId);
-      
       let url = `/chat/rooms/${id}/messages?limit=20`;
       if (beforeId) {
         url += `&before=${beforeId}`;
       }
       
       const response = await apiRequest(url);
-      console.log('Messages API response:', response);
       
       const messages: ChatMessage[] = response.messages.map((msg: any) => ({
         id: msg.id,
@@ -82,8 +78,6 @@ function ChatRoomPageContent() {
         isSystemMessage: msg.is_system_message || false,
         systemType: msg.system_type || undefined
       }));
-      
-      console.log('Processed messages:', messages);
       
       if (beforeId) {
         // 이전 메시지들을 역순으로 정렬해서 기존 메시지 위에 추가
@@ -104,16 +98,12 @@ function ChatRoomPageContent() {
   };
 
   const loadMoreMessages = async () => {
-    console.log('loadMoreMessages called:', { loadingMore, hasMoreMessages, messageCount: initialMessages.length });
-    
     if (loadingMore || !hasMoreMessages || initialMessages.length === 0) {
-      console.log('loadMoreMessages blocked:', { loadingMore, hasMoreMessages, messageCount: initialMessages.length });
       return;
     }
     
     setLoadingMore(true);
     const oldestMessageId = initialMessages[0]?.id;
-    console.log('Loading more messages before:', oldestMessageId);
     
     if (oldestMessageId) {
       await fetchMessages(oldestMessageId);
@@ -144,9 +134,7 @@ function ChatRoomPageContent() {
 
   // 더 불러오기 버튼 클릭 처리
   const handleLoadMore = () => {
-    console.log('Load more button clicked');
     if (hasMoreMessages && !loadingMore) {
-      console.log('Triggering load more...');
       loadMoreMessages();
     }
   };
@@ -332,7 +320,7 @@ function ChatRoomPageContent() {
           participants={chatRoom?.participants || []}
           messages={initialMessages}
           onMessage={(messages) => {
-            console.log('Messages updated:', messages);
+            // Messages updated
           }}
           onLoadMore={handleLoadMore}
           hasMore={hasMoreMessages}
