@@ -316,9 +316,7 @@ function GuildPageContent() {
       textAlign: 'center',
       display: 'flex',
       flexDirection: 'column',
-      minHeight: 'calc(100dvh - 120px)',
-      marginTop: '60px',
-      marginBottom: '60px'
+      minHeight: 'calc(100dvh - 120px)'
     }}>
       {/* 스크롤 가능한 메인 콘텐츠 영역 */}
       <div style={{

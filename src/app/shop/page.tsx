@@ -37,9 +37,7 @@ export default function ShopPage() {
     <div style={{
       minHeight: 'calc(100dvh - 120px)',
       padding: '16px',
-      color: '#ffffff',
-      marginTop: '60px',
-      marginBottom: '60px'
+      color: '#ffffff'
     }}>
       {/* 상점 요약 */}
       <div style={{

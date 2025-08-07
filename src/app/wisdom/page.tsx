@@ -223,9 +223,7 @@ function WisdomNotesPageContent() {
     <div style={{
       padding: '16px',
       color: '#ffffff',
-      minHeight: 'calc(100dvh - 120px)',
-      marginTop: '60px',
-      marginBottom: '60px'
+      minHeight: 'calc(100dvh - 120px)'
     }}>
       {/* 지혜 요약 */}
       <div style={{
