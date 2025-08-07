@@ -71,20 +71,24 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
   }, [roomName, username])
 
   useEffect(() => {
-    console.log('Setting up Realtime subscription for room:', roomName)
+    console.log('🔍 DEBUG: Setting up Realtime subscription')
+    console.log('Room name:', roomName)
     console.log('Username:', username)
     
-    // Subscribe to realtime changes
+    // 가장 기본적인 구독: 모든 INSERT 이벤트 수신
     const channel = supabase
-      .channel(`chat:${roomName}`)
+      .channel('test-channel')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
-        table: 'chat_messages',
-        filter: `chat_room_id=eq.${roomName}`
+        table: 'chat_messages'
+        // 필터링 제거 - 모든 INSERT 이벤트 수신
       }, (payload) => {
         console.log('🎉 REALTIME EVENT RECEIVED! 🎉')
-        console.log('Payload:', payload)
+        console.log('Full payload:', payload)
+        console.log('Event type:', payload.eventType)
+        console.log('New record:', payload.new)
+        console.log('Table:', payload.table)
         
         const newMessage = payload.new as any
         if (!newMessage) {
@@ -92,39 +96,49 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
           return
         }
 
-        const chatMessage: ChatMessage = {
-          id: newMessage.id,
-          content: newMessage.content,
-          user: {
-            name: newMessage.user_nickname
-          },
-          createdAt: newMessage.created_at
-        }
+        console.log('✅ New message data found:', newMessage)
+        console.log('Message room ID:', newMessage.chat_room_id)
+        console.log('Current room name:', roomName)
+        console.log('Room ID match:', newMessage.chat_room_id === roomName)
 
-        console.log('Processed message:', chatMessage)
-        console.log('Current username:', username)
-        console.log('Message username:', newMessage.user_nickname)
+        // 채팅방 ID가 일치하는 경우에만 처리
+        if (newMessage.chat_room_id === roomName) {
+          const chatMessage: ChatMessage = {
+            id: newMessage.id,
+            content: newMessage.content,
+            user: {
+              name: newMessage.user_nickname
+            },
+            createdAt: newMessage.created_at
+          }
 
-        // Don't add if it's our own message (already added optimistically)
-        if (newMessage.user_nickname !== username) {
-          console.log('Adding message to state (not own message)')
-          setMessages(prev => [...prev, chatMessage])
+          console.log('✅ Processing message for this room:', chatMessage)
+          console.log('Current username:', username)
+          console.log('Message username:', newMessage.user_nickname)
+
+          // Don't add if it's our own message (already added optimistically)
+          if (newMessage.user_nickname !== username) {
+            console.log('✅ Adding message to state (not own message)')
+            setMessages(prev => [...prev, chatMessage])
+          } else {
+            console.log('⏭️ Skipping own message')
+          }
+
+          // Call onMessage callback
+          if (onMessage) {
+            onMessage([...messages, chatMessage])
+          }
         } else {
-          console.log('Skipping own message')
-        }
-
-        // Call onMessage callback
-        if (onMessage) {
-          onMessage([...messages, chatMessage])
+          console.log('⏭️ Message is for different room, skipping')
         }
       })
       .subscribe((status) => {
-        console.log('Realtime subscription status:', status)
+        console.log('🔍 Realtime subscription status:', status)
         setIsConnected(status === 'SUBSCRIBED')
       })
 
     return () => {
-      console.log('Cleaning up Realtime subscription for room:', roomName)
+      console.log('🧹 Cleaning up Realtime subscription')
       supabase.removeChannel(channel)
     }
   }, [roomName, username, onMessage])
