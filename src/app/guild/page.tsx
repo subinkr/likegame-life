@@ -325,30 +325,36 @@ function GuildPageContent() {
         gap: '16px'
       }}>
           {loading ? (
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flex: 1,
-          flexDirection: 'column',
-          gap: '24px'
-        }}>
-          <div style={{ 
-            fontSize: '3rem',
-            animation: 'pulse 2s ease-in-out infinite',
-            filter: 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.8))'
-          }}>⚔️</div>
-          <div style={{ 
-            color: '#00ffff', 
-            fontSize: '1rem',
-            fontFamily: 'Press Start 2P, cursive',
-            textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
-            textAlign: 'center'
-          }}>
-            시스템 로딩 중...
-          </div>
-        </div>
-      ) : (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'column',
+              gap: '24px',
+              background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
+              zIndex: 1000
+            }}>
+              <div style={{ 
+                fontSize: '3rem',
+                animation: 'pulse 2s ease-in-out infinite',
+                filter: 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.8))'
+              }}>⚔️</div>
+              <div style={{ 
+                color: '#00ffff', 
+                fontSize: '1rem',
+                fontFamily: 'Press Start 2P, cursive',
+                textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
+                textAlign: 'center'
+              }}>
+                시스템 로딩 중...
+              </div>
+            </div>
+          ) : (
         <>
           {/* 탭 네비게이션 */}
           <div style={{

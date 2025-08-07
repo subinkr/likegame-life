@@ -265,37 +265,37 @@ function AchievementsPageContent() {
 
   // 로딩 중이거나 로그인되지 않은 경우
   if (loading || !user) {
-    const loadingEmoji = activeTab === 'titles' ? '👑' : '🎖️';
     return (
       <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: 'calc(100vh - 130px)',
         flexDirection: 'column',
         gap: '24px',
-        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)'
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
+        zIndex: 1000
       }}>
         <div style={{ 
           fontSize: '3rem',
           animation: 'pulse 2s ease-in-out infinite',
-          filter: 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.8))'
-        }}>{loadingEmoji}</div>
+          filter: 'drop-shadow(0 0 15px rgba(255, 215, 0, 0.8))'
+        }}>🏆</div>
         <div style={{ 
-          color: '#00ffff', 
+          color: '#ffd700', 
           fontSize: '1rem',
           fontFamily: 'Press Start 2P, cursive',
-          textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
+          textShadow: '0 0 10px rgba(255, 215, 0, 0.8)',
           textAlign: 'center'
         }}>
-          시스템 로딩 중...
+          {loading ? '시스템 로딩 중...' : '로그인이 필요합니다.'}
         </div>
       </div>
     );
-  }
-
-  if (!user) {
-    return null;
   }
 
   const titleStats = getTitleStats();

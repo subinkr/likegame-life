@@ -118,27 +118,32 @@ function StrengthPageContent() {
   if (isLoading) {
     return (
       <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: 'calc(100vh - 130px)',
         flexDirection: 'column',
         gap: '24px',
-        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)'
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
+        zIndex: 1000
       }}>
         <div style={{ 
           fontSize: '3rem',
           animation: 'pulse 2s ease-in-out infinite',
-          filter: 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.8))'
+          filter: 'drop-shadow(0 0 15px rgba(255, 0, 102, 0.8))'
         }}>💪</div>
         <div style={{ 
-          color: '#00ffff', 
+          color: '#ff0066', 
           fontSize: '1rem',
           fontFamily: 'Press Start 2P, cursive',
-          textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
+          textShadow: '0 0 10px rgba(255, 0, 102, 0.8)',
           textAlign: 'center'
         }}>
-          3대 운동 기록 로딩 중...
+          시스템 로딩 중...
         </div>
       </div>
     );
