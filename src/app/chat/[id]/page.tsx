@@ -95,7 +95,7 @@ function ChatRoomPageContent() {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        height: 'calc(100dvh - 120px)',
+        height: '100dvh',
         background: '#f8fafc',
         color: '#64748b'
       }}>
@@ -125,7 +125,7 @@ function ChatRoomPageContent() {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        height: 'calc(100dvh - 120px)',
+        height: '100dvh',
         background: '#f8fafc',
         color: '#64748b'
       }}>
@@ -146,7 +146,7 @@ function ChatRoomPageContent() {
     <div style={{
       display: 'flex',
       flexDirection: 'column',
-      height: 'calc(100dvh - 120px)',
+      height: '100dvh',
       background: '#ffffff'
     }}>
       {/* Fixed Header */}
