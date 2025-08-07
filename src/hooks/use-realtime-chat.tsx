@@ -120,7 +120,7 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
 
         // Call onMessage callback
         if (onMessage) {
-          onMessage([...messages, chatMessage])
+          onMessage(prev => [...prev, chatMessage])
         }
       })
       .subscribe((status) => {
@@ -132,7 +132,7 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
       console.log('Cleaning up Realtime subscription for room:', roomName)
       supabase.removeChannel(channel)
     }
-  }, [roomName, username, onMessage, messages])
+  }, [roomName, username, onMessage])
 
   return {
     messages,
