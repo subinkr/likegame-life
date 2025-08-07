@@ -11,8 +11,56 @@ export default function RegisterPage() {
   const [nickname, setNickname] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [nicknameChecking, setNicknameChecking] = useState(false);
+  const [nicknameAvailable, setNicknameAvailable] = useState<boolean | null>(null);
   const router = useRouter();
   const { signUp } = useAuth();
+
+  // 닉네임 중복 확인
+  const checkNickname = async (nickname: string) => {
+    if (!nickname || nickname.trim() === '') {
+      setNicknameAvailable(null);
+      return;
+    }
+
+    setNicknameChecking(true);
+    try {
+      const response = await fetch('/api/auth/check-nickname', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ nickname: nickname.trim() }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || '닉네임 확인 중 오류가 발생했습니다.');
+      }
+
+      setNicknameAvailable(!result.exists);
+    } catch (error: any) {
+      console.error('닉네임 확인 오류:', error);
+      setNicknameAvailable(null);
+    } finally {
+      setNicknameChecking(false);
+    }
+  };
+
+  // 닉네임 입력 핸들러
+  const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNickname(value);
+    setError(''); // 에러 메시지 초기화
+
+    // 디바운스: 500ms 후에 중복 확인
+    const timeoutId = setTimeout(() => {
+      checkNickname(value);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +69,18 @@ export default function RegisterPage() {
 
     if (password !== confirmPassword) {
       setError('비밀번호가 일치하지 않습니다.');
+      setLoading(false);
+      return;
+    }
+
+    if (nicknameAvailable === false) {
+      setError('이미 사용 중인 닉네임입니다.');
+      setLoading(false);
+      return;
+    }
+
+    if (nicknameAvailable === null) {
+      setError('닉네임을 입력해주세요.');
       setLoading(false);
       return;
     }
@@ -48,7 +108,7 @@ export default function RegisterPage() {
       }
 
       // 이메일이 중복되지 않으면 회원가입 진행
-      await signUp({ email, password, nickname });
+      await signUp({ email, password, nickname: nickname.trim() });
       alert('📧 이메일 확인이 필요합니다.\n\n가입하신 이메일로 확인 메일을 보냈습니다.\n이메일을 확인하고 링크를 클릭해주세요.');
       router.push('/auth/login');
     } catch (error: any) {
@@ -108,7 +168,7 @@ export default function RegisterPage() {
             <input
               type="text"
               value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
+              onChange={handleNicknameChange}
               required
               style={{
                 height: 40,
@@ -117,11 +177,42 @@ export default function RegisterPage() {
                 padding: '0 12px',
                 boxSizing: 'border-box',
                 background: 'rgba(15,23,42,0.8)',
-                border: '1px solid #334155',
+                border: nicknameAvailable === false 
+                  ? '1px solid #ef4444' 
+                  : nicknameAvailable === true 
+                    ? '1px solid #10b981'
+                    : '1px solid #334155',
                 color: '#ffffff'
               }}
               placeholder="게임 닉네임"
             />
+            {nicknameChecking && (
+              <div style={{
+                fontSize: '0.75rem',
+                color: '#f59e0b',
+                marginTop: '4px'
+              }}>
+                🔍 닉네임 확인 중...
+              </div>
+            )}
+            {nicknameAvailable === true && !nicknameChecking && (
+              <div style={{
+                fontSize: '0.75rem',
+                color: '#10b981',
+                marginTop: '4px'
+              }}>
+                ✅ 사용 가능한 닉네임입니다.
+              </div>
+            )}
+            {nicknameAvailable === false && !nicknameChecking && (
+              <div style={{
+                fontSize: '0.75rem',
+                color: '#ef4444',
+                marginTop: '4px'
+              }}>
+                ❌ 이미 사용 중인 닉네임입니다.
+              </div>
+            )}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -227,7 +318,7 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || nicknameChecking || nicknameAvailable === false}
             style={{
               padding: '12px',
               borderRadius: 8,
@@ -236,8 +327,8 @@ export default function RegisterPage() {
               color: '#ffffff',
               fontWeight: 600,
               fontSize: '0.9rem',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.7 : 1
+              cursor: (loading || nicknameChecking || nicknameAvailable === false) ? 'not-allowed' : 'pointer',
+              opacity: (loading || nicknameChecking || nicknameAvailable === false) ? 0.7 : 1
             }}
           >
             {loading ? '가입 중...' : '회원가입'}
