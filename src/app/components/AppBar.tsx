@@ -103,9 +103,9 @@ function AppBarContent() {
       case '/guild': return '다른 사람들과 상호작용하세요.';
       case '/chat': return '관련된 사람들과 대화를 나누세요.';
       case '/shop': return '아이템을 구매하세요.';
-      case '/strength': return '30일 내 3대 운동 최고 기록으로 랭크를 올리세요.';
-      case '/agility': return '30일 내 걷기, 달리기 누적 거리로 랭크를 올리세요.';
-      case '/wisdom': return '30일 내 초서 누적 개수로 랭크를 올리세요.';
+      case '/strength': return '3대 운동 최고 기록으로 랭크를 올리세요.';
+      case '/agility': return '걷기, 달리기 누적 거리로 랭크를 올리세요.';
+      case '/wisdom': return '초서 누적 개수로 랭크를 올리세요.';
       case '/wisdom/new': return '새로운 지혜 기록을 작성하세요.';
       case '/books': return '도서를 관리하세요.';
       case '/admin': return '관리자 기능을 사용하세요.';
