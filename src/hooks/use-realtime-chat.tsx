@@ -109,6 +109,11 @@ export const useRealtimeChat = ({ roomName, username, participants = [], onMessa
 
         // 채팅방 ID가 일치하는 경우에만 처리
         if (newMessage.chat_room_id === roomName) {
+          console.log('🔍 DEBUG: Looking for user in participants')
+          console.log('Message user_id:', newMessage.user_id)
+          console.log('Participants array:', participants)
+          console.log('Participants IDs:', participants.map(p => p.id))
+          
           // user_id를 사용하여 참가자 목록에서 닉네임을 찾음
           const participant = participants.find(p => p.id === newMessage.user_id)
           const messageUsername = participant?.nickname || 'Unknown User'

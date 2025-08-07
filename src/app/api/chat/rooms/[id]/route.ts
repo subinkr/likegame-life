@@ -91,7 +91,32 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(chatRoom);
+    // 채팅방 참가자 목록 조회
+    const { data: participants, error: participantsError } = await supabaseAdmin
+      .from('chat_room_participants')
+      .select(`
+        user_id,
+        users!inner(nickname)
+      `)
+      .eq('chat_room_id', id);
+
+    if (participantsError) {
+      console.error('Error fetching participants:', participantsError);
+      // 참가자 정보 없이도 채팅방 정보는 반환
+      return NextResponse.json(chatRoom);
+    }
+
+    // 참가자 정보를 필요한 형태로 변환
+    const participantsData = participants.map((p: any) => ({
+      id: p.user_id,
+      nickname: p.users.nickname
+    }));
+
+    // 채팅방 정보와 참가자 정보를 함께 반환
+    return NextResponse.json({
+      ...chatRoom,
+      participants: participantsData
+    });
   } catch (error) {
     // 채팅방 조회 실패 무시
     return NextResponse.json(
