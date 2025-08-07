@@ -411,7 +411,8 @@ function ChatRoomPageContent() {
         marginBottom: '8px',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        flexShrink: 0
       }}>
         <button
           onClick={handleGoBack}
@@ -483,7 +484,7 @@ function ChatRoomPageContent() {
         </button>
       </div>
 
-      {/* 메시지 목록 */}
+      {/* 메시지 목록 - 남은 공간을 모두 차지 */}
       <div style={{
         flex: 1,
         background: 'rgba(255,255,255,0.05)',
@@ -494,7 +495,8 @@ function ChatRoomPageContent() {
         overflowY: 'auto',
         display: 'flex',
         flexDirection: 'column',
-        gap: '8px'
+        gap: '8px',
+        minHeight: 0
       }}>
         {messages.length === 0 ? (
           <div style={{
@@ -548,11 +550,18 @@ function ChatRoomPageContent() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 메시지 입력 */}
+      {/* 메시지 입력 - 항상 하단에 고정 */}
       <form onSubmit={sendMessage} style={{
         display: 'flex',
         gap: '8px',
-        minWidth: 0
+        minWidth: 0,
+        flexShrink: 0,
+        background: 'rgba(0,0,0,0.3)',
+        border: '2px solid rgba(0,255,255,0.2)',
+        borderRadius: '10px',
+        padding: '12px',
+        position: 'sticky',
+        bottom: 0
       }}>
         <input
           type="text"
