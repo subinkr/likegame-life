@@ -175,7 +175,6 @@ CREATE TABLE chat_messages (
   chat_room_id UUID NOT NULL REFERENCES chat_rooms(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   content TEXT NOT NULL,
-  user_nickname TEXT,
   is_system_message BOOLEAN DEFAULT FALSE,
   system_type TEXT CHECK (system_type IN ('JOIN', 'LEAVE', 'OTHER')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -372,12 +371,11 @@ RETURNS TRIGGER AS $$
 BEGIN
   -- 사용자가 채팅방에 참가할 때 시스템 메시지 생성
   IF TG_OP = 'INSERT' THEN
-    INSERT INTO chat_messages (chat_room_id, user_id, content, user_nickname, is_system_message, system_type, created_at)
+    INSERT INTO chat_messages (chat_room_id, user_id, content, is_system_message, system_type, created_at)
     VALUES (
       NEW.chat_room_id,
       NEW.user_id,
       (SELECT nickname FROM users WHERE id = NEW.user_id) || '님이 입장했습니다',
-      (SELECT nickname FROM users WHERE id = NEW.user_id),
       TRUE,
       'JOIN',
       NOW()
@@ -386,12 +384,11 @@ BEGIN
   
   -- 사용자가 채팅방에서 나갈 때 시스템 메시지 생성
   IF TG_OP = 'DELETE' THEN
-    INSERT INTO chat_messages (chat_room_id, user_id, content, user_nickname, is_system_message, system_type, created_at)
+    INSERT INTO chat_messages (chat_room_id, user_id, content, is_system_message, system_type, created_at)
     VALUES (
       OLD.chat_room_id,
       OLD.user_id,
       (SELECT nickname FROM users WHERE id = OLD.user_id) || '님이 퇴장했습니다',
-      (SELECT nickname FROM users WHERE id = OLD.user_id),
       TRUE,
       'LEAVE',
       NOW()
@@ -425,9 +422,11 @@ BEGIN
       'payload', jsonb_build_object(
         'id', NEW.id,
         'content', NEW.content,
-        'user_nickname', (SELECT nickname FROM users WHERE id = NEW.user_id),
+        'user_id', NEW.user_id,
         'created_at', NEW.created_at,
-        'chat_room_id', NEW.chat_room_id
+        'chat_room_id', NEW.chat_room_id,
+        'is_system_message', NEW.is_system_message,
+        'system_type', NEW.system_type
       )
     )
   );

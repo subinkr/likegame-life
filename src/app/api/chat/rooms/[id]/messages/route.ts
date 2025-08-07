@@ -77,8 +77,12 @@ export async function GET(
     const formattedMessages = (messages || []).map((message: any) => ({
       id: message.id,
       content: message.content,
-      user_nickname: message.user_nickname || message.user?.nickname || message.user_id,
-      created_at: message.created_at,
+      user: {
+        name: message.user?.nickname || 'Unknown User'
+      },
+      createdAt: message.created_at,
+      isSystemMessage: message.is_system_message || false,
+      systemType: message.system_type || undefined
     }));
 
     // 응답에 페이지네이션 정보 포함
@@ -141,28 +145,12 @@ export async function POST(
       );
     }
 
-    // 사용자 닉네임 가져오기
-    const { data: userData, error: userError } = await supabaseAdmin
-      .from('users')
-      .select('nickname')
-      .eq('id', user.id)
-      .single();
-
-    if (userError || !userData) {
-      console.error('Error fetching user data:', userError);
-      return NextResponse.json(
-        { error: '사용자 정보를 가져오는데 실패했습니다.' },
-        { status: 500 }
-      );
-    }
-
-    // 메시지 저장 (user_nickname 필드 포함)
+    // 메시지 저장 (user_nickname 필드 제거)
     const { data: message, error } = await supabaseAdmin
       .from('chat_messages')
       .insert({
         chat_room_id: id,
         user_id: user.id,
-        user_nickname: userData.nickname, // 닉네임 저장
         content: content.trim(),
       })
       .select(`
@@ -184,8 +172,12 @@ export async function POST(
     const formattedMessage = {
       id: message.id,
       content: message.content,
-      user_nickname: message.user_nickname || message.user?.nickname || message.user_id,
-      created_at: message.created_at,
+      user: {
+        name: message.user?.nickname || 'Unknown User'
+      },
+      createdAt: message.created_at,
+      isSystemMessage: message.is_system_message || false,
+      systemType: message.system_type || undefined
     };
 
     console.log('Message saved successfully:', formattedMessage);

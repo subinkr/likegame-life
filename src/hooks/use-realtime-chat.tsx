@@ -105,13 +105,8 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
 
         // 채팅방 ID가 일치하는 경우에만 처리
         if (newMessage.chat_room_id === roomName) {
-          // user_nickname 필드 사용 (이제 항상 닉네임이 저장됨)
-          const messageUsername = newMessage.user_nickname
-          
-          if (!messageUsername) {
-            console.error('❌ No user_nickname in message data')
-            return
-          }
+          // user_id를 사용하여 닉네임을 가져옴 (실제로는 API에서 조인으로 처리됨)
+          const messageUsername = newMessage.user?.name || 'Unknown User'
           
           const chatMessage: ChatMessage = {
             id: newMessage.id,
