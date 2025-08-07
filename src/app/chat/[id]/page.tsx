@@ -484,14 +484,14 @@ function ChatRoomPageContent() {
         </button>
       </div>
 
-      {/* 메시지 목록 - 남은 공간을 모두 차지 */}
+      {/* 메시지 목록 - 입력 섹션 위의 공간을 모두 차지 */}
       <div style={{
         flex: 1,
         background: 'rgba(255,255,255,0.05)',
         border: '2px solid rgba(0,255,255,0.2)',
         borderRadius: '10px',
         padding: '12px',
-        marginBottom: '8px',
+        marginBottom: '80px', // 입력 섹션 높이만큼 여백 추가
         overflowY: 'auto',
         display: 'flex',
         flexDirection: 'column',
@@ -550,18 +550,22 @@ function ChatRoomPageContent() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 메시지 입력 - 항상 하단에 고정 */}
+      {/* 메시지 입력 - 네비게이션 바처럼 고정 */}
       <form onSubmit={sendMessage} style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '60px',
+        background: 'rgba(0,255,255,0.05)',
+        backdropFilter: 'blur(20px)',
+        borderTop: '2px solid rgba(0,255,255,0.3)',
         display: 'flex',
-        gap: '8px',
-        minWidth: 0,
-        flexShrink: 0,
-        background: 'rgba(0,0,0,0.3)',
-        border: '2px solid rgba(0,255,255,0.2)',
-        borderRadius: '10px',
-        padding: '12px',
-        position: 'sticky',
-        bottom: 0
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        zIndex: 9999,
+        padding: '0 12px',
+        gap: '8px'
       }}>
         <input
           type="text"
@@ -571,13 +575,14 @@ function ChatRoomPageContent() {
           style={{
             flex: 1,
             minWidth: 0,
-            padding: '10px',
+            padding: '8px 12px',
             background: 'rgba(255,255,255,0.1)',
             border: '2px solid rgba(0,255,255,0.3)',
             borderRadius: '8px',
             color: '#ffffff',
             fontSize: '0.9rem',
-            fontFamily: 'Press Start 2P, cursive'
+            fontFamily: 'Press Start 2P, cursive',
+            height: '40px'
           }}
         />
         <button
@@ -585,8 +590,8 @@ function ChatRoomPageContent() {
           disabled={!newMessage.trim()}
           style={{
             padding: '8px 12px',
-            width: '70px',
-            minWidth: '70px',
+            width: '60px',
+            minWidth: '60px',
             flexShrink: 0,
             background: newMessage.trim() ? 'rgba(0,255,255,0.2)' : 'rgba(128,128,128,0.2)',
             border: '2px solid rgba(0,255,255,0.3)',
@@ -595,7 +600,8 @@ function ChatRoomPageContent() {
             cursor: newMessage.trim() ? 'pointer' : 'not-allowed',
             fontSize: '0.8rem',
             fontWeight: 'bold',
-            fontFamily: 'Press Start 2P, cursive'
+            fontFamily: 'Press Start 2P, cursive',
+            height: '40px'
           }}
         >
           전송
