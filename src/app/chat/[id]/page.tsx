@@ -79,8 +79,9 @@ function ChatRoomPageContent() {
       console.log('Processed messages:', messages);
       
       if (beforeId) {
-        // 이전 메시지들을 기존 메시지 위에 추가
-        setInitialMessages(prev => [...messages, ...prev]);
+        // 이전 메시지들을 역순으로 정렬해서 기존 메시지 위에 추가
+        const reversedMessages = messages.reverse();
+        setInitialMessages(prev => [...reversedMessages, ...prev]);
       } else {
         // 초기 로딩 - 최신 메시지가 아래쪽에 오도록 (역순으로 표시)
         setInitialMessages(messages.reverse());
@@ -113,6 +114,26 @@ function ChatRoomPageContent() {
       setLoadingMore(false);
     }
   };
+
+  // 스크롤 위치 유지를 위한 useEffect
+  useEffect(() => {
+    if (loadingMore && initialMessages.length > 0) {
+      // 새 메시지들이 추가된 후 스크롤 위치 조정
+      const messagesContainer = document.querySelector('[data-messages-container]');
+      if (messagesContainer) {
+        const scrollHeight = messagesContainer.scrollHeight;
+        const clientHeight = messagesContainer.clientHeight;
+        const scrollTop = messagesContainer.scrollTop;
+        
+        // 새 메시지들이 추가된 후 스크롤 위치를 조정
+        setTimeout(() => {
+          const newScrollHeight = messagesContainer.scrollHeight;
+          const heightDifference = newScrollHeight - scrollHeight;
+          messagesContainer.scrollTop = scrollTop + heightDifference;
+        }, 100);
+      }
+    }
+  }, [initialMessages.length, loadingMore]);
 
   // 더 불러오기 버튼 클릭 처리
   const handleLoadMore = () => {

@@ -131,6 +131,7 @@ export const RealtimeChat = ({
       <div 
         ref={messagesContainerRef}
         onScroll={handleScroll}
+        data-messages-container
         style={{
           flex: 1,
           overflowY: 'auto',
