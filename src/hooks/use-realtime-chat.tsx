@@ -96,6 +96,15 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
         table: 'chat_messages',
         filter: `chat_room_id=eq.${roomName}`
       }, (payload) => {
+        console.log('🎉 REALTIME EVENT RECEIVED! 🎉')
+        console.log('Event type:', payload.eventType)
+        console.log('New record:', payload.new)
+        console.log('Old record:', payload.old)
+        console.log('Schema:', payload.schema)
+        console.log('Table:', payload.table)
+        
+        // 모든 이벤트를 로그로 출력
+        console.log('Full payload:', JSON.stringify(payload, null, 2))
         console.log('=== REALTIME EVENT RECEIVED ===')
         console.log('Realtime payload received:', payload)
         console.log('Payload event type:', payload.eventType)
