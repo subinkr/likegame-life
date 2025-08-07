@@ -9,7 +9,7 @@ interface Badge {
   rarity: string
   icon: string
   achieved: boolean
-  achievedDate?: string
+  achieved_date: string | null
 }
 
 interface Title {
@@ -20,7 +20,7 @@ interface Title {
   required_badges: string[] // snake_case로 수정
   achieved: boolean
   selected: boolean
-  achieved_date?: string
+  achieved_date: string | null
 }
 
 export function useAchievements() {
@@ -40,7 +40,15 @@ export function useAchievements() {
 
     try {
       const response = await badgesAPI.get()
-      setBadges(response.badges || response)
+      const badgesData = response.badges || response
+      
+      // 날짜 정보를 일관되게 처리
+      const processedBadges = badgesData.map((badge: any) => ({
+        ...badge,
+        achieved_date: badge.achievedDate || badge.achieved_date || null
+      }))
+      
+      setBadges(processedBadges)
     } catch (err: any) {
       setError(err.message || '뱃지를 불러오는데 실패했습니다.')
       // API 실패 시 localStorage에서 로드
@@ -73,13 +81,18 @@ export function useAchievements() {
       const response = await titlesAPI.get()
       const titlesData = response.titles || response
       
-      // 비활성화된 칭호의 선택 상태를 자동으로 해제
-      const updatedTitles = titlesData.map((title: Title) => {
-        if (!title.achieved && title.selected) {
-          // 비활성화된 칭호가 선택된 상태라면 선택 해제
-          return { ...title, selected: false }
+      // 날짜 정보를 일관되게 처리하고 비활성화된 칭호의 선택 상태를 자동으로 해제
+      const updatedTitles = titlesData.map((title: any) => {
+        const processedTitle = {
+          ...title,
+          achieved_date: title.achieved_date || title.achievedDate || null
         }
-        return title
+        
+        if (!processedTitle.achieved && processedTitle.selected) {
+          // 비활성화된 칭호가 선택된 상태라면 선택 해제
+          return { ...processedTitle, selected: false }
+        }
+        return processedTitle
       })
       
       setTitles(updatedTitles)
@@ -124,7 +137,7 @@ export function useAchievements() {
     setOptimisticUpdates(prev => new Set(prev).add(badgeId))
     
     const newAchieved = !currentBadge.achieved
-    const newAchievedDate = newAchieved ? new Date().toISOString() : undefined
+    const newAchievedDate = newAchieved ? new Date().toISOString() : null
 
     // 뱃지와 칭호 상태를 동시에 업데이트
     setBadges(prev => {
@@ -133,7 +146,7 @@ export function useAchievements() {
           ? { 
               ...badge, 
               achieved: newAchieved, 
-              achievedDate: newAchievedDate 
+              achieved_date: newAchievedDate 
             }
           : badge
       )
@@ -173,7 +186,7 @@ export function useAchievements() {
               ...title, 
               achieved: false, 
               selected: false, 
-              achieved_date: undefined 
+              achieved_date: null 
             }
           }
           return title

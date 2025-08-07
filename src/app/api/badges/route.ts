@@ -44,13 +44,14 @@ export async function GET(request: NextRequest) {
 
     // 뱃지와 사용자 달성 상태 결합
     const badgesWithStatus = (badges || []).map(badge => {
-      const userBadge = (userBadges || []).find(ub => ub.badge_id === badge.id)
+      const userBadge = (userBadges || []).find(ub => ub.badge_id === badge.id);
+      
       return {
         ...badge,
         achieved: userBadge?.achieved || false,
-        achievedDate: userBadge?.achieved_date || null
-      }
-    })
+        achieved_date: userBadge?.achieved_date || null
+      };
+    });
 
     return NextResponse.json({ badges: badgesWithStatus })
 

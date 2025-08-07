@@ -54,14 +54,14 @@ export default function LoginPage() {
             marginBottom: '8px',
             fontFamily: 'Press Start 2P, cursive'
           }}>
-            🎮 LikeGame.life
+            🎮 Like Game
           </div>
           <div style={{
             fontSize: '0.8rem',
             color: '#bfc9d9',
             fontFamily: 'Orbitron, monospace'
           }}>
-            인생을 게임처럼 즐기세요
+            인생을 게임처럼
           </div>
         </div>
 

@@ -85,14 +85,14 @@ export default function RegisterPage() {
             marginBottom: '8px',
             fontFamily: 'Press Start 2P, cursive'
           }}>
-            🎮 LikeGame.life
+            🎮 Like Game
           </div>
           <div style={{
             fontSize: '0.8rem',
             color: '#bfc9d9',
             fontFamily: 'Orbitron, monospace'
           }}>
-            게임을 시작하세요
+            인생을 게임처럼
           </div>
         </div>
 

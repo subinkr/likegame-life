@@ -12,7 +12,7 @@ interface Title {
   description: string;
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
   achieved: boolean;
-  achieved_date?: string;
+  achieved_date: string | null;
   selected?: boolean;
   required_badges: string[]; // snake_case로 수정
 }
@@ -23,7 +23,7 @@ interface Badge {
   description: string;
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
   achieved: boolean;
-  achievedDate?: string;
+  achieved_date: string | null;
   icon: string;
 }
 
@@ -874,7 +874,7 @@ function AchievementsPageContent() {
                         fontFamily: 'Orbitron, monospace',
                         textAlign: 'center'
                       }}>
-                        {formatDate(badge.achievedDate)}
+                        {formatDate(badge.achieved_date)}
                       </div>
                     )}
                   </div>

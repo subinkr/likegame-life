@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
         ...title,
         achieved: userTitle?.achieved || isAchieved,
         selected: userTitle?.selected || false,
-        achievedDate: userTitle?.achieved_date || (isAchieved ? new Date().toISOString() : null)
+        achieved_date: userTitle?.achieved_date || (isAchieved ? new Date().toISOString() : null)
       };
     });
 

@@ -5,8 +5,8 @@ import { ChatProvider } from "@/contexts/ChatContext";
 import ClientLayout from "./ClientLayout";
 
 export const metadata: Metadata = {
-  title: "likegame.life",
-  description: "인생을 게임처럼 플레이하는 대시보드",
+  title: "Like Game",
+  description: "인생을 게임처럼",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
 };
 
