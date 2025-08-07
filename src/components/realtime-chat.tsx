@@ -51,8 +51,11 @@ export const RealtimeChat = ({
     // 부모 컴포넌트에 스크롤 위치 전달
     onScroll?.(scrollTop);
     
-    if (scrollTop === 0 && hasMore && !loadingMore) { // 스크롤이 맨 위에 도달했을 때만 더 로드
-      console.log('Triggering load more at top...');
+    // 실시간 연결 상태 섹션 높이 (padding: 8px 16px + 텍스트 높이)
+    const connectionStatusHeight = 40;
+    
+    if (scrollTop <= connectionStatusHeight && hasMore && !loadingMore) { // 실시간 연결 상태 섹션과 만날 때 로드
+      console.log('Triggering load more at connection status area...');
       onLoadMore?.();
     }
   };
