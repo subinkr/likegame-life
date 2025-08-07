@@ -42,24 +42,25 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
     setMessages(prev => [...prev, newMessage])
 
     try {
-      // Save to database
-      const { data, error } = await supabase
-        .from('chat_messages')
-        .insert({
-          content: content.trim(),
-          user_nickname: username,
-          chat_room_id: roomName
+      // Save to database via API route
+      const response = await fetch(`/api/chat/rooms/${roomName}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: content.trim()
         })
-        .select()
+      })
 
-      console.log('Database insert result:', { data, error })
-
-      if (error) {
-        console.error('Error saving message:', error)
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('Error saving message:', errorData)
         // Remove optimistic update on error
         setMessages(prev => prev.filter(msg => msg.id !== newMessage.id))
       } else {
-        console.log('Message saved successfully:', data)
+        const savedMessage = await response.json()
+        console.log('Message saved successfully:', savedMessage)
       }
     } catch (error) {
       console.error('Error sending message:', error)
