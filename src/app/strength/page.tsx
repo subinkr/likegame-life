@@ -148,15 +148,13 @@ function StrengthPageContent() {
     <div style={{
       background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
       padding: '20px',
-      color: '#ffffff',
-      minHeight: '100vh'
+      color: '#ffffff'
     }}>
       {/* 스크롤 가능한 메인 콘텐츠 영역 */}
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '16px',
-        flex: 1
+        gap: '16px'
       }}>
         {/* 힘 요약 */}
         <div style={{

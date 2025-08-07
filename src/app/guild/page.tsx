@@ -316,15 +316,13 @@ function GuildPageContent() {
       textAlign: 'center',
       background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
       display: 'flex',
-      flexDirection: 'column',
-      minHeight: '100vh'
+      flexDirection: 'column'
     }}>
       {/* 스크롤 가능한 메인 콘텐츠 영역 */}
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '16px',
-        flex: 1
+        gap: '16px'
       }}>
           {loading ? (
         <div style={{

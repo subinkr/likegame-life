@@ -195,15 +195,13 @@ function HomeContent() {
       padding: '16px',
       display: 'flex',
       flexDirection: 'column',
-      gap: '16px',
-      minHeight: '100vh'
+      gap: '16px'
     }}>
       {/* 스크롤 가능한 메인 콘텐츠 영역 */}
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '16px',
-        flex: 1
+        gap: '16px'
       }}>
       {/* 핵심 상태 요약 - 미니멀하게 */}
       <div style={{
