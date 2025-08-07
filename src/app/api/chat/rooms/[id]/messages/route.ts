@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUserFromSupabase } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase';
-import { broadcastMessage } from '@/lib/chat-utils';
 
 // 메시지 목록 조회
 export async function GET(
@@ -137,19 +136,7 @@ export async function POST(
       created_at: message.created_at,
     };
 
-    console.log('Formatted message for broadcast:', formattedMessage);
-
-    // SSE 브로드캐스트
-    try {
-      console.log('Calling broadcastMessage for room:', id);
-      broadcastMessage(id, {
-        type: 'new_message',
-        message: formattedMessage
-      });
-      console.log('SSE broadcast completed for room:', id);
-    } catch (broadcastError) {
-      console.error('SSE broadcast failed for room:', id, broadcastError);
-    }
+    console.log('Message saved successfully:', formattedMessage);
 
     return NextResponse.json(formattedMessage);
   } catch (error) {
