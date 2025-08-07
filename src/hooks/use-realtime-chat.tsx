@@ -95,6 +95,7 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
         table: 'chat_messages',
         filter: `chat_room_id=eq.${roomName}`
       }, (payload) => {
+        console.log('Realtime payload received:', payload)
         console.log('Realtime message received:', payload)
         const newMessage = payload.new as any
         const chatMessage: ChatMessage = {
@@ -109,18 +110,25 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
         console.log('Processed chat message:', chatMessage)
         console.log('Current username:', username)
         console.log('Message username:', newMessage.user_nickname)
+        console.log('Message content:', newMessage.content)
+        console.log('Message created_at:', newMessage.created_at)
 
         // Don't add if it's our own message (already added optimistically)
         if (newMessage.user_nickname !== username) {
           console.log('Adding message to state (not own message)')
-          setMessages(prev => [...prev, chatMessage])
+          setMessages(prev => {
+            console.log('Previous messages count:', prev.length)
+            const updatedMessages = [...prev, chatMessage]
+            console.log('Updated messages count:', updatedMessages.length)
+            return updatedMessages
+          })
         } else {
           console.log('Skipping own message')
         }
 
         // Call onMessage callback
         if (onMessage) {
-          onMessage(prev => [...prev, chatMessage])
+          onMessage([...messages, chatMessage])
         }
       })
       .subscribe((status) => {
