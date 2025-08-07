@@ -144,7 +144,7 @@ export const RealtimeChat = ({
               fontWeight: '500'
             }}
           >
-            {loadingMore ? '불러오는 중...' : '이전 메시지 20개 더 불러오기'}
+            {loadingMore ? '불러오는 중...' : '이전 메시지 불러오기'}
           </button>
         </div>
       )}
