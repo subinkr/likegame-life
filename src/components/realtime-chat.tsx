@@ -44,7 +44,10 @@ export const RealtimeChat = ({
     if (!messagesContainerRef.current || !hasMore || loadingMore) return;
     
     const { scrollTop } = messagesContainerRef.current;
-    if (scrollTop < 100) { // 스크롤이 위쪽 100px 이내에 있으면 더 로드
+    console.log('Scroll position:', scrollTop, 'hasMore:', hasMore, 'loadingMore:', loadingMore);
+    
+    if (scrollTop < 200) { // 스크롤이 위쪽 200px 이내에 있으면 더 로드
+      console.log('Triggering load more...');
       onLoadMore?.();
     }
   };

@@ -95,10 +95,17 @@ function ChatRoomPageContent() {
   };
 
   const loadMoreMessages = async () => {
-    if (loadingMore || !hasMoreMessages || initialMessages.length === 0) return;
+    console.log('loadMoreMessages called:', { loadingMore, hasMoreMessages, messageCount: initialMessages.length });
+    
+    if (loadingMore || !hasMoreMessages || initialMessages.length === 0) {
+      console.log('loadMoreMessages blocked:', { loadingMore, hasMoreMessages, messageCount: initialMessages.length });
+      return;
+    }
     
     setLoadingMore(true);
     const oldestMessageId = initialMessages[0]?.id;
+    console.log('Loading more messages before:', oldestMessageId);
+    
     if (oldestMessageId) {
       await fetchMessages(oldestMessageId);
     }
