@@ -484,14 +484,14 @@ function ChatRoomPageContent() {
         </button>
       </div>
 
-      {/* 메시지 목록 - 입력 섹션 위의 공간을 모두 차지 */}
+      {/* 메시지 목록 - 입력 섹션과 네비게이션 바 위의 공간을 모두 차지 */}
       <div style={{
         flex: 1,
         background: 'rgba(255,255,255,0.05)',
         border: '2px solid rgba(0,255,255,0.2)',
         borderRadius: '10px',
         padding: '12px',
-        marginBottom: '80px', // 입력 섹션 높이만큼 여백 추가
+        marginBottom: '140px', // 입력 섹션 + 네비게이션 바 높이만큼 여백 추가
         overflowY: 'auto',
         display: 'flex',
         flexDirection: 'column',
@@ -550,10 +550,10 @@ function ChatRoomPageContent() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 메시지 입력 - 네비게이션 바처럼 고정 */}
+      {/* 메시지 입력 - 네비게이션 바 위에 고정 */}
       <form onSubmit={sendMessage} style={{
         position: 'fixed',
-        bottom: 0,
+        bottom: '60px', // 네비게이션 바 위에 위치
         left: 0,
         right: 0,
         height: '60px',
@@ -607,6 +607,197 @@ function ChatRoomPageContent() {
           전송
         </button>
       </form>
+
+      {/* 채팅방 바텀 네비게이션 바 */}
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '60px',
+        background: 'rgba(0,255,255,0.05)',
+        backdropFilter: 'blur(20px)',
+        borderTop: '2px solid rgba(0,255,255,0.3)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-around',
+        zIndex: 9999,
+        padding: '0 4px'
+      }}>
+        {/* 뒤로가기 */}
+        <button
+          onClick={handleGoBack}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textDecoration: 'none',
+            flex: 1,
+            minWidth: 0,
+            padding: '6px 4px',
+            position: 'relative',
+            borderRadius: '6px',
+            margin: '0 2px',
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            color: '#ffffff'
+          }}
+        >
+          <div style={{
+            fontSize: '1.2rem',
+            marginBottom: '2px',
+            opacity: 0.8
+          }}>
+            ←
+          </div>
+          <div style={{
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            color: '#ffffff',
+            textAlign: 'center',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            maxWidth: '100%',
+            fontFamily: 'Press Start 2P, cursive'
+          }}>
+            뒤로
+          </div>
+        </button>
+
+        {/* 채팅방 정보 */}
+        <button
+          onClick={() => alert('채팅방 정보: ' + (chatRoom?.name || '채팅방'))}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textDecoration: 'none',
+            flex: 1,
+            minWidth: 0,
+            padding: '6px 4px',
+            position: 'relative',
+            borderRadius: '6px',
+            margin: '0 2px',
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            color: '#ffffff'
+          }}
+        >
+          <div style={{
+            fontSize: '1.2rem',
+            marginBottom: '2px',
+            opacity: 0.8
+          }}>
+            ℹ️
+          </div>
+          <div style={{
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            color: '#ffffff',
+            textAlign: 'center',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            maxWidth: '100%',
+            fontFamily: 'Press Start 2P, cursive'
+          }}>
+            정보
+          </div>
+        </button>
+
+        {/* 멤버 목록 */}
+        <button
+          onClick={() => alert('멤버 목록 기능은 준비 중입니다.')}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textDecoration: 'none',
+            flex: 1,
+            minWidth: 0,
+            padding: '6px 4px',
+            position: 'relative',
+            borderRadius: '6px',
+            margin: '0 2px',
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            color: '#ffffff'
+          }}
+        >
+          <div style={{
+            fontSize: '1.2rem',
+            marginBottom: '2px',
+            opacity: 0.8
+          }}>
+            👥
+          </div>
+          <div style={{
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            color: '#ffffff',
+            textAlign: 'center',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            maxWidth: '100%',
+            fontFamily: 'Press Start 2P, cursive'
+          }}>
+            멤버
+          </div>
+        </button>
+
+        {/* 나가기 */}
+        <button
+          onClick={handleLeaveRoom}
+          disabled={!!(party && party.leader_id === user?.id)}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textDecoration: 'none',
+            flex: 1,
+            minWidth: 0,
+            padding: '6px 4px',
+            position: 'relative',
+            borderRadius: '6px',
+            margin: '0 2px',
+            background: 'transparent',
+            border: 'none',
+            cursor: party && party.leader_id === user?.id ? 'not-allowed' : 'pointer',
+            color: party && party.leader_id === user?.id ? '#888888' : '#ff0000',
+            opacity: party && party.leader_id === user?.id ? 0.5 : 1
+          }}
+        >
+          <div style={{
+            fontSize: '1.2rem',
+            marginBottom: '2px',
+            opacity: party && party.leader_id === user?.id ? 0.5 : 0.8
+          }}>
+            🚪
+          </div>
+          <div style={{
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            color: party && party.leader_id === user?.id ? '#888888' : '#ff0000',
+            textAlign: 'center',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            maxWidth: '100%',
+            fontFamily: 'Press Start 2P, cursive'
+          }}>
+            나가기
+          </div>
+        </button>
+      </div>
     </div>
   );
 }
