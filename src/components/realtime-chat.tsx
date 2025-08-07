@@ -43,7 +43,11 @@ export const RealtimeChat = ({
 
   // 무한스크롤 처리
   const handleScroll = () => {
-    if (!messagesContainerRef.current) return;
+    console.log('Scroll event triggered!');
+    if (!messagesContainerRef.current) {
+      console.log('No messages container ref');
+      return;
+    }
     
     const { scrollTop } = messagesContainerRef.current;
     console.log('Chat scroll position:', scrollTop, 'hasMore:', hasMore, 'loadingMore:', loadingMore, 'onLoadMore exists:', !!onLoadMore);
@@ -58,10 +62,17 @@ export const RealtimeChat = ({
   };
 
   useEffect(() => {
+    console.log('Setting up scroll listener...');
     const container = messagesContainerRef.current;
     if (container) {
+      console.log('Container found, adding scroll listener');
       container.addEventListener('scroll', handleScroll);
-      return () => container.removeEventListener('scroll', handleScroll);
+      return () => {
+        console.log('Removing scroll listener');
+        container.removeEventListener('scroll', handleScroll);
+      };
+    } else {
+      console.log('Container not found');
     }
   }, [hasMore, loadingMore, onLoadMore]);
 
@@ -111,6 +122,7 @@ export const RealtimeChat = ({
       {/* Scrollable Messages Area */}
       <div 
         ref={messagesContainerRef}
+        onScroll={handleScroll}
         style={{
           flex: 1,
           overflowY: 'auto',
