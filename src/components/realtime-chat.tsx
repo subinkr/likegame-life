@@ -49,8 +49,8 @@ export const RealtimeChat = ({
       return;
     }
     
-    const { scrollTop } = messagesContainerRef.current;
-    console.log('Chat scroll position:', scrollTop, 'hasMore:', hasMore, 'loadingMore:', loadingMore, 'onLoadMore exists:', !!onLoadMore);
+    const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+    console.log('Chat scroll position:', scrollTop, 'scrollHeight:', scrollHeight, 'clientHeight:', clientHeight, 'hasMore:', hasMore, 'loadingMore:', loadingMore, 'onLoadMore exists:', !!onLoadMore);
     
     // 부모 컴포넌트에 스크롤 위치 전달
     onScroll?.(scrollTop);
@@ -66,6 +66,11 @@ export const RealtimeChat = ({
     const container = messagesContainerRef.current;
     if (container) {
       console.log('Container found, adding scroll listener');
+      console.log('Container dimensions:', {
+        scrollHeight: container.scrollHeight,
+        clientHeight: container.clientHeight,
+        scrollTop: container.scrollTop
+      });
       container.addEventListener('scroll', handleScroll);
       return () => {
         console.log('Removing scroll listener');
@@ -131,7 +136,8 @@ export const RealtimeChat = ({
           flexDirection: 'column',
           gap: '16px',
           background: '#f8fafc',
-          minHeight: 0 // Important for flex child scrolling
+          minHeight: 0, // Important for flex child scrolling
+          maxHeight: '60vh' // 강제로 스크롤 가능하게 만들기
         }}
       >
         {allMessages.length === 0 ? (
