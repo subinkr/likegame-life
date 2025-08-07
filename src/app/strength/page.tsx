@@ -294,7 +294,7 @@ function StrengthPageContent() {
                     marginBottom: '6px'
                   }}>
                     <div style={{
-                      fontSize: '0.7rem',
+                      fontSize: '0.8rem',
                       color: '#666',
                       fontFamily: 'Orbitron, monospace'
                     }}>
@@ -307,9 +307,9 @@ function StrengthPageContent() {
                         border: '1px solid rgba(255,0,0,0.3)',
                         color: '#ff0000',
                         fontWeight: 600,
-                        fontSize: '0.65rem',
+                        fontSize: '0.75rem',
                         cursor: 'pointer',
-                        padding: '2px 4px',
+                        padding: '3px 6px',
                         borderRadius: '4px',
                         fontFamily: 'Press Start 2P, cursive',
                         transition: 'all 0.3s ease'
@@ -331,24 +331,24 @@ function StrengthPageContent() {
                     display: 'grid',
                     gridTemplateColumns: '1fr 1fr 1fr 1fr',
                     gap: '6px',
-                    fontSize: '0.7rem',
+                    fontSize: '0.8rem',
                     color: '#ffffff',
                     fontFamily: 'Orbitron, monospace'
                   }}>
                     <div style={{ textAlign: 'center' }}>
-                      <div style={{ color: '#888', marginBottom: '2px', fontSize: '0.6rem' }}>벤치</div>
+                      <div style={{ color: '#888', marginBottom: '2px', fontSize: '0.7rem' }}>벤치</div>
                       <div style={{ fontWeight: 'bold' }}>{record.bench}kg</div>
                     </div>
                     <div style={{ textAlign: 'center' }}>
-                      <div style={{ color: '#888', marginBottom: '2px', fontSize: '0.6rem' }}>스쿼트</div>
+                      <div style={{ color: '#888', marginBottom: '2px', fontSize: '0.7rem' }}>스쿼트</div>
                       <div style={{ fontWeight: 'bold' }}>{record.squat}kg</div>
                     </div>
                     <div style={{ textAlign: 'center' }}>
-                      <div style={{ color: '#888', marginBottom: '2px', fontSize: '0.6rem' }}>데드</div>
+                      <div style={{ color: '#888', marginBottom: '2px', fontSize: '0.7rem' }}>데드</div>
                       <div style={{ fontWeight: 'bold' }}>{record.deadlift}kg</div>
                     </div>
                     <div style={{ textAlign: 'center' }}>
-                      <div style={{ color: '#ffd700', marginBottom: '2px', fontSize: '0.6rem', fontWeight: 'bold' }}>총합</div>
+                      <div style={{ color: '#ffd700', marginBottom: '2px', fontSize: '0.7rem', fontWeight: 'bold' }}>총합</div>
                       <div style={{ fontWeight: 'bold', color: '#ffd700' }}>{record.total}kg</div>
                     </div>
                   </div>

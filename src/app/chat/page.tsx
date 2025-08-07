@@ -216,7 +216,7 @@ function ChatListPageContent() {
                   marginBottom: '8px'
                 }}>
                   <h3 style={{ 
-                    fontSize: '0.9rem', 
+                    fontSize: '1rem', 
                     fontWeight: 'bold', 
                     color: '#00ffff',
                     margin: 0,
@@ -232,7 +232,7 @@ function ChatListPageContent() {
                       : 'linear-gradient(135deg, rgba(255,165,0,0.3) 0%, rgba(255,165,0,0.2) 100%)',
                     color: room.type === 'PARTY' ? '#00ff00' : '#ffa500',
                     borderRadius: '12px',
-                    fontSize: '0.65rem',
+                    fontSize: '0.75rem',
                     fontWeight: 'bold',
                     boxShadow: room.type === 'PARTY' 
                       ? '0 1px 4px rgba(0,255,0,0.3)'
@@ -252,7 +252,7 @@ function ChatListPageContent() {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    fontSize: '0.7rem',
+                    fontSize: '0.8rem',
                     color: '#888888'
                   }}>
                     <span>👥 {room.participants.length}명</span>
@@ -264,11 +264,11 @@ function ChatListPageContent() {
                         <span
                           key={participant.id}
                           style={{
-                            padding: '1px 4px',
+                            padding: '2px 6px',
                             background: 'rgba(0,255,255,0.2)',
                             color: '#00ffff',
                             borderRadius: '4px',
-                            fontSize: '0.6rem',
+                            fontSize: '0.7rem',
                             fontFamily: 'Press Start 2P, cursive',
                             border: '1px solid rgba(0,255,255,0.3)'
                           }}
@@ -278,11 +278,11 @@ function ChatListPageContent() {
                       ))}
                       {room.participants.length > 2 && (
                         <span style={{
-                          padding: '1px 4px',
+                          padding: '2px 6px',
                           background: 'rgba(255,255,255,0.1)',
                           color: '#888',
                           borderRadius: '4px',
-                          fontSize: '0.6rem',
+                          fontSize: '0.7rem',
                           fontFamily: 'Press Start 2P, cursive'
                         }}>
                           +{room.participants.length - 2}
