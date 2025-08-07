@@ -10,39 +10,36 @@ export const ChatMessageItem = ({ message, isOwnMessage, showHeader }: ChatMessa
   return (
     <div style={{
       display: 'flex',
-      marginTop: '12px',
+      marginTop: '8px',
       justifyContent: isOwnMessage ? 'flex-end' : 'flex-start'
     }}>
       <div style={{
-        maxWidth: '75%',
+        maxWidth: '70%',
         width: 'fit-content',
         display: 'flex',
         flexDirection: 'column',
-        gap: '6px',
+        gap: '4px',
         alignItems: isOwnMessage ? 'flex-end' : 'flex-start'
       }}>
         {showHeader && (
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
-            fontSize: '0.75rem',
-            padding: '0 16px',
+            gap: '8px',
+            fontSize: '12px',
+            padding: '0 4px',
             justifyContent: isOwnMessage ? 'flex-end' : 'flex-start',
             flexDirection: isOwnMessage ? 'row-reverse' : 'row'
           }}>
             <span style={{ 
-              fontWeight: 600, 
-              color: '#00ffff',
-              textShadow: '0 0 8px rgba(0,255,255,0.8)',
-              fontFamily: 'Press Start 2P, cursive'
+              fontWeight: 500, 
+              color: '#374151'
             }}>
               {message.user.name}
             </span>
             <span style={{ 
-              color: 'rgba(255, 255, 255, 0.6)', 
-              fontSize: '0.7rem',
-              fontFamily: 'Press Start 2P, cursive'
+              color: '#9ca3af', 
+              fontSize: '11px'
             }}>
               {new Date(message.createdAt).toLocaleTimeString('ko-KR', {
                 hour: '2-digit',
@@ -54,22 +51,16 @@ export const ChatMessageItem = ({ message, isOwnMessage, showHeader }: ChatMessa
         )}
         <div style={{
           padding: '12px 16px',
-          borderRadius: '16px',
+          borderRadius: '18px',
           width: 'fit-content',
-          background: isOwnMessage 
-            ? 'linear-gradient(135deg, rgba(0,255,255,0.3) 0%, rgba(0,255,255,0.2) 100%)'
-            : 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
-          color: isOwnMessage ? '#000' : '#fff',
-          fontFamily: 'Press Start 2P, cursive',
-          fontSize: '0.8rem',
+          background: isOwnMessage ? '#3b82f6' : '#ffffff',
+          color: isOwnMessage ? '#ffffff' : '#1f2937',
+          fontSize: '14px',
           lineHeight: '1.4',
-          border: `2px solid ${isOwnMessage ? 'rgba(0,255,255,0.5)' : 'rgba(255,255,255,0.2)'}`,
-          boxShadow: isOwnMessage 
-            ? '0 4px 15px rgba(0,255,255,0.3)'
-            : '0 2px 8px rgba(255,255,255,0.1)',
-          backdropFilter: 'blur(10px)',
-          transition: 'all 0.3s ease',
-          textShadow: isOwnMessage ? '0 0 5px rgba(0,255,255,0.8)' : 'none'
+          border: isOwnMessage ? 'none' : '1px solid #e5e7eb',
+          boxShadow: isOwnMessage ? '0 1px 3px rgba(0,0,0,0.1)' : '0 1px 2px rgba(0,0,0,0.05)',
+          maxWidth: '100%',
+          wordBreak: 'break-word'
         }}>
           {message.content}
         </div>

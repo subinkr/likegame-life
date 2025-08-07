@@ -92,32 +92,28 @@ function ChatRoomPageContent() {
   if (loading) {
     return (
       <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
         display: 'flex',
-        alignItems: 'center',
         justifyContent: 'center',
-        flexDirection: 'column',
-        gap: '24px',
-        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
-        zIndex: 1000
+        alignItems: 'center',
+        height: 'calc(100dvh - 120px)',
+        background: '#f8fafc',
+        color: '#64748b'
       }}>
-        <div style={{ 
-          fontSize: '3rem',
-          animation: 'pulse 2s ease-in-out infinite',
-          filter: 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.8))'
-        }}>💬</div>
-        <div style={{ 
-          color: '#00ffff', 
-          fontSize: '1rem',
-          fontFamily: 'Press Start 2P, cursive',
-          textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
-          textAlign: 'center'
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '16px'
         }}>
-          채팅방 로딩 중...
+          <div style={{
+            width: '40px',
+            height: '40px',
+            border: '3px solid #e2e8f0',
+            borderTop: '3px solid #3b82f6',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }}></div>
+          <div style={{ fontSize: '14px', fontWeight: 500 }}>채팅방 로딩 중...</div>
         </div>
       </div>
     );
@@ -130,12 +126,18 @@ function ChatRoomPageContent() {
         justifyContent: 'center',
         alignItems: 'center',
         height: 'calc(100dvh - 120px)',
-        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
-        color: '#00ffff',
-        fontFamily: 'Press Start 2P, cursive',
-        textShadow: '0 0 10px rgba(0, 255, 255, 0.8)'
+        background: '#f8fafc',
+        color: '#64748b'
       }}>
-        채팅방을 찾을 수 없습니다.
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '16px'
+        }}>
+          <div style={{ fontSize: '48px' }}>💬</div>
+          <div style={{ fontSize: '16px', fontWeight: 600 }}>채팅방을 찾을 수 없습니다</div>
+        </div>
       </div>
     );
   }
@@ -145,57 +147,51 @@ function ChatRoomPageContent() {
       display: 'flex',
       flexDirection: 'column',
       height: 'calc(100dvh - 120px)',
-      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)'
+      background: '#ffffff'
     }}>
       {/* Header */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '20px',
-        background: 'linear-gradient(135deg, rgba(0,255,255,0.08) 0%, rgba(0,255,255,0.03) 100%)',
-        borderBottom: '2px solid rgba(0,255,255,0.3)',
-        backdropFilter: 'blur(10px)',
-        boxShadow: '0 4px 15px rgba(0,255,255,0.1)'
+        padding: '16px 20px',
+        background: '#ffffff',
+        borderBottom: '1px solid #e2e8f0',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
       }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '16px'
+          gap: '12px'
         }}>
           <button
             onClick={handleGoBack}
             style={{
-              background: 'linear-gradient(135deg, rgba(0,255,255,0.2) 0%, rgba(0,255,255,0.1) 100%)',
-              border: '2px solid rgba(0,255,255,0.5)',
-              color: '#00ffff',
-              fontSize: '1.2rem',
+              background: 'none',
+              border: 'none',
+              color: '#64748b',
+              fontSize: '20px',
               cursor: 'pointer',
-              fontFamily: 'Press Start 2P, cursive',
-              padding: '8px 12px',
+              padding: '8px',
               borderRadius: '8px',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 2px 8px rgba(0,255,255,0.2)',
-              textShadow: '0 0 10px rgba(0,255,255,0.8)'
+              transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,255,255,0.4)';
+              e.currentTarget.style.background = '#f1f5f9';
+              e.currentTarget.style.color = '#475569';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,255,255,0.2)';
+              e.currentTarget.style.background = 'none';
+              e.currentTarget.style.color = '#64748b';
             }}
           >
             ←
           </button>
           <div>
             <div style={{
-              fontSize: '1.1rem',
+              fontSize: '18px',
               fontWeight: 600,
-              color: '#00ffff',
-              fontFamily: 'Press Start 2P, cursive',
-              textShadow: '0 0 10px rgba(0,255,255,0.8)',
+              color: '#1e293b',
               marginBottom: '4px'
             }}>
               {chatRoom.name}
@@ -207,25 +203,18 @@ function ChatRoomPageContent() {
             }}>
               <span style={{
                 padding: '4px 8px',
-                background: chatRoom.type === 'PARTY' 
-                  ? 'linear-gradient(135deg, rgba(0,255,0,0.3) 0%, rgba(0,255,0,0.2) 100%)'
-                  : 'linear-gradient(135deg, rgba(255,165,0,0.3) 0%, rgba(255,165,0,0.2) 100%)',
-                color: chatRoom.type === 'PARTY' ? '#00ff00' : '#ffa500',
+                background: chatRoom.type === 'PARTY' ? '#dcfce7' : '#fef3c7',
+                color: chatRoom.type === 'PARTY' ? '#166534' : '#92400e',
                 borderRadius: '12px',
-                fontSize: '0.7rem',
-                fontWeight: 'bold',
-                boxShadow: chatRoom.type === 'PARTY' 
-                  ? '0 2px 8px rgba(0,255,0,0.3)'
-                  : '0 2px 8px rgba(255,165,0,0.3)',
-                fontFamily: 'Press Start 2P, cursive'
+                fontSize: '12px',
+                fontWeight: 500
               }}>
                 {chatRoom.type === 'PARTY' ? '👥 파티' : '⚔️ 퀘스트'}
               </span>
               {party && (
                 <span style={{
-                  fontSize: '0.7rem',
-                  color: '#888888',
-                  fontFamily: 'Press Start 2P, cursive'
+                  fontSize: '12px',
+                  color: '#64748b'
                 }}>
                   파티: {party.name}
                 </span>
@@ -236,25 +225,21 @@ function ChatRoomPageContent() {
         <button
           onClick={handleLeaveRoom}
           style={{
-            padding: '10px 16px',
-            background: 'linear-gradient(135deg, rgba(255,68,68,0.3) 0%, rgba(255,68,68,0.2) 100%)',
-            color: '#ff4444',
-            border: '2px solid rgba(255,68,68,0.5)',
+            padding: '8px 16px',
+            background: '#ef4444',
+            color: '#ffffff',
+            border: 'none',
             borderRadius: '8px',
-            fontSize: '0.75rem',
+            fontSize: '14px',
+            fontWeight: 500,
             cursor: 'pointer',
-            fontFamily: 'Press Start 2P, cursive',
-            transition: 'all 0.3s ease',
-            boxShadow: '0 2px 8px rgba(255,68,68,0.2)',
-            textShadow: '0 0 10px rgba(255,68,68,0.8)'
+            transition: 'all 0.2s ease'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.05)';
-            e.currentTarget.style.boxShadow = '0 4px 15px rgba(255,68,68,0.4)';
+            e.currentTarget.style.background = '#dc2626';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(255,68,68,0.2)';
+            e.currentTarget.style.background = '#ef4444';
           }}
         >
           나가기

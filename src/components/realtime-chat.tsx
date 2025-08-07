@@ -57,23 +57,17 @@ export const RealtimeChat = ({
       display: 'flex',
       flexDirection: 'column',
       height: '100%',
-      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
-      color: '#fff'
+      background: '#ffffff'
     }}>
       {/* Connection Status */}
       <div style={{
-        padding: '12px 20px',
-        background: isConnected 
-          ? 'linear-gradient(135deg, rgba(0,255,0,0.2) 0%, rgba(0,255,0,0.1) 100%)'
-          : 'linear-gradient(135deg, rgba(255,68,68,0.2) 0%, rgba(255,68,68,0.1) 100%)',
-        color: isConnected ? '#00ff00' : '#ff4444',
-        fontSize: '0.8rem',
+        padding: '8px 16px',
+        background: isConnected ? '#f0fdf4' : '#fef2f2',
+        color: isConnected ? '#166534' : '#dc2626',
+        fontSize: '12px',
         textAlign: 'center',
-        fontWeight: 600,
-        fontFamily: 'Press Start 2P, cursive',
-        borderBottom: `2px solid ${isConnected ? 'rgba(0,255,0,0.3)' : 'rgba(255,68,68,0.3)'}`,
-        textShadow: `0 0 10px ${isConnected ? 'rgba(0,255,0,0.8)' : 'rgba(255,68,68,0.8)'}`,
-        boxShadow: `0 2px 8px ${isConnected ? 'rgba(0,255,0,0.2)' : 'rgba(255,68,68,0.2)'}`
+        fontWeight: 500,
+        borderBottom: `1px solid ${isConnected ? '#dcfce7' : '#fecaca'}`
       }}>
         {isConnected ? '🟢 실시간 연결됨' : '🔴 연결 중...'}
       </div>
@@ -82,12 +76,11 @@ export const RealtimeChat = ({
       <div style={{
         flex: 1,
         overflowY: 'auto',
-        padding: '20px',
+        padding: '16px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '8px',
-        background: 'rgba(0,0,0,0.3)',
-        backdropFilter: 'blur(10px)'
+        gap: '16px',
+        background: '#f8fafc'
       }}>
         {allMessages.length === 0 ? (
           <div style={{
@@ -97,17 +90,14 @@ export const RealtimeChat = ({
             height: '100%',
             flexDirection: 'column',
             gap: '16px',
-            color: '#888888',
-            fontFamily: 'Press Start 2P, cursive',
-            fontSize: '0.8rem',
-            textAlign: 'center'
+            color: '#64748b'
           }}>
             <div style={{ 
-              fontSize: '2rem',
-              filter: 'drop-shadow(0 0 10px rgba(0, 255, 255, 0.5))'
+              fontSize: '48px',
+              opacity: 0.5
             }}>💬</div>
-            <div>아직 메시지가 없습니다</div>
-            <div style={{ fontSize: '0.7rem', opacity: 0.7 }}>
+            <div style={{ fontSize: '16px', fontWeight: 500 }}>아직 메시지가 없습니다</div>
+            <div style={{ fontSize: '14px', opacity: 0.7 }}>
               첫 번째 메시지를 보내보세요!
             </div>
           </div>
@@ -126,11 +116,9 @@ export const RealtimeChat = ({
 
       {/* Input Form */}
       <form onSubmit={handleSubmit} style={{
-        padding: '20px',
-        borderTop: '2px solid rgba(0,255,255,0.3)',
-        background: 'linear-gradient(135deg, rgba(0,255,255,0.05) 0%, rgba(0,255,255,0.02) 100%)',
-        backdropFilter: 'blur(10px)',
-        boxShadow: '0 -4px 15px rgba(0,255,255,0.1)'
+        padding: '16px',
+        borderTop: '1px solid #e2e8f0',
+        background: '#ffffff'
       }}>
         <div style={{
           display: 'flex',
@@ -144,57 +132,46 @@ export const RealtimeChat = ({
             placeholder="메시지를 입력하세요..."
             style={{
               flex: 1,
-              padding: '14px 16px',
+              padding: '12px 16px',
               borderRadius: '12px',
-              border: '2px solid rgba(0,255,255,0.3)',
-              background: 'linear-gradient(135deg, rgba(0,255,255,0.1) 0%, rgba(0,255,255,0.05) 100%)',
-              color: '#fff',
-              fontSize: '0.875rem',
-              fontFamily: 'Press Start 2P, cursive',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 2px 8px rgba(0,255,255,0.1)',
-              backdropFilter: 'blur(10px)'
+              border: '1px solid #d1d5db',
+              background: '#ffffff',
+              color: '#1f2937',
+              fontSize: '14px',
+              transition: 'all 0.2s ease',
+              outline: 'none'
             }}
             onFocus={(e) => {
-              e.target.style.borderColor = 'rgba(0,255,255,0.6)';
-              e.target.style.boxShadow = '0 4px 15px rgba(0,255,255,0.2)';
+              e.target.style.borderColor = '#3b82f6';
+              e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
             }}
             onBlur={(e) => {
-              e.target.style.borderColor = 'rgba(0,255,255,0.3)';
-              e.target.style.boxShadow = '0 2px 8px rgba(0,255,255,0.1)';
+              e.target.style.borderColor = '#d1d5db';
+              e.target.style.boxShadow = 'none';
             }}
           />
           <button
             type="submit"
             disabled={!inputValue.trim() || !isConnected}
             style={{
-              padding: '14px 20px',
+              padding: '12px 20px',
               borderRadius: '12px',
-              background: inputValue.trim() && isConnected 
-                ? 'linear-gradient(135deg, rgba(0,255,255,0.3) 0%, rgba(0,255,255,0.2) 100%)'
-                : 'linear-gradient(135deg, rgba(128,128,128,0.2) 0%, rgba(128,128,128,0.1) 100%)',
-              color: inputValue.trim() && isConnected ? '#000' : '#666',
-              border: `2px solid ${inputValue.trim() && isConnected ? 'rgba(0,255,255,0.5)' : 'rgba(128,128,128,0.3)'}`,
+              background: inputValue.trim() && isConnected ? '#3b82f6' : '#e5e7eb',
+              color: inputValue.trim() && isConnected ? '#ffffff' : '#9ca3af',
+              border: 'none',
               cursor: inputValue.trim() && isConnected ? 'pointer' : 'not-allowed',
-              fontSize: '0.875rem',
-              fontWeight: 600,
-              fontFamily: 'Press Start 2P, cursive',
-              transition: 'all 0.3s ease',
-              boxShadow: inputValue.trim() && isConnected 
-                ? '0 4px 15px rgba(0,255,255,0.3)'
-                : '0 2px 8px rgba(128,128,128,0.2)',
-              textShadow: inputValue.trim() && isConnected ? '0 0 5px rgba(0,255,255,0.8)' : 'none'
+              fontSize: '14px',
+              fontWeight: 500,
+              transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
               if (inputValue.trim() && isConnected) {
-                e.currentTarget.style.transform = 'scale(1.05)';
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,255,255,0.4)';
+                e.currentTarget.style.background = '#2563eb';
               }
             }}
             onMouseLeave={(e) => {
               if (inputValue.trim() && isConnected) {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,255,255,0.3)';
+                e.currentTarget.style.background = '#3b82f6';
               }
             }}
           >
