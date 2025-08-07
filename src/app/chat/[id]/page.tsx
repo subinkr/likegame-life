@@ -484,14 +484,14 @@ function ChatRoomPageContent() {
         </button>
       </div>
 
-      {/* 메시지 목록 - 입력 섹션과 네비게이션 바 위의 공간을 모두 차지 */}
+      {/* 메시지 목록 - 브라우저 네비게이션 바를 고려한 여백 */}
       <div style={{
         flex: 1,
         background: 'rgba(255,255,255,0.05)',
         border: '2px solid rgba(0,255,255,0.2)',
         borderRadius: '10px',
         padding: '12px',
-        marginBottom: '140px', // 입력 섹션 + 네비게이션 바 높이만큼 여백 추가
+        marginBottom: '120px', // 브라우저 네비게이션 바 고려하여 여백 조정
         overflowY: 'auto',
         display: 'flex',
         flexDirection: 'column',
@@ -550,13 +550,13 @@ function ChatRoomPageContent() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 메시지 입력 - 네비게이션 바 위에 고정 */}
+      {/* 메시지 입력 - 브라우저 네비게이션 바 위에 위치 */}
       <form onSubmit={sendMessage} style={{
         position: 'fixed',
-        bottom: '60px', // 네비게이션 바 위에 위치
+        bottom: '80px', // 브라우저 네비게이션 바 위에 위치
         left: 0,
         right: 0,
-        height: '60px',
+        height: '50px',
         background: 'rgba(0,255,255,0.05)',
         backdropFilter: 'blur(20px)',
         borderTop: '2px solid rgba(0,255,255,0.3)',
@@ -582,7 +582,7 @@ function ChatRoomPageContent() {
             color: '#ffffff',
             fontSize: '0.9rem',
             fontFamily: 'Press Start 2P, cursive',
-            height: '40px'
+            height: '35px'
           }}
         />
         <button
@@ -590,8 +590,8 @@ function ChatRoomPageContent() {
           disabled={!newMessage.trim()}
           style={{
             padding: '8px 12px',
-            width: '60px',
-            minWidth: '60px',
+            width: '50px',
+            minWidth: '50px',
             flexShrink: 0,
             background: newMessage.trim() ? 'rgba(0,255,255,0.2)' : 'rgba(128,128,128,0.2)',
             border: '2px solid rgba(0,255,255,0.3)',
@@ -601,20 +601,20 @@ function ChatRoomPageContent() {
             fontSize: '0.8rem',
             fontWeight: 'bold',
             fontFamily: 'Press Start 2P, cursive',
-            height: '40px'
+            height: '35px'
           }}
         >
           전송
         </button>
       </form>
 
-      {/* 채팅방 바텀 네비게이션 바 */}
+      {/* 채팅방 바텀 네비게이션 바 - 브라우저 네비게이션 바 위에 위치 */}
       <div style={{
         position: 'fixed',
-        bottom: 0,
+        bottom: '20px', // 브라우저 네비게이션 바 위에 위치
         left: 0,
         right: 0,
-        height: '60px',
+        height: '50px',
         background: 'rgba(0,255,255,0.05)',
         backdropFilter: 'blur(20px)',
         borderTop: '2px solid rgba(0,255,255,0.3)',
@@ -635,7 +635,7 @@ function ChatRoomPageContent() {
             textDecoration: 'none',
             flex: 1,
             minWidth: 0,
-            padding: '6px 4px',
+            padding: '4px 2px',
             position: 'relative',
             borderRadius: '6px',
             margin: '0 2px',
@@ -646,14 +646,14 @@ function ChatRoomPageContent() {
           }}
         >
           <div style={{
-            fontSize: '1.2rem',
+            fontSize: '1rem',
             marginBottom: '2px',
             opacity: 0.8
           }}>
             ←
           </div>
           <div style={{
-            fontSize: '0.75rem',
+            fontSize: '0.6rem',
             fontWeight: 600,
             color: '#ffffff',
             textAlign: 'center',
@@ -678,7 +678,7 @@ function ChatRoomPageContent() {
             textDecoration: 'none',
             flex: 1,
             minWidth: 0,
-            padding: '6px 4px',
+            padding: '4px 2px',
             position: 'relative',
             borderRadius: '6px',
             margin: '0 2px',
@@ -689,14 +689,14 @@ function ChatRoomPageContent() {
           }}
         >
           <div style={{
-            fontSize: '1.2rem',
+            fontSize: '1rem',
             marginBottom: '2px',
             opacity: 0.8
           }}>
             ℹ️
           </div>
           <div style={{
-            fontSize: '0.75rem',
+            fontSize: '0.6rem',
             fontWeight: 600,
             color: '#ffffff',
             textAlign: 'center',
@@ -721,7 +721,7 @@ function ChatRoomPageContent() {
             textDecoration: 'none',
             flex: 1,
             minWidth: 0,
-            padding: '6px 4px',
+            padding: '4px 2px',
             position: 'relative',
             borderRadius: '6px',
             margin: '0 2px',
@@ -732,14 +732,14 @@ function ChatRoomPageContent() {
           }}
         >
           <div style={{
-            fontSize: '1.2rem',
+            fontSize: '1rem',
             marginBottom: '2px',
             opacity: 0.8
           }}>
             👥
           </div>
           <div style={{
-            fontSize: '0.75rem',
+            fontSize: '0.6rem',
             fontWeight: 600,
             color: '#ffffff',
             textAlign: 'center',
@@ -765,7 +765,7 @@ function ChatRoomPageContent() {
             textDecoration: 'none',
             flex: 1,
             minWidth: 0,
-            padding: '6px 4px',
+            padding: '4px 2px',
             position: 'relative',
             borderRadius: '6px',
             margin: '0 2px',
@@ -777,14 +777,14 @@ function ChatRoomPageContent() {
           }}
         >
           <div style={{
-            fontSize: '1.2rem',
+            fontSize: '1rem',
             marginBottom: '2px',
             opacity: party && party.leader_id === user?.id ? 0.5 : 0.8
           }}>
             🚪
           </div>
           <div style={{
-            fontSize: '0.75rem',
+            fontSize: '0.6rem',
             fontWeight: 600,
             color: party && party.leader_id === user?.id ? '#888888' : '#ff0000',
             textAlign: 'center',
