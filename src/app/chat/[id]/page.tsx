@@ -117,7 +117,8 @@ function ChatRoomPageContent() {
   // 채팅 스크롤 이벤트 처리
   const handleChatScroll = (scrollTop: number) => {
     console.log('Chat scroll position:', scrollTop);
-    setShowHeader(scrollTop > 50);
+    // 스크롤 위치와 관계없이 헤더를 항상 표시
+    setShowHeader(true);
   };
 
   const handleGoBack = () => {
@@ -193,21 +194,19 @@ function ChatRoomPageContent() {
       height: '100dvh',
       background: '#ffffff'
     }}>
-      {/* Conditional Header */}
-      {showHeader && (
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '16px 20px',
-          background: '#ffffff',
-          borderBottom: '1px solid #e2e8f0',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          position: 'sticky',
-          top: 0,
-          zIndex: 10,
-          animation: 'slideDown 0.3s ease'
-        }}>
+      {/* Fixed Header */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '16px 20px',
+        background: '#ffffff',
+        borderBottom: '1px solid #e2e8f0',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10
+      }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -294,7 +293,6 @@ function ChatRoomPageContent() {
           나가기
         </button>
       </div>
-      )}
 
       {/* Chat Component with Fixed Layout */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
