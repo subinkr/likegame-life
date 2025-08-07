@@ -120,9 +120,9 @@ function ChatRoomPageContent() {
     const shouldShow = scrollTop > 50;
     setShowHeader(shouldShow);
     
-    // 헤더가 나타날 때 이전 메시지 로드
-    if (shouldShow && hasMoreMessages && !loadingMore) {
-      console.log('Header appeared, triggering load more...');
+    // 헤더가 나타날 때 이전 메시지 로드 (조건부 헤더가 나타나지 않을 때도 작동)
+    if (scrollTop > 30 && hasMoreMessages && !loadingMore) {
+      console.log('Scroll threshold reached, triggering load more...');
       loadMoreMessages();
     }
   };
