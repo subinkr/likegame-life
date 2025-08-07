@@ -179,16 +179,6 @@ function SkillsPageContent() {
           padding: '12px'
         }}>
           <div style={{
-            fontSize: '0.9rem',
-            color: '#00ffff',
-            marginBottom: '8px',
-            textAlign: 'center',
-            fontWeight: 600,
-            fontFamily: 'Press Start 2P, cursive'
-          }}>
-            스킬 통계
-          </div>
-          <div style={{
             display: 'flex',
             gap: '8px'
           }}>
