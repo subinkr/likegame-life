@@ -92,15 +92,33 @@ function ChatRoomPageContent() {
   if (loading) {
     return (
       <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         display: 'flex',
-        justifyContent: 'center',
         alignItems: 'center',
-        height: 'calc(100dvh - 120px)',
-        backgroundColor: '#1a1a1a',
-        color: '#fff',
-        fontFamily: 'Press Start 2P, cursive'
+        justifyContent: 'center',
+        flexDirection: 'column',
+        gap: '24px',
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
+        zIndex: 1000
       }}>
-        로딩 중...
+        <div style={{ 
+          fontSize: '3rem',
+          animation: 'pulse 2s ease-in-out infinite',
+          filter: 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.8))'
+        }}>💬</div>
+        <div style={{ 
+          color: '#00ffff', 
+          fontSize: '1rem',
+          fontFamily: 'Press Start 2P, cursive',
+          textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
+          textAlign: 'center'
+        }}>
+          채팅방 로딩 중...
+        </div>
       </div>
     );
   }
@@ -112,9 +130,10 @@ function ChatRoomPageContent() {
         justifyContent: 'center',
         alignItems: 'center',
         height: 'calc(100dvh - 120px)',
-        backgroundColor: '#1a1a1a',
-        color: '#fff',
-        fontFamily: 'Press Start 2P, cursive'
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
+        color: '#00ffff',
+        fontFamily: 'Press Start 2P, cursive',
+        textShadow: '0 0 10px rgba(0, 255, 255, 0.8)'
       }}>
         채팅방을 찾을 수 없습니다.
       </div>
@@ -126,66 +145,116 @@ function ChatRoomPageContent() {
       display: 'flex',
       flexDirection: 'column',
       height: 'calc(100dvh - 120px)',
-      backgroundColor: '#1a1a1a'
+      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)'
     }}>
       {/* Header */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '16px',
-        backgroundColor: '#2a2a2a',
-        borderBottom: '1px solid #333'
+        padding: '20px',
+        background: 'linear-gradient(135deg, rgba(0,255,255,0.08) 0%, rgba(0,255,255,0.03) 100%)',
+        borderBottom: '2px solid rgba(0,255,255,0.3)',
+        backdropFilter: 'blur(10px)',
+        boxShadow: '0 4px 15px rgba(0,255,255,0.1)'
       }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '12px'
+          gap: '16px'
         }}>
           <button
             onClick={handleGoBack}
             style={{
-              background: 'none',
-              border: 'none',
+              background: 'linear-gradient(135deg, rgba(0,255,255,0.2) 0%, rgba(0,255,255,0.1) 100%)',
+              border: '2px solid rgba(0,255,255,0.5)',
               color: '#00ffff',
-              fontSize: '1rem',
+              fontSize: '1.2rem',
               cursor: 'pointer',
-              fontFamily: 'Press Start 2P, cursive'
+              fontFamily: 'Press Start 2P, cursive',
+              padding: '8px 12px',
+              borderRadius: '8px',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 2px 8px rgba(0,255,255,0.2)',
+              textShadow: '0 0 10px rgba(0,255,255,0.8)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,255,255,0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,255,255,0.2)';
             }}
           >
             ←
           </button>
           <div>
             <div style={{
-              fontSize: '0.875rem',
+              fontSize: '1.1rem',
               fontWeight: 600,
-              color: '#fff',
-              fontFamily: 'Press Start 2P, cursive'
+              color: '#00ffff',
+              fontFamily: 'Press Start 2P, cursive',
+              textShadow: '0 0 10px rgba(0,255,255,0.8)',
+              marginBottom: '4px'
             }}>
               {chatRoom.name}
             </div>
-            {party && (
-              <div style={{
-                fontSize: '0.75rem',
-                color: '#00ffff',
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <span style={{
+                padding: '4px 8px',
+                background: chatRoom.type === 'PARTY' 
+                  ? 'linear-gradient(135deg, rgba(0,255,0,0.3) 0%, rgba(0,255,0,0.2) 100%)'
+                  : 'linear-gradient(135deg, rgba(255,165,0,0.3) 0%, rgba(255,165,0,0.2) 100%)',
+                color: chatRoom.type === 'PARTY' ? '#00ff00' : '#ffa500',
+                borderRadius: '12px',
+                fontSize: '0.7rem',
+                fontWeight: 'bold',
+                boxShadow: chatRoom.type === 'PARTY' 
+                  ? '0 2px 8px rgba(0,255,0,0.3)'
+                  : '0 2px 8px rgba(255,165,0,0.3)',
                 fontFamily: 'Press Start 2P, cursive'
               }}>
-                파티: {party.name}
-              </div>
-            )}
+                {chatRoom.type === 'PARTY' ? '👥 파티' : '⚔️ 퀘스트'}
+              </span>
+              {party && (
+                <span style={{
+                  fontSize: '0.7rem',
+                  color: '#888888',
+                  fontFamily: 'Press Start 2P, cursive'
+                }}>
+                  파티: {party.name}
+                </span>
+              )}
+            </div>
           </div>
         </div>
         <button
           onClick={handleLeaveRoom}
           style={{
-            padding: '8px 12px',
-            backgroundColor: '#ff4444',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '4px',
+            padding: '10px 16px',
+            background: 'linear-gradient(135deg, rgba(255,68,68,0.3) 0%, rgba(255,68,68,0.2) 100%)',
+            color: '#ff4444',
+            border: '2px solid rgba(255,68,68,0.5)',
+            borderRadius: '8px',
             fontSize: '0.75rem',
             cursor: 'pointer',
-            fontFamily: 'Press Start 2P, cursive'
+            fontFamily: 'Press Start 2P, cursive',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 2px 8px rgba(255,68,68,0.2)',
+            textShadow: '0 0 10px rgba(255,68,68,0.8)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.05)';
+            e.currentTarget.style.boxShadow = '0 4px 15px rgba(255,68,68,0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(255,68,68,0.2)';
           }}
         >
           나가기
