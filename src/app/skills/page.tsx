@@ -376,10 +376,11 @@ function SkillsPageContent() {
                       border: '1px solid rgba(255,0,0,0.3)',
                       borderRadius: '4px',
                       color: '#ff0000',
-                      fontSize: '0.6rem',
-                      padding: '2px 4px',
+                      fontSize: '0.75rem',
+                      padding: '6px 10px',
                       cursor: 'pointer',
-                      fontFamily: 'Press Start 2P, cursive'
+                      fontFamily: 'Press Start 2P, cursive',
+                      minWidth: '50px'
                     }}
                   >
                     삭제

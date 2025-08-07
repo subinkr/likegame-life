@@ -717,14 +717,15 @@ function GuildPageContent() {
                               completeQuest(quest.id);
                             }}
                             style={{
-                              padding: '2px 6px',
+                              padding: '8px 12px',
                               background: 'rgba(0,255,255,0.2)',
                               border: '1px solid rgba(0,255,255,0.5)',
                               color: '#00ffff',
                               borderRadius: '4px',
                               cursor: 'pointer',
                               fontWeight: 'bold',
-                              fontSize: '0.6rem'
+                              fontSize: '0.75rem',
+                              minWidth: '60px'
                             }}
                           >
                             완료
@@ -738,14 +739,15 @@ function GuildPageContent() {
                               abandonQuest(quest.id);
                             }}
                             style={{
-                              padding: '2px 6px',
+                              padding: '8px 12px',
                               background: 'rgba(255,165,0,0.2)',
                               border: '1px solid rgba(255,165,0,0.5)',
                               color: '#ffa500',
                               borderRadius: '4px',
                               cursor: 'pointer',
                               fontWeight: 'bold',
-                              fontSize: '0.6rem'
+                              fontSize: '0.75rem',
+                              minWidth: '60px'
                             }}
                           >
                             포기
@@ -949,7 +951,7 @@ function GuildPageContent() {
                             <span
                               key={member.id}
                               style={{
-                                padding: '2px 6px',
+                                padding: '3px 8px',
                                 background: member.id === party.leader.id ? 'rgba(255,215,0,0.2)' : 'rgba(0,255,255,0.1)',
                                 color: member.id === party.leader.id ? '#ffd700' : '#00ffff',
                                 borderRadius: '4px',
@@ -994,14 +996,15 @@ function GuildPageContent() {
                               joinParty(party.id);
                             }}
                             style={{
-                              padding: '2px 6px',
+                              padding: '8px 12px',
                               background: 'rgba(0,255,255,0.2)',
                               border: '1px solid rgba(0,255,255,0.5)',
                               color: '#00ffff',
                               borderRadius: '4px',
                               cursor: 'pointer',
                               fontWeight: 'bold',
-                              fontSize: '0.6rem'
+                              fontSize: '0.75rem',
+                              minWidth: '60px'
                             }}
                           >
                             참가
@@ -1029,14 +1032,15 @@ function GuildPageContent() {
                               leaveParty(party.id);
                             }}
                             style={{
-                              padding: '2px 6px',
+                              padding: '8px 12px',
                               background: 'rgba(255,165,0,0.2)',
                               border: '1px solid rgba(255,165,0,0.5)',
                               color: '#ffa500',
                               borderRadius: '4px',
                               cursor: 'pointer',
                               fontWeight: 'bold',
-                              fontSize: '0.6rem'
+                              fontSize: '0.75rem',
+                              minWidth: '60px'
                             }}
                           >
                             나가기

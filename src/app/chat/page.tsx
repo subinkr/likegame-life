@@ -264,7 +264,7 @@ function ChatListPageContent() {
                         <span
                           key={participant.id}
                           style={{
-                            padding: '2px 6px',
+                            padding: '3px 8px',
                             background: 'rgba(0,255,255,0.2)',
                             color: '#00ffff',
                             borderRadius: '4px',
@@ -278,7 +278,7 @@ function ChatListPageContent() {
                       ))}
                       {room.participants.length > 2 && (
                         <span style={{
-                          padding: '2px 6px',
+                          padding: '3px 8px',
                           background: 'rgba(255,255,255,0.1)',
                           color: '#888',
                           borderRadius: '4px',
