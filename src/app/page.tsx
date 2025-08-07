@@ -199,7 +199,6 @@ function HomeContent() {
     }}>
       {/* 스크롤 가능한 메인 콘텐츠 영역 */}
       <div style={{
-        flex: 1,
         display: 'flex',
         flexDirection: 'column',
         gap: '8px'

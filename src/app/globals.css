@@ -15,10 +15,11 @@ body {
   padding: 0;
 }
 
-/* 모바일 사파리 주소창 대응 */
+/* 모바일 사파리 주소창 대응 - 채팅방에서만 사용 */
 @supports (height: 100dvh) {
-  html, body {
+  .chat-page-mobile {
     height: 100dvh;
+    min-height: 100dvh;
   }
 }
 
