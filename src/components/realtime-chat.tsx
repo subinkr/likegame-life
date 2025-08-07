@@ -51,8 +51,8 @@ export const RealtimeChat = ({
     // 부모 컴포넌트에 스크롤 위치 전달
     onScroll?.(scrollTop);
     
-    if (scrollTop < 300 && hasMore && !loadingMore) { // 스크롤이 위쪽 300px 이내에 있으면 더 로드
-      console.log('Triggering load more...');
+    if (scrollTop === 0 && hasMore && !loadingMore) { // 스크롤이 맨 위에 도달했을 때만 더 로드
+      console.log('Triggering load more at top...');
       onLoadMore?.();
     }
   };
