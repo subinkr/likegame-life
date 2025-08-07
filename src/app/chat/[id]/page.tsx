@@ -78,11 +78,11 @@ function ChatRoomPageContent() {
       console.log('Processed messages:', messages);
       
       if (beforeId) {
-        // 이전 메시지들을 기존 메시지 앞에 추가
-        setInitialMessages(prev => [...messages, ...prev]);
+        // 이전 메시지들을 기존 메시지 앞에 추가 (최신순이므로 뒤에 추가)
+        setInitialMessages(prev => [...prev, ...messages]);
       } else {
-        // 초기 로딩 - 최신 메시지가 아래쪽에 오도록
-        setInitialMessages(messages);
+        // 초기 로딩 - 최신 메시지가 아래쪽에 오도록 (역순으로 표시)
+        setInitialMessages(messages.reverse());
       }
       
       setHasMoreMessages(response.hasMore);

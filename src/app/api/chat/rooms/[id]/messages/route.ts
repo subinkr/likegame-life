@@ -46,7 +46,7 @@ export async function GET(
         user:users(nickname)
       `)
       .eq('chat_room_id', id)
-      .order('created_at', { ascending: true })
+      .order('created_at', { ascending: false })
       .limit(limit);
 
     // before 파라미터가 있으면 해당 메시지 이전의 메시지들을 가져옴
