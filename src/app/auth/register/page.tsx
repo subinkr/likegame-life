@@ -23,6 +23,20 @@ export default function RegisterPage() {
       return;
     }
 
+    // 닉네임 유효성 검사
+    const trimmedNickname = nickname.trim();
+    if (trimmedNickname.length < 2 || trimmedNickname.length > 20) {
+      setNicknameAvailable(false);
+      return;
+    }
+
+    // 닉네임 형식 검사 (영문, 숫자, 한글, 언더스코어만 허용)
+    const nicknameRegex = /^[a-zA-Z0-9가-힣_]+$/;
+    if (!nicknameRegex.test(trimmedNickname)) {
+      setNicknameAvailable(false);
+      return;
+    }
+
     setNicknameChecking(true);
     try {
       const response = await fetch('/api/auth/check-nickname', {
@@ -30,7 +44,7 @@ export default function RegisterPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ nickname: nickname.trim() }),
+        body: JSON.stringify({ nickname: trimmedNickname }),
       });
 
       const result = await response.json();
@@ -48,11 +62,42 @@ export default function RegisterPage() {
     }
   };
 
+  // 닉네임 유효성 검사
+  const getNicknameError = (nickname: string) => {
+    if (!nickname || nickname.trim() === '') {
+      return null;
+    }
+
+    const trimmedNickname = nickname.trim();
+    
+    if (trimmedNickname.length < 2) {
+      return '닉네임은 2자 이상이어야 합니다.';
+    }
+    
+    if (trimmedNickname.length > 20) {
+      return '닉네임은 20자 이하여야 합니다.';
+    }
+    
+    const nicknameRegex = /^[a-zA-Z0-9가-힣_]+$/;
+    if (!nicknameRegex.test(trimmedNickname)) {
+      return '닉네임은 영문, 숫자, 한글, 언더스코어(_)만 사용할 수 있습니다.';
+    }
+    
+    return null;
+  };
+
   // 닉네임 입력 핸들러
   const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setNickname(value);
     setError(''); // 에러 메시지 초기화
+
+    // 유효성 검사 오류가 있으면 중복 확인하지 않음
+    const validationError = getNicknameError(value);
+    if (validationError) {
+      setNicknameAvailable(false);
+      return;
+    }
 
     // 디바운스: 500ms 후에 중복 확인
     const timeoutId = setTimeout(() => {
@@ -213,6 +258,22 @@ export default function RegisterPage() {
                 ❌ 이미 사용 중인 닉네임입니다.
               </div>
             )}
+            {getNicknameError(nickname) && (
+              <div style={{
+                fontSize: '0.75rem',
+                color: '#ef4444',
+                marginTop: '4px'
+              }}>
+                ❌ {getNicknameError(nickname)}
+              </div>
+            )}
+            <div style={{
+              fontSize: '0.75rem',
+              color: '#64748b',
+              marginTop: '4px'
+            }}>
+              ⚠️ 닉네임은 2-20자, 영문/숫자/한글/언더스코어(_)만 사용 가능합니다.
+            </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
