@@ -149,7 +149,7 @@ function ChatRoomPageContent() {
       height: 'calc(100dvh - 120px)',
       background: '#ffffff'
     }}>
-      {/* Header */}
+      {/* Fixed Header */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -157,7 +157,10 @@ function ChatRoomPageContent() {
         padding: '16px 20px',
         background: '#ffffff',
         borderBottom: '1px solid #e2e8f0',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10
       }}>
         <div style={{
           display: 'flex',
@@ -246,8 +249,8 @@ function ChatRoomPageContent() {
         </button>
       </div>
 
-      {/* Chat Component */}
-      <div style={{ flex: 1 }}>
+      {/* Chat Component with Fixed Layout */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <RealtimeChat
           roomName={id as string}
           username={user?.user_metadata?.nickname || user?.email?.split('@')[0] || '나'}

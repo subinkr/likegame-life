@@ -59,7 +59,7 @@ export const RealtimeChat = ({
       height: '100%',
       background: '#ffffff'
     }}>
-      {/* Connection Status */}
+      {/* Fixed Connection Status */}
       <div style={{
         padding: '8px 16px',
         background: isConnected ? '#f0fdf4' : '#fef2f2',
@@ -67,12 +67,15 @@ export const RealtimeChat = ({
         fontSize: '12px',
         textAlign: 'center',
         fontWeight: 500,
-        borderBottom: `1px solid ${isConnected ? '#dcfce7' : '#fecaca'}`
+        borderBottom: `1px solid ${isConnected ? '#dcfce7' : '#fecaca'}`,
+        position: 'sticky',
+        top: 0,
+        zIndex: 5
       }}>
         {isConnected ? '🟢 실시간 연결됨' : '🔴 연결 중...'}
       </div>
 
-      {/* Messages */}
+      {/* Scrollable Messages Area */}
       <div style={{
         flex: 1,
         overflowY: 'auto',
@@ -80,7 +83,8 @@ export const RealtimeChat = ({
         display: 'flex',
         flexDirection: 'column',
         gap: '16px',
-        background: '#f8fafc'
+        background: '#f8fafc',
+        minHeight: 0 // Important for flex child scrolling
       }}>
         {allMessages.length === 0 ? (
           <div style={{
@@ -114,11 +118,14 @@ export const RealtimeChat = ({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Form */}
+      {/* Fixed Input Form */}
       <form onSubmit={handleSubmit} style={{
         padding: '16px',
         borderTop: '1px solid #e2e8f0',
-        background: '#ffffff'
+        background: '#ffffff',
+        position: 'sticky',
+        bottom: 0,
+        zIndex: 5
       }}>
         <div style={{
           display: 'flex',
