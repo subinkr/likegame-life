@@ -93,6 +93,28 @@ function AppBarContent() {
     }
   };
 
+  const getPageDescription = () => {
+    switch (pathname) {
+      case '/': return '30일 내 3대 운동 최고 기록으로 랭크를 올리세요.';
+      case '/skills': return '자격증을 등록하세요.';
+      case '/achievements': 
+        const tab = searchParams.get('tab');
+        return tab === 'badges' ? '뱃지별 행동을 완료하고 칭호를 활성화하세요.' : '뱃지를 활성화하고 칭호를 획득하세요.';
+      case '/guild': return '다른 사람들과 상호작용하세요.';
+      case '/chat': return '관련된 사람들과 대화를 나누세요.';
+      case '/shop': return '아이템을 구매하세요.';
+      case '/strength': return '30일 내 3대 운동 최고 기록으로 랭크를 올리세요.';
+      case '/agility': return '30일 내 걷기, 달리기 누적 거리로 랭크를 올리세요.';
+      case '/wisdom': return '30일 내 초서 누적 개수로 랭크를 올리세요.';
+      case '/wisdom/new': return '새로운 지혜 기록을 작성하세요.';
+      case '/books': return '도서를 관리하세요.';
+      case '/admin': return '관리자 기능을 사용하세요.';
+      default:
+        if (pathname.startsWith('/chat/')) { return '채팅방에서 대화를 나누세요.'; }
+        return '라이크게임을 즐기세요.';
+    }
+  };
+
   return (
     <div style={{
       position: 'fixed',
@@ -110,7 +132,7 @@ function AppBarContent() {
       zIndex: 10000
     }}>
       {/* 왼쪽: 페이지 정보 */}
-      <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+      <div style={{display: 'flex', alignItems: 'center', gap: '8px', flex: 1}}>
         <div style={{
           width: '32px',
           height: '32px',
@@ -120,17 +142,37 @@ function AppBarContent() {
           alignItems: 'center',
           justifyContent: 'center',
           fontSize: '1rem',
-          border: '1px solid rgba(0,255,255,0.3)'
+          border: '1px solid rgba(0,255,255,0.3)',
+          flexShrink: 0
         }}>
           {getPageIcon()}
         </div>
         <div style={{
-          fontSize: '0.8rem',
-          fontWeight: 600,
-          color: '#ffffff',
-          fontFamily: 'Press Start 2P, cursive'
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '2px',
+          minWidth: 0,
+          flex: 1
         }}>
-          {getPageTitle()}
+          <div style={{
+            fontSize: '0.8rem',
+            fontWeight: 600,
+            color: '#ffffff',
+            fontFamily: 'Press Start 2P, cursive',
+            whiteSpace: 'nowrap'
+          }}>
+            {getPageTitle()}
+          </div>
+          <div style={{
+            fontSize: '0.65rem',
+            color: '#00ffff',
+            fontFamily: 'Orbitron, monospace',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}>
+            {getPageDescription()}
+          </div>
         </div>
       </div>
 
@@ -197,7 +239,7 @@ export default function AppBar() {
         padding: '0 12px',
         zIndex: 10000
       }}>
-        <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+        <div style={{display: 'flex', alignItems: 'center', gap: '8px', flex: 1}}>
           <div style={{
             width: '32px',
             height: '32px',
@@ -207,17 +249,37 @@ export default function AppBar() {
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '1rem',
-            border: '1px solid rgba(0,255,255,0.3)'
+            border: '1px solid rgba(0,255,255,0.3)',
+            flexShrink: 0
           }}>
             🎮
           </div>
           <div style={{
-            fontSize: '0.8rem',
-            fontWeight: 600,
-            color: '#ffffff',
-            fontFamily: 'Press Start 2P, cursive'
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '2px',
+            minWidth: 0,
+            flex: 1
           }}>
-            로딩...
+            <div style={{
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              color: '#ffffff',
+              fontFamily: 'Press Start 2P, cursive',
+              whiteSpace: 'nowrap'
+            }}>
+              로딩...
+            </div>
+            <div style={{
+              fontSize: '0.65rem',
+              color: '#00ffff',
+              fontFamily: 'Orbitron, monospace',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}>
+              페이지를 불러오는 중...
+            </div>
           </div>
         </div>
       </div>
