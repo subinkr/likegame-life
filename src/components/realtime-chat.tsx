@@ -51,9 +51,8 @@ export const RealtimeChat = ({
     // 부모 컴포넌트에 스크롤 위치 전달
     onScroll?.(scrollTop);
     
-    // 채팅 섹션의 맨 위가 화면 맨 위와 닿을 때 로드 (조건부 헤더가 나타나지 않을 때도 작동)
-    if (scrollTop <= 50 && hasMore && !loadingMore) {
-      console.log('Triggering load more at top of chat section...');
+    if (scrollTop === 0 && hasMore && !loadingMore) { // 스크롤이 맨 위에 도달했을 때만 더 로드
+      console.log('Scroll reached top, triggering load more...');
       onLoadMore?.();
     }
   };

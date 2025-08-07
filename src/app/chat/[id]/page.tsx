@@ -117,12 +117,12 @@ function ChatRoomPageContent() {
   // 채팅 스크롤 이벤트 처리
   const handleChatScroll = (scrollTop: number) => {
     console.log('Chat scroll position:', scrollTop);
-    // 헤더를 항상 표시 (스크롤 위치와 관계없이)
+    // 스크롤 위치와 관계없이 헤더를 항상 표시
     setShowHeader(true);
     
-    // 스크롤 위치에 따라 이전 메시지 로드
-    if (scrollTop > 20 && hasMoreMessages && !loadingMore) {
-      console.log('Scroll threshold reached, triggering load more...');
+    // 스크롤이 맨 위에 도달했을 때 이전 메시지 로드
+    if (scrollTop === 0 && hasMoreMessages && !loadingMore) {
+      console.log('Scroll reached top, triggering load more...');
       loadMoreMessages();
     }
   };
@@ -200,9 +200,8 @@ function ChatRoomPageContent() {
       height: '100dvh',
       background: '#ffffff'
     }}>
-      {/* Conditional Header */}
-      {showHeader && (
-        <div style={{
+      {/* Fixed Header */}
+      <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -300,7 +299,6 @@ function ChatRoomPageContent() {
           나가기
         </button>
       </div>
-      )}
 
       {/* Chat Component with Fixed Layout */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
