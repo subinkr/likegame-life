@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎮 LikeGame.life - 이메일 인증</title>
+    <title>🎮 Like Game 이메일 인증</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -78,7 +78,7 @@
         .verify-button {
             display: inline-block;
             background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
+            color: white !important;
             padding: 15px 40px;
             border-radius: 50px;
             text-decoration: none;
@@ -87,10 +87,22 @@
             margin: 30px 0;
             transition: all 0.3s ease;
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            border: none;
+            cursor: pointer;
         }
         .verify-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+            color: white !important;
+            text-decoration: none;
+        }
+        .verify-button:visited {
+            color: white !important;
+            text-decoration: none;
+        }
+        .verify-button:link {
+            color: white !important;
+            text-decoration: none;
         }
         .features {
             margin: 30px 0;
@@ -155,27 +167,27 @@
 </head>
 <body>
     <div class="container">
-        <div class="logo">🎮 LikeGame.life</div>
-        <div class="subtitle">당신의 게임화된 삶을 시작하세요</div>
+        <div class="logo">🎮 Like Game</div>
+        <div class="subtitle">인생을 게임처럼</div>
         
         <div class="game-icon">⚔️</div>
         
         <div class="welcome-text">
-            안녕하세요! <span class="highlight">게임화된 삶</span>의 여정에 오신 것을 환영합니다! 🎉
+            안녕하세요! <span class="highlight">Like Game</span>에 오신 것을 환영합니다! 🎉
         </div>
         
         <div class="welcome-text">
-            이메일 인증을 완료하면 다음과 같은 모험을 시작할 수 있습니다:
+            이메일 인증을 완료하면 아래의 서비스가 무료로 제공됩니다.
         </div>
         
         <div class="features">
             <div class="feature-item">
                 <div class="feature-icon">💪</div>
-                <div class="feature-text">힘 스탯: 3대 운동으로 체력을 측정하고 성장시키세요</div>
+                <div class="feature-text">힘 스탯: 3대 운동으로 근력을 성장시키세요</div>
             </div>
             <div class="feature-item">
                 <div class="feature-icon">🏃</div>
-                <div class="feature-text">민첩 스탯: 도보 이동거리로 민첩성을 올려보세요</div>
+                <div class="feature-text">민첩 스탯: 걷거나 뛰면서 민첩성을 올려보세요</div>
             </div>
             <div class="feature-item">
                 <div class="feature-icon">📚</div>
@@ -183,7 +195,7 @@
             </div>
             <div class="feature-item">
                 <div class="feature-icon">🎯</div>
-                <div class="feature-text">퀘스트 시스템: 다른 사용자와 함께 모험을 떠나보세요</div>
+                <div class="feature-text">퀘스트 시스템: 다른 사용자의 의뢰를 처리하고 보상을 받아보세요</div>
             </div>
             <div class="feature-item">
                 <div class="feature-icon">🏆</div>
@@ -192,7 +204,7 @@
         </div>
         
         <div class="stats-preview">
-            <div class="stats-title">🎮 게임화된 삶 미리보기</div>
+            <div class="stats-title">🎮 현재 당신의 랭크는?</div>
             <div class="stats-grid">
                 <div class="stat-item">
                     <div class="stat-value">F</div>
@@ -210,17 +222,17 @@
         </div>
         
         <div class="welcome-text">
-            이제 이메일을 인증하고 모험을 시작해보세요!
+            이제 이메일을 인증하고 게임같은 인생을 시작해보세요!
         </div>
         
         <a href="{{ .ConfirmationURL }}" class="verify-button">
-            ✨ 이메일 인증하기
+            이메일 인증하기
         </a>
         
         <div class="footer">
             <p>이 링크는 24시간 동안 유효합니다.</p>
             <p>문의사항이 있으시면 언제든 연락주세요.</p>
-            <p>🎮 LikeGame.life - 당신의 삶을 게임처럼 만들어보세요</p>
+            <p>🎮 Like Game - 인생을 게임처럼</p>
         </div>
     </div>
 </body>
