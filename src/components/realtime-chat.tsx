@@ -58,7 +58,7 @@ export const RealtimeChat = ({
   };
 
   useEffect(() => {
-    // 초기 로딩 시 또는 새 메시지가 추가되었을 때 스크롤을 맨 아래로
+    // 초기 로딩 시 또는 새 메시지가 배열 뒤에 추가되었을 때만 스크롤을 맨 아래로
     if (allMessages.length > 0 && !loadingMore) {
       // 초기 로딩인지 확인 (initialMessages가 비어있고 allMessages가 있으면 초기 로딩)
       const isInitialLoad = initialMessages.length === 0 && allMessages.length > 0;
@@ -67,13 +67,13 @@ export const RealtimeChat = ({
         // 초기 로딩 시에는 무조건 맨 아래로
         scrollToBottom();
       } else {
-        // 새 메시지가 추가된 것인지 확인
+        // 새 메시지가 배열 뒤에 추가되었는지 확인
         const lastMessage = allMessages[allMessages.length - 1];
-        const isNewMessage = lastMessage && lastMessage.id && 
+        const isNewMessageAtEnd = lastMessage && lastMessage.id && 
           (!initialMessages.length || lastMessage.id !== initialMessages[initialMessages.length - 1]?.id);
         
-        // 새 메시지이고 현재 사용자가 보낸 메시지가 아닌 경우에만 스크롤
-        if (isNewMessage && lastMessage.user.name !== username) {
+        // 새 메시지가 배열 뒤에 추가되었고, 현재 사용자가 보낸 메시지가 아닌 경우에만 스크롤
+        if (isNewMessageAtEnd && lastMessage.user.name !== username) {
           scrollToBottom();
         }
       }
