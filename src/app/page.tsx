@@ -196,8 +196,22 @@ function HomeContent() {
       display: 'flex',
       flexDirection: 'column',
       gap: '8px',
-      minHeight: 'calc(100vh - 130px)'
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      overflow: 'hidden'
     }}>
+      {/* 스크롤 가능한 메인 콘텐츠 영역 */}
+      <div style={{
+        flex: 1,
+        overflowY: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        minHeight: 0
+      }}>
       {/* 핵심 상태 요약 - 미니멀하게 */}
       <div style={{
         background: 'rgba(0,255,255,0.05)',
@@ -648,6 +662,7 @@ function HomeContent() {
             }}>{achievedBadges}/{totalBadges}</div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

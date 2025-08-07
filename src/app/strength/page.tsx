@@ -149,231 +149,246 @@ function StrengthPageContent() {
       background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
       padding: '16px',
       color: '#ffffff',
-      minHeight: 'calc(100vh - 130px)'
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      overflow: 'hidden'
     }}>
-      {/* 힘 요약 */}
+      {/* 스크롤 가능한 메인 콘텐츠 영역 */}
       <div style={{
-        background: 'rgba(255,0,102,0.05)',
-        borderRadius: '8px',
-        padding: '12px',
-        marginBottom: '12px'
+        flex: 1,
+        overflowY: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        minHeight: 0
       }}>
+        {/* 힘 요약 */}
         <div style={{
-          display: 'flex',
-          justifyContent: 'space-around',
-          gap: '4px'
+          background: 'rgba(255,0,102,0.05)',
+          borderRadius: '8px',
+          padding: '12px',
+          marginBottom: '12px'
         }}>
-          <div style={{
-            textAlign: 'center',
-            padding: '6px',
-            background: 'rgba(255,0,102,0.1)',
-            borderRadius: '4px',
-            flex: 1
-          }}>
-            <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>📊</div>
-            <div style={{
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              color: '#ffffff',
-              fontFamily: 'Press Start 2P, cursive'
-            }}>기록</div>
-            <div style={{
-              fontSize: '0.8rem',
-              fontWeight: 700,
-              color: '#ff0066',
-              fontFamily: 'Press Start 2P, cursive'
-            }}>{records.length}</div>
-          </div>
-          
-          <div style={{
-            textAlign: 'center',
-            padding: '6px',
-            background: 'rgba(255,215,0,0.1)',
-            borderRadius: '4px',
-            flex: 1
-          }}>
-            <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>🏆</div>
-            <div style={{
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              color: '#ffffff',
-              fontFamily: 'Press Start 2P, cursive'
-            }}>최고</div>
-            <div style={{
-              fontSize: '0.8rem',
-              fontWeight: 700,
-              color: '#ffd700',
-              fontFamily: 'Press Start 2P, cursive'
-            }}>{records.length > 0 ? Math.max(...records.map(r => r.total)) : 0}kg</div>
-          </div>
-        </div>
-      </div>
-
-      {/* 기록 추가 버튼 */}
-      <div style={{
-        background: 'rgba(255,0,0,0.05)',
-        borderRadius: '8px',
-        padding: '12px',
-        marginBottom: '12px'
-      }}>
-        <button
-          onClick={() => setShowAddForm(true)}
-          style={{
-            width: '100%',
-            padding: '12px',
-            background: 'rgba(255,0,0,0.2)',
-            border: '2px solid rgba(255,0,0,0.5)',
-            color: '#ff0000',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-            fontSize: '0.9rem',
-            fontFamily: 'Press Start 2P, cursive'
-          }}
-        >
-          💪 새 기록 추가
-        </button>
-      </div>
-
-      {/* 기록 목록 */}
-      <div style={{
-        background: 'rgba(255,255,255,0.05)',
-        borderRadius: '8px',
-        padding: '12px'
-      }}>
-        <div style={{
-          fontSize: '0.9rem',
-          color: '#ffffff',
-          marginBottom: '8px',
-          textAlign: 'center',
-          fontWeight: 600,
-          fontFamily: 'Press Start 2P, cursive'
-        }}>
-          3대 운동 목록
-        </div>
-        
-        {records.length === 0 ? (
-          <div style={{
-            textAlign: 'center',
-            color: '#666',
-            fontSize: '0.8rem',
-            padding: '20px',
-            fontFamily: 'Orbitron, monospace'
-          }}>
-            아직 3대 운동 기록이 없습니다.
-          </div>
-        ) : (
           <div style={{
             display: 'flex',
-            flexDirection: 'column',
-            gap: '8px'
+            justifyContent: 'space-around',
+            gap: '4px'
           }}>
-            {records.map((record) => (
-              <div key={record.id} style={{
-                background: 'rgba(255,0,0,0.1)',
-                borderRadius: '6px',
-                padding: '12px',
-                border: '1px solid rgba(255,0,0,0.3)',
-                transition: 'all 0.3s ease'
-              }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  marginBottom: '8px'
+            <div style={{
+              textAlign: 'center',
+              padding: '6px',
+              background: 'rgba(255,0,102,0.1)',
+              borderRadius: '4px',
+              flex: 1
+            }}>
+              <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>📊</div>
+              <div style={{
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                color: '#ffffff',
+                fontFamily: 'Press Start 2P, cursive'
+              }}>기록</div>
+              <div style={{
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                color: '#ff0066',
+                fontFamily: 'Press Start 2P, cursive'
+              }}>{records.length}</div>
+            </div>
+            
+            <div style={{
+              textAlign: 'center',
+              padding: '6px',
+              background: 'rgba(255,215,0,0.1)',
+              borderRadius: '4px',
+              flex: 1
+            }}>
+              <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>🏆</div>
+              <div style={{
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                color: '#ffffff',
+                fontFamily: 'Press Start 2P, cursive'
+              }}>최고</div>
+              <div style={{
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                color: '#ffd700',
+                fontFamily: 'Press Start 2P, cursive'
+              }}>{records.length > 0 ? Math.max(...records.map(r => r.total)) : 0}kg</div>
+            </div>
+          </div>
+        </div>
+
+        {/* 기록 추가 버튼 */}
+        <div style={{
+          background: 'rgba(255,0,0,0.05)',
+          borderRadius: '8px',
+          padding: '12px',
+          marginBottom: '12px'
+        }}>
+          <button
+            onClick={() => setShowAddForm(true)}
+            style={{
+              width: '100%',
+              padding: '12px',
+              background: 'rgba(255,0,0,0.2)',
+              border: '2px solid rgba(255,0,0,0.5)',
+              color: '#ff0000',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              fontSize: '0.9rem',
+              fontFamily: 'Press Start 2P, cursive'
+            }}
+          >
+            💪 새 기록 추가
+          </button>
+        </div>
+
+        {/* 기록 목록 */}
+        <div style={{
+          background: 'rgba(255,255,255,0.05)',
+          borderRadius: '8px',
+          padding: '12px'
+        }}>
+          <div style={{
+            fontSize: '0.9rem',
+            color: '#ffffff',
+            marginBottom: '8px',
+            textAlign: 'center',
+            fontWeight: 600,
+            fontFamily: 'Press Start 2P, cursive'
+          }}>
+            3대 운동 목록
+          </div>
+          
+          {records.length === 0 ? (
+            <div style={{
+              textAlign: 'center',
+              color: '#666',
+              fontSize: '0.8rem',
+              padding: '20px',
+              fontFamily: 'Orbitron, monospace'
+            }}>
+              아직 3대 운동 기록이 없습니다.
+            </div>
+          ) : (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px'
+            }}>
+              {records.map((record) => (
+                <div key={record.id} style={{
+                  background: 'rgba(255,0,0,0.1)',
+                  borderRadius: '6px',
+                  padding: '12px',
+                  border: '1px solid rgba(255,0,0,0.3)',
+                  transition: 'all 0.3s ease'
                 }}>
-                  <div style={{flex: 1}}>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    marginBottom: '8px'
+                  }}>
+                    <div style={{flex: 1}}>
+                      <div style={{
+                        fontSize: '0.75rem',
+                        color: '#666',
+                        marginBottom: '4px',
+                        fontFamily: 'Orbitron, monospace'
+                      }}>
+                        📅 {formatDate(record.created_at)}
+                      </div>
+
+                    </div>
+                    <button
+                      onClick={() => handleDelete(record.id)}
+                      style={{
+                        background: 'rgba(255,0,0,0.2)',
+                        border: '1px solid rgba(255,0,0,0.3)',
+                        color: '#ff0000',
+                        fontWeight: 600,
+                        fontSize: '0.75rem',
+                        cursor: 'pointer',
+                        padding: '2px 4px',
+                        borderRadius: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minWidth: '32px',
+                        fontFamily: 'Press Start 2P, cursive',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255,0,0,0.3)';
+                        e.currentTarget.style.boxShadow = '0 0 5px rgba(255,0,0,0.5)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(255,0,0,0.2)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      삭제
+                    </button>
+                  </div>
+                  
+                  <div style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    borderRadius: '4px',
+                    padding: '8px',
+                    marginBottom: '6px'
+                  }}>
+
                     <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr 1fr',
+                      gap: '8px',
                       fontSize: '0.75rem',
-                      color: '#666',
-                      marginBottom: '4px',
+                      color: '#ffffff',
                       fontFamily: 'Orbitron, monospace'
                     }}>
-                      📅 {formatDate(record.created_at)}
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ color: '#888', marginBottom: '2px' }}>벤치</div>
+                        <div style={{ fontWeight: 'bold' }}>{record.bench}kg</div>
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ color: '#888', marginBottom: '2px' }}>스쿼트</div>
+                        <div style={{ fontWeight: 'bold' }}>{record.squat}kg</div>
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ color: '#888', marginBottom: '2px' }}>데드</div>
+                        <div style={{ fontWeight: 'bold' }}>{record.deadlift}kg</div>
+                      </div>
                     </div>
-
                   </div>
-                  <button
-                    onClick={() => handleDelete(record.id)}
-                    style={{
-                      background: 'rgba(255,0,0,0.2)',
-                      border: '1px solid rgba(255,0,0,0.3)',
-                      color: '#ff0000',
-                      fontWeight: 600,
-                      fontSize: '0.75rem',
-                      cursor: 'pointer',
-                      padding: '2px 4px',
-                      borderRadius: '4px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      minWidth: '32px',
+                  
+                  <div style={{
+                    background: 'rgba(255,215,0,0.05)',
+                    borderRadius: '4px',
+                    padding: '8px'
+                  }}>
+
+                    <div style={{
+                      fontSize: '0.9rem',
+                      color: '#ffd700',
+                      fontWeight: 'bold',
                       fontFamily: 'Press Start 2P, cursive',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(255,0,0,0.3)';
-                      e.currentTarget.style.boxShadow = '0 0 5px rgba(255,0,0,0.5)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'rgba(255,0,0,0.2)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
-                  >
-                    삭제
-                  </button>
-                </div>
-                
-                <div style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  borderRadius: '4px',
-                  padding: '8px',
-                  marginBottom: '6px'
-                }}>
-
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr 1fr',
-                    gap: '8px',
-                    fontSize: '0.75rem',
-                    color: '#ffffff',
-                    fontFamily: 'Orbitron, monospace'
-                  }}>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ color: '#888', marginBottom: '2px' }}>벤치</div>
-                      <div style={{ fontWeight: 'bold' }}>{record.bench}kg</div>
-                    </div>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ color: '#888', marginBottom: '2px' }}>스쿼트</div>
-                      <div style={{ fontWeight: 'bold' }}>{record.squat}kg</div>
-                    </div>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ color: '#888', marginBottom: '2px' }}>데드</div>
-                      <div style={{ fontWeight: 'bold' }}>{record.deadlift}kg</div>
+                      textAlign: 'center'
+                    }}>
+                      {record.total}kg
                     </div>
                   </div>
                 </div>
-                
-                <div style={{
-                  background: 'rgba(255,215,0,0.05)',
-                  borderRadius: '4px',
-                  padding: '8px'
-                }}>
-
-                  <div style={{
-                    fontSize: '0.9rem',
-                    color: '#ffd700',
-                    fontWeight: 'bold',
-                    fontFamily: 'Press Start 2P, cursive',
-                    textAlign: 'center'
-                  }}>
-                    {record.total}kg
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 기록 추가 모달 */}
