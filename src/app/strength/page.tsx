@@ -277,32 +277,28 @@ function StrengthPageContent() {
             <div style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: '8px'
+              gap: '6px'
             }}>
               {records.map((record) => (
                 <div key={record.id} style={{
                   background: 'rgba(255,0,0,0.1)',
                   borderRadius: '6px',
-                  padding: '12px',
+                  padding: '8px',
                   border: '1px solid rgba(255,0,0,0.3)',
                   transition: 'all 0.3s ease'
                 }}>
                   <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    marginBottom: '8px'
+                    alignItems: 'center',
+                    marginBottom: '6px'
                   }}>
-                    <div style={{flex: 1}}>
-                      <div style={{
-                        fontSize: '0.75rem',
-                        color: '#666',
-                        marginBottom: '4px',
-                        fontFamily: 'Orbitron, monospace'
-                      }}>
-                        📅 {formatDate(record.created_at)}
-                      </div>
-
+                    <div style={{
+                      fontSize: '0.7rem',
+                      color: '#666',
+                      fontFamily: 'Orbitron, monospace'
+                    }}>
+                      📅 {formatDate(record.created_at)}
                     </div>
                     <button
                       onClick={() => handleDelete(record.id)}
@@ -311,14 +307,10 @@ function StrengthPageContent() {
                         border: '1px solid rgba(255,0,0,0.3)',
                         color: '#ff0000',
                         fontWeight: 600,
-                        fontSize: '0.75rem',
+                        fontSize: '0.65rem',
                         cursor: 'pointer',
                         padding: '2px 4px',
                         borderRadius: '4px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        minWidth: '32px',
                         fontFamily: 'Press Start 2P, cursive',
                         transition: 'all 0.3s ease'
                       }}
@@ -336,49 +328,28 @@ function StrengthPageContent() {
                   </div>
                   
                   <div style={{
-                    background: 'rgba(255,255,255,0.05)',
-                    borderRadius: '4px',
-                    padding: '8px',
-                    marginBottom: '6px'
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                    gap: '6px',
+                    fontSize: '0.7rem',
+                    color: '#ffffff',
+                    fontFamily: 'Orbitron, monospace'
                   }}>
-
-                    <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: '1fr 1fr 1fr',
-                      gap: '8px',
-                      fontSize: '0.75rem',
-                      color: '#ffffff',
-                      fontFamily: 'Orbitron, monospace'
-                    }}>
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ color: '#888', marginBottom: '2px' }}>벤치</div>
-                        <div style={{ fontWeight: 'bold' }}>{record.bench}kg</div>
-                      </div>
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ color: '#888', marginBottom: '2px' }}>스쿼트</div>
-                        <div style={{ fontWeight: 'bold' }}>{record.squat}kg</div>
-                      </div>
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ color: '#888', marginBottom: '2px' }}>데드</div>
-                        <div style={{ fontWeight: 'bold' }}>{record.deadlift}kg</div>
-                      </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ color: '#888', marginBottom: '2px', fontSize: '0.6rem' }}>벤치</div>
+                      <div style={{ fontWeight: 'bold' }}>{record.bench}kg</div>
                     </div>
-                  </div>
-                  
-                  <div style={{
-                    background: 'rgba(255,215,0,0.05)',
-                    borderRadius: '4px',
-                    padding: '8px'
-                  }}>
-
-                    <div style={{
-                      fontSize: '0.9rem',
-                      color: '#ffd700',
-                      fontWeight: 'bold',
-                      fontFamily: 'Press Start 2P, cursive',
-                      textAlign: 'center'
-                    }}>
-                      {record.total}kg
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ color: '#888', marginBottom: '2px', fontSize: '0.6rem' }}>스쿼트</div>
+                      <div style={{ fontWeight: 'bold' }}>{record.squat}kg</div>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ color: '#888', marginBottom: '2px', fontSize: '0.6rem' }}>데드</div>
+                      <div style={{ fontWeight: 'bold' }}>{record.deadlift}kg</div>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ color: '#ffd700', marginBottom: '2px', fontSize: '0.6rem', fontWeight: 'bold' }}>총합</div>
+                      <div style={{ fontWeight: 'bold', color: '#ffd700' }}>{record.total}kg</div>
                     </div>
                   </div>
                 </div>

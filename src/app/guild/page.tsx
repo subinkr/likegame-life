@@ -573,9 +573,9 @@ function GuildPageContent() {
                         e.currentTarget.style.borderColor = 'rgba(255,215,0,0.3)';
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                         <h3 style={{ 
-                          fontSize: '1.2rem', 
+                          fontSize: '0.9rem', 
                           fontWeight: 'bold', 
                           color: '#ffd700',
                           margin: 0,
@@ -585,13 +585,13 @@ function GuildPageContent() {
                           {quest.title}
                         </h3>
                         <span style={{
-                          padding: '6px 12px',
+                          padding: '4px 8px',
                           background: `linear-gradient(135deg, ${statusStyle.bg} 0%, ${statusStyle.bg.replace('0.2', '0.3')} 100%)`,
                           color: statusStyle.color,
-                          borderRadius: '20px',
-                          fontSize: '0.75rem',
+                          borderRadius: '12px',
+                          fontSize: '0.65rem',
                           fontWeight: 'bold',
-                          boxShadow: `0 2px 8px ${statusStyle.bg}`,
+                          boxShadow: `0 1px 4px ${statusStyle.bg}`,
                           fontFamily: 'Press Start 2P, cursive'
                         }}>
                           {getQuestStatusText(quest.status)}
@@ -600,72 +600,61 @@ function GuildPageContent() {
                       
                       <div style={{
                         background: 'rgba(255,255,255,0.05)',
-                        borderRadius: '10px',
-                        padding: '12px',
-                        marginBottom: '12px'
+                        borderRadius: '6px',
+                        padding: '8px',
+                        marginBottom: '8px'
                       }}>
                         <p style={{ 
-                          margin: '0 0 8px 0', 
+                          margin: '0 0 4px 0', 
                           color: '#cccccc',
-                          lineHeight: '1.4',
-                          fontSize: '0.9rem'
+                          lineHeight: '1.3',
+                          fontSize: '0.75rem'
                         }}>{quest.description}</p>
-                        <p style={{ 
-                          margin: '8px 0 0 0', 
-                          color: '#888888', 
-                          fontSize: '0.8rem',
+                        <div style={{
                           display: 'flex',
+                          justifyContent: 'space-between',
                           alignItems: 'center',
-                          gap: '5px'
+                          fontSize: '0.7rem',
+                          color: '#888888'
                         }}>
-                          {quest.location}
-                        </p>
-                      </div>
-                      
-                      <div style={{
-                        background: 'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)',
-                        borderRadius: '10px',
-                        padding: '12px',
-                        marginBottom: '12px',
-                        border: '1px solid rgba(255,215,0,0.2)'
-                      }}>
-                        <p style={{ 
-                          margin: '0', 
-                          color: '#ffd700', 
-                          fontWeight: 'bold',
-                          fontSize: '1rem',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px'
-                        }}>
-                          {quest.reward.toLocaleString()}원
-                          {quest.rewardPaid && (
-                            <span style={{ 
-                              marginLeft: '10px', 
-                              color: '#00ff00',
-                              fontSize: '0.8rem',
-                              background: 'rgba(0,255,0,0.2)',
-                              padding: '2px 6px',
-                              borderRadius: '10px'
-                            }}>
-                              ✓ 지급완료
-                            </span>
-                          )}
-                        </p>
+                          <span>📍 {quest.location}</span>
+                          <span style={{ color: '#ffd700', fontWeight: 'bold' }}>
+                            {quest.reward.toLocaleString()}원
+                            {quest.rewardPaid && (
+                              <span style={{ 
+                                marginLeft: '4px', 
+                                color: '#00ff00',
+                                fontSize: '0.6rem',
+                                background: 'rgba(0,255,0,0.2)',
+                                padding: '1px 4px',
+                                borderRadius: '6px'
+                              }}>
+                                ✓
+                              </span>
+                            )}
+                          </span>
+                        </div>
                       </div>
 
-                      <p style={{ margin: '8px 0', color: '#888888', fontSize: '0.9rem' }}>
-                        생성자: {quest.creator.nickname}
-                      </p>
-                      
-                      {quest.accepted_by_user && (
-                        <p style={{ margin: '8px 0', color: '#00ff00', fontSize: '0.9rem' }}>
-                          수락자: {quest.accepted_by_user.nickname}
-                        </p>
-                      )}
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        fontSize: '0.7rem',
+                        marginBottom: '8px'
+                      }}>
+                        <span style={{ color: '#888888' }}>
+                          👤 {quest.creator.nickname}
+                        </span>
+                        {quest.accepted_by_user && (
+                          <span style={{ color: '#00ff00' }}>
+                            ✅ {quest.accepted_by_user.nickname}
+                          </span>
+                        )}
+                      </div>
 
                       {/* 액션 버튼들 */}
-                      <div style={{ marginTop: '15px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      <div style={{ marginTop: '8px', display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                         {quest.status === 'OPEN' && quest.creator.id !== user?.id && (
                           <button
                             onClick={(e) => {
@@ -673,14 +662,14 @@ function GuildPageContent() {
                               acceptQuest(quest.id);
                             }}
                             style={{
-                              padding: '6px 12px',
+                              padding: '4px 8px',
                               background: 'rgba(0,255,0,0.2)',
                               border: '1px solid rgba(0,255,0,0.5)',
                               color: '#00ff00',
                               borderRadius: '4px',
                               cursor: 'pointer',
                               fontWeight: 'bold',
-                              fontSize: '0.8rem'
+                              fontSize: '0.7rem'
                             }}
                           >
                             수락
@@ -694,14 +683,14 @@ function GuildPageContent() {
                               cancelQuest(quest.id);
                             }}
                             style={{
-                              padding: '6px 12px',
+                              padding: '4px 8px',
                               background: 'rgba(255,0,0,0.2)',
                               border: '1px solid rgba(255,0,0,0.5)',
                               color: '#ff0000',
                               borderRadius: '4px',
                               cursor: 'pointer',
                               fontWeight: 'bold',
-                              fontSize: '0.8rem'
+                              fontSize: '0.7rem'
                             }}
                           >
                             취소
@@ -850,9 +839,9 @@ function GuildPageContent() {
                         e.currentTarget.style.borderColor = 'rgba(0,255,0,0.3)';
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                         <h3 style={{ 
-                          fontSize: '1.2rem', 
+                          fontSize: '0.9rem', 
                           fontWeight: 'bold', 
                           color: '#00ff00',
                           margin: 0,
@@ -863,13 +852,13 @@ function GuildPageContent() {
                         </h3>
                         {isLeader && (
                           <span style={{
-                            padding: '6px 12px',
+                            padding: '4px 8px',
                             background: 'linear-gradient(135deg, rgba(255,215,0,0.3) 0%, rgba(255,215,0,0.2) 100%)',
                             color: '#ffd700',
-                            borderRadius: '20px',
-                            fontSize: '0.75rem',
+                            borderRadius: '12px',
+                            fontSize: '0.65rem',
                             fontWeight: 'bold',
-                            boxShadow: '0 2px 8px rgba(255,215,0,0.3)',
+                            boxShadow: '0 1px 4px rgba(255,215,0,0.3)',
                             fontFamily: 'Press Start 2P, cursive'
                           }}>
                             파티장
@@ -879,65 +868,61 @@ function GuildPageContent() {
                       
                       <div style={{
                         background: 'rgba(255,255,255,0.05)',
-                        borderRadius: '10px',
-                        padding: '12px',
-                        marginBottom: '12px'
+                        borderRadius: '6px',
+                        padding: '8px',
+                        marginBottom: '8px'
                       }}>
                         <p style={{ 
-                          margin: '0 0 8px 0', 
+                          margin: '0 0 6px 0', 
                           color: '#cccccc',
-                          lineHeight: '1.4',
-                          fontSize: '0.9rem'
+                          lineHeight: '1.3',
+                          fontSize: '0.75rem'
                         }}>{party.description}</p>
-                      </div>
-                      
-                      <div style={{
-                        background: 'linear-gradient(135deg, rgba(0,255,0,0.1) 0%, rgba(0,255,0,0.05) 100%)',
-                        borderRadius: '10px',
-                        padding: '12px',
-                        marginBottom: '12px',
-                        border: '1px solid rgba(0,255,0,0.2)'
-                      }}>
-                        <p style={{ 
-                          margin: '0 0 8px 0', 
-                          color: '#888888', 
-                          fontSize: '0.9rem',
+                        <div style={{
                           display: 'flex',
+                          justifyContent: 'space-between',
                           alignItems: 'center',
-                          gap: '5px'
+                          fontSize: '0.7rem'
                         }}>
-                          파티장: {party.leader.nickname || '익명'}
-                        </p>
-                        <p style={{ 
-                          margin: '0', 
-                          color: party.members.length >= party.maxMembers ? '#ff0000' : '#888888', 
-                          fontSize: '0.9rem',
-                          fontWeight: party.members.length >= party.maxMembers ? 'bold' : 'normal',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '5px'
-                        }}>
-                          {party.members.length}/{party.maxMembers}명
-                          {party.members.length >= party.maxMembers && (
-                            <span style={{
-                              marginLeft: '5px',
-                              background: 'rgba(255,0,0,0.2)',
-                              padding: '2px 6px',
-                              borderRadius: '10px',
-                              fontSize: '0.75rem'
-                            }}>
-                              가득참
-                            </span>
-                          )}
-                        </p>
+                          <span style={{ color: '#888888' }}>
+                            👑 {party.leader.nickname || '익명'}
+                          </span>
+                          <span style={{ 
+                            color: party.members.length >= party.maxMembers ? '#ff0000' : '#888888',
+                            fontWeight: party.members.length >= party.maxMembers ? 'bold' : 'normal'
+                          }}>
+                            {party.members.length}/{party.maxMembers}명
+                            {party.members.length >= party.maxMembers && (
+                              <span style={{
+                                marginLeft: '4px',
+                                background: 'rgba(255,0,0,0.2)',
+                                padding: '1px 4px',
+                                borderRadius: '6px',
+                                fontSize: '0.6rem'
+                              }}>
+                                가득참
+                              </span>
+                            )}
+                          </span>
+                        </div>
                       </div>
 
                       {/* 멤버 목록 */}
-                      <div style={{ margin: '8px 0' }}>
-                        <p style={{ margin: '4px 0', color: '#888888', fontSize: '0.8rem' }}>
-                          멤버 목록:
-                        </p>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                      <div style={{ margin: '6px 0' }}>
+                        <div style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center',
+                          marginBottom: '4px'
+                        }}>
+                          <span style={{ color: '#888888', fontSize: '0.7rem' }}>
+                            멤버 목록:
+                          </span>
+                          <span style={{ color: '#888888', fontSize: '0.7rem' }}>
+                            {party.members.length}명
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px' }}>
                           {party.members.map((member) => (
                             <span
                               key={member.id}
@@ -979,7 +964,7 @@ function GuildPageContent() {
                       </div>
                       
                       {/* 액션 버튼들 */}
-                      <div style={{ marginTop: '15px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      <div style={{ marginTop: '8px', display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                         {canJoin && (
                           <button
                             onClick={(e) => {
@@ -987,14 +972,14 @@ function GuildPageContent() {
                               joinParty(party.id);
                             }}
                             style={{
-                              padding: '6px 12px',
+                              padding: '4px 8px',
                               background: 'rgba(0,255,255,0.2)',
                               border: '1px solid rgba(0,255,255,0.5)',
                               color: '#00ffff',
                               borderRadius: '4px',
                               cursor: 'pointer',
                               fontWeight: 'bold',
-                              fontSize: '0.8rem'
+                              fontSize: '0.7rem'
                             }}
                           >
                             참가
@@ -1003,12 +988,12 @@ function GuildPageContent() {
 
                         {!canJoin && !isMember && (
                           <div style={{
-                            padding: '6px 12px',
+                            padding: '4px 8px',
                             background: 'rgba(255,0,0,0.1)',
                             border: '1px solid rgba(255,0,0,0.3)',
                             color: '#ff0000',
                             borderRadius: '4px',
-                            fontSize: '0.8rem',
+                            fontSize: '0.7rem',
                             fontWeight: 'bold'
                           }}>
                             ❌ 파티가 가득 찼습니다
@@ -1022,14 +1007,14 @@ function GuildPageContent() {
                               leaveParty(party.id);
                             }}
                             style={{
-                              padding: '6px 12px',
+                              padding: '4px 8px',
                               background: 'rgba(255,165,0,0.2)',
                               border: '1px solid rgba(255,165,0,0.5)',
                               color: '#ffa500',
                               borderRadius: '4px',
                               cursor: 'pointer',
                               fontWeight: 'bold',
-                              fontSize: '0.8rem'
+                              fontSize: '0.7rem'
                             }}
                           >
                             나가기

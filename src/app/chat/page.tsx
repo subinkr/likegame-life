@@ -188,35 +188,35 @@ function ChatListPageContent() {
                 key={room.id}
                 onClick={() => enterChatRoom(room.id)}
                 style={{
-                  padding: '20px',
+                  padding: '12px',
                   background: 'linear-gradient(135deg, rgba(0,255,255,0.08) 0%, rgba(0,255,255,0.03) 100%)',
-                  border: '2px solid rgba(0,255,255,0.3)',
-                  borderRadius: '15px',
+                  border: '1px solid rgba(0,255,255,0.3)',
+                  borderRadius: '8px',
                   position: 'relative',
                   transition: 'all 0.3s ease',
-                  boxShadow: '0 4px 15px rgba(0,255,255,0.1)',
+                  boxShadow: '0 2px 8px rgba(0,255,255,0.1)',
                   backdropFilter: 'blur(10px)',
                   cursor: 'pointer'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-3px)';
-                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,255,255,0.2)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,255,255,0.2)';
                   e.currentTarget.style.borderColor = 'rgba(0,255,255,0.5)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,255,255,0.1)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,255,255,0.1)';
                   e.currentTarget.style.borderColor = 'rgba(0,255,255,0.3)';
                 }}
               >
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  marginBottom: '15px'
+                  alignItems: 'center',
+                  marginBottom: '8px'
                 }}>
                   <h3 style={{ 
-                    fontSize: '1.2rem', 
+                    fontSize: '0.9rem', 
                     fontWeight: 'bold', 
                     color: '#00ffff',
                     margin: 0,
@@ -226,17 +226,17 @@ function ChatListPageContent() {
                     {room.name}
                   </h3>
                   <span style={{
-                    padding: '6px 12px',
+                    padding: '4px 8px',
                     background: room.type === 'PARTY' 
                       ? 'linear-gradient(135deg, rgba(0,255,0,0.3) 0%, rgba(0,255,0,0.2) 100%)'
                       : 'linear-gradient(135deg, rgba(255,165,0,0.3) 0%, rgba(255,165,0,0.2) 100%)',
                     color: room.type === 'PARTY' ? '#00ff00' : '#ffa500',
-                    borderRadius: '20px',
-                    fontSize: '0.75rem',
+                    borderRadius: '12px',
+                    fontSize: '0.65rem',
                     fontWeight: 'bold',
                     boxShadow: room.type === 'PARTY' 
-                      ? '0 2px 8px rgba(0,255,0,0.3)'
-                      : '0 2px 8px rgba(255,165,0,0.3)',
+                      ? '0 1px 4px rgba(0,255,0,0.3)'
+                      : '0 1px 4px rgba(255,165,0,0.3)',
                     fontFamily: 'Press Start 2P, cursive'
                   }}>
                     {room.type === 'PARTY' ? '👥 파티' : '⚔️ 퀘스트'}
@@ -245,20 +245,51 @@ function ChatListPageContent() {
                 
                 <div style={{
                   background: 'rgba(255,255,255,0.05)',
-                  borderRadius: '10px',
-                  padding: '12px',
-                  marginBottom: '12px'
+                  borderRadius: '6px',
+                  padding: '6px',
                 }}>
-                  <p style={{ 
-                    margin: '0', 
-                    color: '#888888', 
-                    fontSize: '0.9rem',
+                  <div style={{ 
                     display: 'flex',
+                    justifyContent: 'space-between',
                     alignItems: 'center',
-                    gap: '5px'
+                    fontSize: '0.7rem',
+                    color: '#888888'
                   }}>
-                    👥 {room.participants.length}명 참가
-                  </p>
+                    <span>👥 {room.participants.length}명</span>
+                    <div style={{
+                      display: 'flex',
+                      gap: '3px'
+                    }}>
+                      {room.participants.slice(0, 2).map((participant) => (
+                        <span
+                          key={participant.id}
+                          style={{
+                            padding: '1px 4px',
+                            background: 'rgba(0,255,255,0.2)',
+                            color: '#00ffff',
+                            borderRadius: '4px',
+                            fontSize: '0.6rem',
+                            fontFamily: 'Press Start 2P, cursive',
+                            border: '1px solid rgba(0,255,255,0.3)'
+                          }}
+                        >
+                          {participant.nickname}
+                        </span>
+                      ))}
+                      {room.participants.length > 2 && (
+                        <span style={{
+                          padding: '1px 4px',
+                          background: 'rgba(255,255,255,0.1)',
+                          color: '#888',
+                          borderRadius: '4px',
+                          fontSize: '0.6rem',
+                          fontFamily: 'Press Start 2P, cursive'
+                        }}>
+                          +{room.participants.length - 2}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             ))
