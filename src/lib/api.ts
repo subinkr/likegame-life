@@ -148,8 +148,8 @@ export const titlesAPI = {
 
 // 퀘스트 API
 export const questsAPI = {
-  get: async () => {
-    return apiRequest('/quests')
+  get: async (page = 1, limit = 10) => {
+    return apiRequest(`/quests?page=${page}&limit=${limit}`)
   },
 
   getActive: async () => {
@@ -214,8 +214,8 @@ export const questsAPI = {
 
 // 파티 API
 export const partiesAPI = {
-  get: async () => {
-    return apiRequest('/parties')
+  get: async (page = 1, limit = 10) => {
+    return apiRequest(`/parties?page=${page}&limit=${limit}`)
   },
 
   create: async (data: {

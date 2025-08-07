@@ -20,6 +20,11 @@ function ChatListPageContent() {
   const router = useRouter();
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // 무한스크롤 상태
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -27,14 +32,60 @@ function ChatListPageContent() {
     }
   }, [user]);
 
-  const fetchChatRooms = async () => {
+  const fetchChatRooms = async (pageNum = 1, append = false) => {
     try {
-      const response = await apiRequest('/chat/rooms');
-      setChatRooms(response);
+      if (pageNum === 1) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+
+      const response = await apiRequest(`/chat/rooms?page=${pageNum}&limit=10`);
+      
+      if (append) {
+        setChatRooms(prev => [...prev, ...(response.rooms || [])]);
+      } else {
+        setChatRooms(response.rooms || []);
+      }
+      
+      setHasMore(response.pagination?.hasNextPage || false);
+      setPage(pageNum);
     } catch (error) {
-      setChatRooms([]);
+      if (!append) {
+        setChatRooms([]);
+      }
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  // 무한스크롤을 위한 Intersection Observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const sentinel = document.getElementById('scroll-sentinel');
+    if (sentinel) {
+      observer.observe(sentinel);
+    }
+
+    return () => {
+      if (sentinel) {
+        observer.unobserve(sentinel);
+      }
+    };
+  }, [hasMore, loadingMore, page]);
+
+  const loadMore = () => {
+    if (hasMore && !loadingMore) {
+      fetchChatRooms(page + 1, true);
     }
   };
 
@@ -211,6 +262,27 @@ function ChatListPageContent() {
                 </div>
               </div>
             ))
+          )}
+          
+          {/* 무한스크롤 센티널 */}
+          {(hasMore || loadingMore) && (
+            <div id="scroll-sentinel" style={{
+              height: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginTop: '10px'
+            }}>
+              {loadingMore && (
+                <div style={{
+                  color: '#00ffff',
+                  fontSize: '0.8rem',
+                  fontFamily: 'Press Start 2P, cursive'
+                }}>
+                  로딩 중...
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>

@@ -48,6 +48,14 @@ function GuildPageContent() {
   const [parties, setParties] = useState<Party[]>([]);
   const [loading, setLoading] = useState(true);
   
+  // 무한스크롤 상태
+  const [questsPage, setQuestsPage] = useState(1);
+  const [partiesPage, setPartiesPage] = useState(1);
+  const [hasMoreQuests, setHasMoreQuests] = useState(true);
+  const [hasMoreParties, setHasMoreParties] = useState(true);
+  const [loadingMoreQuests, setLoadingMoreQuests] = useState(false);
+  const [loadingMoreParties, setLoadingMoreParties] = useState(false);
+  
   // URL 파라미터에서 탭 상태 읽기
   const tabParam = searchParams.get('tab');
   const [activeTab, setActiveTab] = useState<'quests' | 'parties'>(
@@ -95,21 +103,90 @@ function GuildPageContent() {
     fetchParties();
   }, []);
 
-  const fetchQuests = async () => {
+  const fetchQuests = async (page = 1, append = false) => {
     try {
-      const data = await questsAPI.get();
-      setQuests(data);
+      if (page === 1) {
+        setLoading(true);
+      } else {
+        setLoadingMoreQuests(true);
+      }
+
+      const data = await questsAPI.get(page, 10);
+      
+      if (append) {
+        setQuests(prev => [...prev, ...(data.quests || [])]);
+      } else {
+        setQuests(data.quests || []);
+      }
+      
+      setHasMoreQuests(data.pagination?.hasNextPage || false);
+      setQuestsPage(page);
     } finally {
       setLoading(false);
+      setLoadingMoreQuests(false);
     }
   };
 
-  const fetchParties = async () => {
+  const fetchParties = async (page = 1, append = false) => {
     try {
-      const data = await partiesAPI.get();
-      setParties(data);
+      if (page === 1) {
+        setLoading(true);
+      } else {
+        setLoadingMoreParties(true);
+      }
+
+      const data = await partiesAPI.get(page, 10);
+      
+      if (append) {
+        setParties(prev => [...prev, ...(data.parties || [])]);
+      } else {
+        setParties(data.parties || []);
+      }
+      
+      setHasMoreParties(data.pagination?.hasNextPage || false);
+      setPartiesPage(page);
     } finally {
       setLoading(false);
+      setLoadingMoreParties(false);
+    }
+  };
+
+  // 무한스크롤을 위한 Intersection Observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          if (activeTab === 'quests' && hasMoreQuests && !loadingMoreQuests) {
+            loadMoreQuests();
+          } else if (activeTab === 'parties' && hasMoreParties && !loadingMoreParties) {
+            loadMoreParties();
+          }
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const sentinel = document.getElementById('scroll-sentinel');
+    if (sentinel) {
+      observer.observe(sentinel);
+    }
+
+    return () => {
+      if (sentinel) {
+        observer.unobserve(sentinel);
+      }
+    };
+  }, [activeTab, hasMoreQuests, hasMoreParties, loadingMoreQuests, loadingMoreParties]);
+
+  const loadMoreQuests = () => {
+    if (hasMoreQuests && !loadingMoreQuests) {
+      fetchQuests(questsPage + 1, true);
+    }
+  };
+
+  const loadMoreParties = () => {
+    if (hasMoreParties && !loadingMoreParties) {
+      fetchParties(partiesPage + 1, true);
     }
   };
 
@@ -678,6 +755,27 @@ function GuildPageContent() {
                     </div>
                   );
                 })}
+                
+                {/* 무한스크롤 센티널 */}
+                {(hasMoreQuests || loadingMoreQuests) && (
+                  <div id="scroll-sentinel" style={{
+                    height: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginTop: '10px'
+                  }}>
+                    {loadingMoreQuests && (
+                      <div style={{
+                        color: '#ffd700',
+                        fontSize: '0.8rem',
+                        fontFamily: 'Press Start 2P, cursive'
+                      }}>
+                        로딩 중...
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -962,6 +1060,27 @@ function GuildPageContent() {
                     </div>
                   );
                 })}
+                
+                {/* 무한스크롤 센티널 */}
+                {(hasMoreParties || loadingMoreParties) && (
+                  <div id="scroll-sentinel" style={{
+                    height: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginTop: '10px'
+                  }}>
+                    {loadingMoreParties && (
+                      <div style={{
+                        color: '#00ff00',
+                        fontSize: '0.8rem',
+                        fontFamily: 'Press Start 2P, cursive'
+                      }}>
+                        로딩 중...
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}

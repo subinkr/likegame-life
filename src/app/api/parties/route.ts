@@ -9,6 +9,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
     }
 
+    // 페이지네이션 파라미터
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const offset = (page - 1) * limit;
+
+    // 전체 개수 조회
+    const { count, error: countError } = await supabaseAdmin
+      .from('parties')
+      .select('*', { count: 'exact', head: true });
+
+    if (countError) {
+      return NextResponse.json({ error: '파티 목록을 불러오는데 실패했습니다' }, { status: 500 });
+    }
+
+    // 페이지네이션된 데이터 조회
     const { data: parties, error } = await supabaseAdmin
       .from('parties')
       .select(`
@@ -18,7 +34,8 @@ export async function GET(request: NextRequest) {
           user:users(id, nickname)
         )
       `)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
 
     if (error) {
       return NextResponse.json({ error: '파티 목록을 불러오는데 실패했습니다' }, { status: 500 });
@@ -33,7 +50,18 @@ export async function GET(request: NextRequest) {
       members: (party.members || []).map((member: any) => member.user),
     }));
 
-    return NextResponse.json(formattedParties);
+    const totalPages = Math.ceil((count || 0) / limit);
+    const hasNextPage = page < totalPages;
+
+    return NextResponse.json({
+      parties: formattedParties,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        hasNextPage,
+        totalCount: count
+      }
+    });
   } catch (error) {
     return NextResponse.json({ error: '파티 목록을 불러오는데 실패했습니다' }, { status: 500 });
   }

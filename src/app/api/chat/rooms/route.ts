@@ -12,6 +12,12 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // 페이지네이션 파라미터
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const offset = (page - 1) * limit;
+
     // 사용자가 참여한 채팅방 목록 조회
     const { data: chatRooms, error } = await supabaseAdmin
       .from('chat_rooms')
@@ -60,15 +66,30 @@ export async function GET(request: NextRequest) {
       return isParticipant;
     });
 
+    // 페이지네이션 적용
+    const totalCount = userChatRooms.length;
+    const paginatedChatRooms = userChatRooms.slice(offset, offset + limit);
+
     // 응답 형식 맞추기
-    const formattedChatRooms = userChatRooms.map((room: any) => ({
+    const formattedChatRooms = paginatedChatRooms.map((room: any) => ({
       id: room.id,
       name: room.name,
       type: room.type,
       participants: (room.participants || []).map((p: any) => p.user),
     }));
 
-    return NextResponse.json(formattedChatRooms);
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = page < totalPages;
+
+    return NextResponse.json({
+      rooms: formattedChatRooms,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        hasNextPage,
+        totalCount
+      }
+    });
   } catch (error) {
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
