@@ -112,16 +112,11 @@ function ChatRoomPageContent() {
     }
   };
 
-  // 스크롤 이벤트 처리
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      setShowHeader(scrollTop > 10);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  // 채팅 스크롤 이벤트 처리
+  const handleChatScroll = (scrollTop: number) => {
+    console.log('Chat scroll position:', scrollTop);
+    setShowHeader(scrollTop > 50);
+  };
 
   const handleGoBack = () => {
     router.push('/chat');
@@ -311,6 +306,7 @@ function ChatRoomPageContent() {
           onLoadMore={loadMoreMessages}
           hasMore={hasMoreMessages}
           loadingMore={loadingMore}
+          onScroll={handleChatScroll}
         />
       </div>
     </div>

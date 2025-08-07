@@ -10,6 +10,7 @@ interface RealtimeChatProps {
   onLoadMore?: () => void
   hasMore?: boolean
   loadingMore?: boolean
+  onScroll?: (scrollTop: number) => void
 }
 
 export const RealtimeChat = ({ 
@@ -19,7 +20,8 @@ export const RealtimeChat = ({
   messages: initialMessages = [],
   onLoadMore,
   hasMore = false,
-  loadingMore = false
+  loadingMore = false,
+  onScroll
 }: RealtimeChatProps) => {
   const [inputValue, setInputValue] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -41,12 +43,15 @@ export const RealtimeChat = ({
 
   // 무한스크롤 처리
   const handleScroll = () => {
-    if (!messagesContainerRef.current || !hasMore || loadingMore) return;
+    if (!messagesContainerRef.current) return;
     
     const { scrollTop } = messagesContainerRef.current;
-    console.log('Scroll position:', scrollTop, 'hasMore:', hasMore, 'loadingMore:', loadingMore);
+    console.log('Chat scroll position:', scrollTop, 'hasMore:', hasMore, 'loadingMore:', loadingMore);
     
-    if (scrollTop < 200) { // 스크롤이 위쪽 200px 이내에 있으면 더 로드
+    // 부모 컴포넌트에 스크롤 위치 전달
+    onScroll?.(scrollTop);
+    
+    if (scrollTop < 200 && hasMore && !loadingMore) { // 스크롤이 위쪽 200px 이내에 있으면 더 로드
       console.log('Triggering load more...');
       onLoadMore?.();
     }
