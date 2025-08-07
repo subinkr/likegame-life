@@ -103,21 +103,25 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
 
         // 채팅방 ID가 일치하는 경우에만 처리
         if (newMessage.chat_room_id === roomName) {
+          // user_nickname이 null인 경우 user_id를 사용
+          const messageUsername = newMessage.user_nickname || newMessage.user_id
+          
           const chatMessage: ChatMessage = {
             id: newMessage.id,
             content: newMessage.content,
             user: {
-              name: newMessage.user_nickname
+              name: messageUsername
             },
             createdAt: newMessage.created_at
           }
 
           console.log('✅ Processing message for this room:', chatMessage)
           console.log('Current username:', username)
-          console.log('Message username:', newMessage.user_nickname)
+          console.log('Message username:', messageUsername)
+          console.log('Username comparison:', messageUsername !== username)
 
           // Don't add if it's our own message (already added optimistically)
-          if (newMessage.user_nickname !== username) {
+          if (messageUsername !== username) {
             console.log('✅ Adding message to state (not own message)')
             setMessages(prev => [...prev, chatMessage])
           } else {
