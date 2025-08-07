@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export function corsMiddleware(request: NextRequest) {
   const origin = request.headers.get('origin');
-  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000', 'https://likegame-life.vercel.app', 'https://likegame-life-d2n0b4sxc-subinkrs-projects.vercel.app'];
+  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['https://likegame.life', 'https://likegame-life.vercel.app', 'https://likegame-life-d2n0b4sxc-subinkrs-projects.vercel.app'];
   
   const response = NextResponse.next();
   

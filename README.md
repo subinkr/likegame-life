@@ -51,7 +51,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 NODE_ENV=development
 
 # CORS 설정 (필요시)
-ALLOWED_ORIGINS=http://localhost:3000,https://yourdomain.com
+ALLOWED_ORIGINS=https://likegame.life,https://yourdomain.com
 ```
 
 ### 3. 설치 및 실행
@@ -169,6 +169,6 @@ npm run build
 npm start
 ```
 
-## 📄 라이센스
+## �� 라이센스
 
 MIT License
