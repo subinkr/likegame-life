@@ -116,22 +116,6 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
           console.error('❌ No new message data in payload')
           return
         }
-        console.log('🎉 REALTIME EVENT RECEIVED! 🎉')
-        console.log('Event type:', payload.eventType)
-        console.log('New record:', payload.new)
-        console.log('Old record:', payload.old)
-        console.log('Schema:', payload.schema)
-        console.log('Table:', payload.table)
-        
-        // 모든 이벤트를 로그로 출력
-        console.log('Full payload:', JSON.stringify(payload, null, 2))
-        console.log('=== REALTIME EVENT RECEIVED ===')
-        console.log('Realtime payload received:', payload)
-        console.log('Payload event type:', payload.eventType)
-        console.log('Payload new record:', payload.new)
-        console.log('Payload old record:', payload.old)
-        
-        const newMessage = payload.new as any
         console.log('Extracted new message:', newMessage)
         
         const chatMessage: ChatMessage = {
