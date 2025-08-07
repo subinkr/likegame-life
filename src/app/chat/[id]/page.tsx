@@ -55,9 +55,6 @@ function ChatRoomPageContent() {
       
       // 하트비트 체크 (30초마다)
       heartbeatIntervalRef.current = setInterval(() => {
-        const now = Date.now();
-        const timeSinceLastMessage = now - lastMessageTimeRef.current;
-        
         // 30초마다 연결 상태 확인
         const currentTime = Date.now();
         const timeSinceLastHeartbeat = currentTime - lastHeartbeatRef.current;
