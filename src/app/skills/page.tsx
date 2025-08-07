@@ -155,16 +155,18 @@ function SkillsPageContent() {
   return (
     <div style={{
       background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
-      padding: '8px',
+      padding: '16px',
       display: 'flex',
       flexDirection: 'column',
-      gap: '8px'
+      gap: '16px',
+      minHeight: '100vh'
     }}>
       {/* 스크롤 가능한 메인 콘텐츠 영역 */}
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '8px'
+        gap: '16px',
+        flex: 1
       }}>
         {/* 스킬 통계 */}
         <div style={{

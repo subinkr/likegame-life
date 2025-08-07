@@ -306,14 +306,16 @@ function AchievementsPageContent() {
   return (
     <div style={{
       background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
-      padding: '8px',
-      color: '#ffffff'
+      padding: '16px',
+      color: '#ffffff',
+      minHeight: '100vh'
     }}>
       {/* 스크롤 가능한 메인 콘텐츠 영역 */}
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '8px'
+        gap: '16px',
+        flex: 1
       }}>
         {/* 탭 선택 */}
         <div style={{

@@ -312,13 +312,21 @@ function GuildPageContent() {
 
   return (
     <div style={{ 
-      padding: '8px', 
+      padding: '16px', 
       textAlign: 'center',
       background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
       display: 'flex',
-      flexDirection: 'column'
+      flexDirection: 'column',
+      minHeight: '100vh'
     }}>
-      {loading ? (
+      {/* 스크롤 가능한 메인 콘텐츠 영역 */}
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px',
+        flex: 1
+      }}>
+          {loading ? (
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -1241,6 +1249,7 @@ function GuildPageContent() {
           )}
         </>
       )}
+      </div>
     </div>
   );
 }
