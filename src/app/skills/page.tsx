@@ -317,30 +317,13 @@ function SkillsPageContent() {
                   }}
                 >
                   <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    color: '#ffffff',
+                    fontFamily: 'Press Start 2P, cursive',
                     marginBottom: '8px'
                   }}>
-                    <div style={{
-                      fontSize: '0.9rem',
-                      fontWeight: 600,
-                      color: '#ffffff',
-                      fontFamily: 'Press Start 2P, cursive'
-                    }}>
-                      {skill.name}
-                    </div>
-                    <div style={{
-                      fontSize: '0.7rem',
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                      background: `${getStatusColor(skill.expiryDate)}20`,
-                      color: getStatusColor(skill.expiryDate),
-                      fontFamily: 'Press Start 2P, cursive',
-                      fontWeight: 600
-                    }}>
-                      {getStatusText(skill.expiryDate)}
-                    </div>
+                    {skill.name}
                   </div>
                   
                   <div style={{
@@ -361,9 +344,26 @@ function SkillsPageContent() {
                     fontFamily: 'Orbitron, monospace'
                   }}>
                     <span>취득: {formatDate(skill.acquiredDate)}</span>
-                    {skill.expiryDate && (
-                      <span>만료: {formatDate(skill.expiryDate)}</span>
-                    )}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      {skill.expiryDate && (
+                        <span>만료: {formatDate(skill.expiryDate)}</span>
+                      )}
+                      <div style={{
+                        fontSize: '0.7rem',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        background: `${getStatusColor(skill.expiryDate)}20`,
+                        color: getStatusColor(skill.expiryDate),
+                        fontFamily: 'Press Start 2P, cursive',
+                        fontWeight: 600
+                      }}>
+                        {getStatusText(skill.expiryDate)}
+                      </div>
+                    </div>
                   </div>
                   
                   <button
