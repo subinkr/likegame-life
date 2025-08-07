@@ -36,6 +36,7 @@ export const RealtimeChat = ({
 
   // Combine initial messages with realtime messages
   const allMessages = [...initialMessages, ...messages]
+  const [lastMessageTime, setLastMessageTime] = useState<string | null>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -58,27 +59,29 @@ export const RealtimeChat = ({
   };
 
   useEffect(() => {
-    // 초기 로딩 시 또는 새 메시지가 배열 뒤에 추가되었을 때만 스크롤을 맨 아래로
-    if (allMessages.length > 0 && !loadingMore) {
-      // 초기 로딩인지 확인 (initialMessages가 비어있고 allMessages가 있으면 초기 로딩)
-      const isInitialLoad = initialMessages.length === 0 && allMessages.length > 0;
-      
-      if (isInitialLoad) {
-        // 초기 로딩 시에는 무조건 맨 아래로
-        scrollToBottom();
-      } else {
-        // 새 메시지가 배열 뒤에 추가되었는지 확인
-        const lastMessage = allMessages[allMessages.length - 1];
-        const isNewMessageAtEnd = lastMessage && lastMessage.id && 
-          (!initialMessages.length || lastMessage.id !== initialMessages[initialMessages.length - 1]?.id);
-        
-        // 새 메시지가 배열 뒤에 추가되었고, 현재 사용자가 보낸 메시지가 아닌 경우에만 스크롤
-        if (isNewMessageAtEnd && lastMessage.user.name !== username) {
-          scrollToBottom();
-        }
+    // 채팅방에 처음 들어왔을 때 마지막 메시지 시간 기록
+    if (allMessages.length > 0 && lastMessageTime === null) {
+      const lastMessage = allMessages[allMessages.length - 1];
+              if (lastMessage && lastMessage.createdAt) {
+          setLastMessageTime(lastMessage.createdAt);
+        scrollToBottom(); // 초기 로딩 시에는 맨 아래로
       }
     }
-  }, [allMessages, loadingMore, initialMessages, username])
+  }, [allMessages, lastMessageTime])
+
+  useEffect(() => {
+    // allMessages가 변경될 때마다 마지막 메시지 시간 비교
+    if (allMessages.length > 0 && lastMessageTime !== null && !loadingMore) {
+      const lastMessage = allMessages[allMessages.length - 1];
+      const currentLastMessageTime = lastMessage?.createdAt;
+      
+      // 마지막 메시지 시간이 다르면 새 메시지가 추가된 것
+      if (currentLastMessageTime && currentLastMessageTime !== lastMessageTime) {
+        setLastMessageTime(currentLastMessageTime);
+        scrollToBottom();
+      }
+    }
+  }, [allMessages, lastMessageTime, loadingMore])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
