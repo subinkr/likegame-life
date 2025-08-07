@@ -32,6 +32,7 @@ function ChatRoomPageContent() {
   const [initialMessages, setInitialMessages] = useState<ChatMessage[]>([]);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [showHeader, setShowHeader] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -111,6 +112,17 @@ function ChatRoomPageContent() {
     }
   };
 
+  // 스크롤 이벤트 처리
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      setShowHeader(scrollTop > 10);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const handleGoBack = () => {
     router.push('/chat');
   };
@@ -184,19 +196,21 @@ function ChatRoomPageContent() {
       height: '100dvh',
       background: '#ffffff'
     }}>
-      {/* Fixed Header */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '16px 20px',
-        background: '#ffffff',
-        borderBottom: '1px solid #e2e8f0',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 10
-      }}>
+      {/* Conditional Header */}
+      {showHeader && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '16px 20px',
+          background: '#ffffff',
+          borderBottom: '1px solid #e2e8f0',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 10,
+          animation: 'slideDown 0.3s ease'
+        }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -283,6 +297,7 @@ function ChatRoomPageContent() {
           나가기
         </button>
       </div>
+      )}
 
       {/* Chat Component with Fixed Layout */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
