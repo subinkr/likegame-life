@@ -311,16 +311,22 @@ function GuildPageContent() {
   };
 
   return (
-    <div style={{ padding: '8px', textAlign: 'center' }}>
+    <div style={{ 
+      padding: '8px', 
+      textAlign: 'center',
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
       {loading ? (
         <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          minHeight: 'calc(100vh - 130px)',
+          flex: 1,
           flexDirection: 'column',
-          gap: '24px',
-          background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)'
+          gap: '24px'
         }}>
           <div style={{ 
             fontSize: '3rem',
@@ -1248,7 +1254,7 @@ export default function GuildPage() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          minHeight: 'calc(100vh - 130px)',
+          minHeight: '100vh',
           background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
           color: '#00ffff',
           fontSize: '1rem',
