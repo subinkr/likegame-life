@@ -277,21 +277,11 @@ CREATE POLICY "Users can view chat room participants" ON chat_room_participants 
 CREATE POLICY "Users can insert chat room participants" ON chat_room_participants FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can delete own chat room participation" ON chat_room_participants FOR DELETE USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can view messages in their chat rooms" ON chat_messages FOR SELECT USING (
-  EXISTS (
-    SELECT 1 FROM chat_room_participants 
-    WHERE chat_room_participants.chat_room_id = chat_messages.chat_room_id 
-    AND chat_room_participants.user_id = auth.uid()
-  )
-);
-CREATE POLICY "Users can insert messages in their chat rooms" ON chat_messages FOR INSERT WITH CHECK (
-  EXISTS (
-    SELECT 1 FROM chat_room_participants 
-    WHERE chat_room_participants.chat_room_id = chat_messages.chat_room_id 
-    AND chat_room_participants.user_id = auth.uid()
-  )
-  AND user_id = auth.uid()
-);
+-- 간단한 메시지 정책 (무한 재귀 방지)
+CREATE POLICY "Users can view messages" ON chat_messages FOR SELECT USING (true);
+CREATE POLICY "Users can insert messages" ON chat_messages FOR INSERT WITH CHECK (user_id = auth.uid());
+CREATE POLICY "Users can update own messages" ON chat_messages FOR UPDATE USING (user_id = auth.uid());
+CREATE POLICY "Users can delete own messages" ON chat_messages FOR DELETE USING (user_id = auth.uid());
 
 -- 20. 사용자 생성 트리거
 CREATE OR REPLACE FUNCTION public.handle_new_user()
