@@ -105,6 +105,26 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
         
         // 모든 이벤트를 로그로 출력
         console.log('Full payload:', JSON.stringify(payload, null, 2))
+        
+        // 추가: 모든 INSERT 이벤트를 받아보기
+        console.log('🔍 Testing: Received INSERT event for chat_messages table')
+        
+        const newMessage = payload.new as any
+        console.log('Extracted new message:', newMessage)
+        
+        if (!newMessage) {
+          console.error('❌ No new message data in payload')
+          return
+        }
+        console.log('🎉 REALTIME EVENT RECEIVED! 🎉')
+        console.log('Event type:', payload.eventType)
+        console.log('New record:', payload.new)
+        console.log('Old record:', payload.old)
+        console.log('Schema:', payload.schema)
+        console.log('Table:', payload.table)
+        
+        // 모든 이벤트를 로그로 출력
+        console.log('Full payload:', JSON.stringify(payload, null, 2))
         console.log('=== REALTIME EVENT RECEIVED ===')
         console.log('Realtime payload received:', payload)
         console.log('Payload event type:', payload.eventType)
