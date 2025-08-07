@@ -42,11 +42,25 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
     setMessages(prev => [...prev, newMessage])
 
     try {
+      // Get auth token
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+      
+      console.log('Session:', session)
+      console.log('Token available:', !!token)
+      
+      if (!token) {
+        console.error('No auth token available')
+        setMessages(prev => prev.filter(msg => msg.id !== newMessage.id))
+        return
+      }
+
       // Save to database via API route
       const response = await fetch(`/api/chat/rooms/${roomName}/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           content: content.trim()

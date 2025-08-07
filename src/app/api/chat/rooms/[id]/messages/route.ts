@@ -72,7 +72,12 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    console.log('POST API route called for room:', await params);
+    console.log('Request headers:', Object.fromEntries(request.headers.entries()));
+    
     const user = await getCurrentUserFromSupabase(request);
+    console.log('User from auth:', user);
+    
     if (!user) {
       return NextResponse.json(
         { error: '인증이 필요합니다.' },
