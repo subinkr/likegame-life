@@ -54,7 +54,10 @@ function ChatRoomPageContent() {
 
   const fetchMessages = async () => {
     try {
+      console.log('Fetching messages for room:', id);
       const response = await apiRequest(`/chat/rooms/${id}/messages`);
+      console.log('Messages API response:', response);
+      
       const messages: ChatMessage[] = response.map((msg: any) => ({
         id: msg.id,
         content: msg.content,
@@ -63,6 +66,8 @@ function ChatRoomPageContent() {
         },
         createdAt: msg.created_at
       }));
+      
+      console.log('Processed initial messages:', messages);
       setInitialMessages(messages);
     } catch (error) {
       console.error('Error fetching messages:', error);

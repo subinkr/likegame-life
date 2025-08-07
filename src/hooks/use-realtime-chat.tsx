@@ -23,6 +23,10 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim()) return
 
+    console.log('Sending message:', content)
+    console.log('Room name:', roomName)
+    console.log('Username:', username)
+
     const newMessage: ChatMessage = {
       id: Date.now().toString(),
       content: content.trim(),
@@ -32,23 +36,30 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
       createdAt: new Date().toISOString()
     }
 
+    console.log('Optimistic message:', newMessage)
+
     // Optimistic update
     setMessages(prev => [...prev, newMessage])
 
     try {
       // Save to database
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('chat_messages')
         .insert({
           content: content.trim(),
           user_nickname: username,
           chat_room_id: roomName
         })
+        .select()
+
+      console.log('Database insert result:', { data, error })
 
       if (error) {
         console.error('Error saving message:', error)
         // Remove optimistic update on error
         setMessages(prev => prev.filter(msg => msg.id !== newMessage.id))
+      } else {
+        console.log('Message saved successfully:', data)
       }
     } catch (error) {
       console.error('Error sending message:', error)
@@ -57,6 +68,9 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
   }, [roomName, username])
 
   useEffect(() => {
+    console.log('Setting up Realtime subscription for room:', roomName)
+    console.log('Username:', username)
+    
     // Subscribe to realtime changes
     const channel = supabase
       .channel(`chat:${roomName}`)
@@ -66,6 +80,7 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
         table: 'chat_messages',
         filter: `chat_room_id=eq.${roomName}`
       }, (payload) => {
+        console.log('Realtime message received:', payload)
         const newMessage = payload.new as any
         const chatMessage: ChatMessage = {
           id: newMessage.id,
@@ -76,9 +91,16 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
           createdAt: newMessage.created_at
         }
 
+        console.log('Processed chat message:', chatMessage)
+        console.log('Current username:', username)
+        console.log('Message username:', newMessage.user_nickname)
+
         // Don't add if it's our own message (already added optimistically)
         if (newMessage.user_nickname !== username) {
+          console.log('Adding message to state (not own message)')
           setMessages(prev => [...prev, chatMessage])
+        } else {
+          console.log('Skipping own message')
         }
 
         // Call onMessage callback
@@ -87,10 +109,12 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
         }
       })
       .subscribe((status) => {
+        console.log('Realtime subscription status:', status)
         setIsConnected(status === 'SUBSCRIBED')
       })
 
     return () => {
+      console.log('Cleaning up Realtime subscription for room:', roomName)
       supabase.removeChannel(channel)
     }
   }, [roomName, username, onMessage, messages])
