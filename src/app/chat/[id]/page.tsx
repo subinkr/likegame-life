@@ -14,6 +14,10 @@ interface ChatRoom {
   type: string;
   party_id?: string;
   quest_id?: string;
+  participants?: Array<{
+    id: string;
+    nickname: string;
+  }>;
 }
 
 interface Party {
@@ -72,9 +76,11 @@ function ChatRoomPageContent() {
         id: msg.id,
         content: msg.content,
         user: {
-          name: msg.user_nickname
+          name: msg.user?.nickname || 'Unknown User'
         },
-        createdAt: msg.created_at
+        createdAt: msg.created_at,
+        isSystemMessage: msg.is_system_message || false,
+        systemType: msg.system_type || undefined
       }));
       
       console.log('Processed messages:', messages);
@@ -323,13 +329,14 @@ function ChatRoomPageContent() {
         <RealtimeChat
           roomName={id as string}
           username={user?.user_metadata?.nickname || user?.email?.split('@')[0] || '나'}
+          participants={chatRoom?.participants || []}
           messages={initialMessages}
           onMessage={(messages) => {
             console.log('Messages updated:', messages);
           }}
-                      onLoadMore={handleLoadMore}
-            hasMore={hasMoreMessages}
-            loadingMore={loadingMore}
+          onLoadMore={handleLoadMore}
+          hasMore={hasMoreMessages}
+          loadingMore={loadingMore}
         />
       </div>
     </div>

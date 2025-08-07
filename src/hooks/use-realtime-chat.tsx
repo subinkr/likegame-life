@@ -15,10 +15,14 @@ export interface ChatMessage {
 interface UseRealtimeChatProps {
   roomName: string
   username: string
+  participants?: Array<{
+    id: string;
+    nickname: string;
+  }>;
   onMessage?: (messages: ChatMessage[]) => void
 }
 
-export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeChatProps) => {
+export const useRealtimeChat = ({ roomName, username, participants = [], onMessage }: UseRealtimeChatProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isConnected, setIsConnected] = useState(false)
 
@@ -105,8 +109,9 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
 
         // 채팅방 ID가 일치하는 경우에만 처리
         if (newMessage.chat_room_id === roomName) {
-          // user_id를 사용하여 닉네임을 가져옴 (실제로는 API에서 조인으로 처리됨)
-          const messageUsername = newMessage.user?.name || 'Unknown User'
+          // user_id를 사용하여 참가자 목록에서 닉네임을 찾음
+          const participant = participants.find(p => p.id === newMessage.user_id)
+          const messageUsername = participant?.nickname || 'Unknown User'
           
           const chatMessage: ChatMessage = {
             id: newMessage.id,
@@ -122,6 +127,8 @@ export const useRealtimeChat = ({ roomName, username, onMessage }: UseRealtimeCh
           console.log('✅ Processing message for this room:', chatMessage)
           console.log('Current username:', username)
           console.log('Message username:', messageUsername)
+          console.log('Message user_id:', newMessage.user_id)
+          console.log('Found participant:', participant)
           console.log('Username comparison:', messageUsername !== username)
 
           // Don't add if it's our own message (already added optimistically)

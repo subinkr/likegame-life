@@ -5,6 +5,10 @@ import { ChatMessageItem } from './chat-message'
 interface RealtimeChatProps {
   roomName: string
   username: string
+  participants?: Array<{
+    id: string;
+    nickname: string;
+  }>;
   onMessage?: (messages: ChatMessage[]) => void
   messages?: ChatMessage[]
   onLoadMore?: () => void
@@ -16,6 +20,7 @@ interface RealtimeChatProps {
 export const RealtimeChat = ({ 
   roomName, 
   username, 
+  participants = [],
   onMessage, 
   messages: initialMessages = [],
   onLoadMore,
@@ -31,6 +36,7 @@ export const RealtimeChat = ({
   const { messages, sendMessage, isConnected } = useRealtimeChat({
     roomName,
     username,
+    participants,
     onMessage
   })
 
