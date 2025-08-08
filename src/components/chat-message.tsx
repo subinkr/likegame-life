@@ -23,12 +23,14 @@ export const ChatMessageItem = ({ message, isOwnMessage, showHeader }: ChatMessa
   // 시스템 메시지인 경우 전용 디자인 적용
   if (message.systemType) {
     return (
-      <div style={{
-        display: 'flex',
-        marginTop: '12px',
-        marginBottom: '12px',
-        justifyContent: 'center'
-      }}>
+      <div 
+        data-message-id={message.id}
+        style={{
+          display: 'flex',
+          marginTop: '12px',
+          marginBottom: '12px',
+          justifyContent: 'center'
+        }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',

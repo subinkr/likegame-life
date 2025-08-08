@@ -85,6 +85,23 @@ function ChatRoomPageContent() {
       } else {
         // 초기 로딩 - 최신 메시지가 아래쪽에 오도록 (역순으로 표시)
         setInitialMessages(messages.reverse());
+        
+        // 초기 로딩 완료 후 최신 메시지 확인 및 스크롤
+        setTimeout(() => {
+          const container = document.querySelector('[data-messages-container]') as HTMLElement;
+          if (container) {
+            const { scrollTop, scrollHeight, clientHeight } = container;
+            const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+            const bottomThreshold = scrollHeight * 0.1;
+            const isNearBottom = distanceFromBottom <= bottomThreshold;
+            
+            // 최신 메시지가 보이지 않으면 스크롤
+            if (!isNearBottom) {
+              console.log('초기 로딩 후 최신 메시지 확인 및 스크롤');
+              container.scrollTop = container.scrollHeight;
+            }
+          }
+        }, 250);
       }
       
       setHasMoreMessages(response.hasMore);
@@ -96,41 +113,47 @@ function ChatRoomPageContent() {
     }
   };
 
-  const loadMoreMessages = async (scrollInfo?: { scrollTop: number; scrollHeight: number; clientHeight: number }) => {
+  const loadMoreMessages = async () => {
     if (loadingMore || !hasMoreMessages || initialMessages.length === 0) {
       return;
     }
     
     setLoadingMore(true);
     const oldestMessageId = initialMessages[0]?.id;
+    const container = document.querySelector('[data-messages-container]') as HTMLElement;
     
-    if (oldestMessageId) {
-      await fetchMessages(oldestMessageId);
+    if (oldestMessageId && container) {
+      // 현재 스크롤 상태 저장
+      const beforeScrollHeight = container.scrollHeight;
+      const beforeScrollTop = container.scrollTop;
       
-      // 로딩 완료 후 스크롤 위치 복원
-      if (scrollInfo) {
-        setTimeout(() => {
-          const messagesContainer = document.querySelector('[data-messages-container]');
-          if (messagesContainer) {
-            const newScrollHeight = messagesContainer.scrollHeight;
-            const heightDifference = newScrollHeight - scrollInfo.scrollHeight;
-            messagesContainer.scrollTop = scrollInfo.scrollTop + heightDifference;
-          }
-        }, 50);
+      try {
+        // 이전 메시지 가져오기
+        await fetchMessages(oldestMessageId);
+        
+        // 스크롤 위치 복원 - 새로 추가된 메시지 높이만큼 보정
+        requestAnimationFrame(() => {
+          const afterScrollHeight = container.scrollHeight;
+          const heightDifference = afterScrollHeight - beforeScrollHeight;
+          
+          // 이전 스크롤 위치 + 새로 추가된 높이 = 유지되어야 할 위치
+          container.scrollTop = beforeScrollTop + heightDifference;
+          
+          console.log('무한 스크롤 완료:', {
+            heightDifference,
+            beforeScrollTop,
+            newScrollTop: container.scrollTop
+          });
+        });
+      } catch (error) {
+        console.error('메시지 로딩 실패:', error);
       }
     } else {
       setLoadingMore(false);
     }
   };
 
-  // 스크롤 위치 복원은 loadMoreMessages 함수 내에서 처리
 
-  // 더 불러오기 버튼 클릭 처리
-  const handleLoadMore = () => {
-    if (hasMoreMessages && !loadingMore) {
-      loadMoreMessages();
-    }
-  };
 
   const handleGoBack = () => {
     router.push('/chat');
@@ -305,7 +328,7 @@ function ChatRoomPageContent() {
           username={user?.user_metadata?.nickname || user?.email?.split('@')[0] || 'Unknown'}
           participants={chatRoom?.participants || []}
           messages={initialMessages}
-          onLoadMore={handleLoadMore}
+          onLoadMore={loadMoreMessages}
           hasMore={hasMoreMessages}
           loadingMore={loadingMore}
         />
