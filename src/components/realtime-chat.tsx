@@ -85,6 +85,7 @@ export const RealtimeChat = ({
   const [lastMessageId, setLastMessageId] = useState<string | null>(null)
   const [isScrollingToBottom, setIsScrollingToBottom] = useState(false)
   const [isInitialScroll, setIsInitialScroll] = useState(false)
+  const [isInitializing, setIsInitializing] = useState(true)
   
   // 새 메시지 미리보기 상태
   const [newMessagePreview, setNewMessagePreview] = useState<ChatMessage | null>(null)
@@ -131,17 +132,27 @@ export const RealtimeChat = ({
     }
   }, [onScroll, showNewMessageIndicator]);
 
-  // 무한 스크롤 - Intersection Observer
+  // 무한 스크롤 - Intersection Observer (1초 지연)
   useEffect(() => {
     const loadTrigger = loadTriggerRef.current;
     const container = messagesContainerRef.current;
     
     if (!loadTrigger || !container || !hasMore || loadingMore) return;
 
+    let isInitialized = false;
+    let initializationTimer: NodeJS.Timeout;
+
+    // 1초 후에 Intersection Observer 활성화
+    initializationTimer = setTimeout(() => {
+      isInitialized = true;
+      setIsInitializing(false);
+      console.log('무한 스크롤 활성화됨 (1초 후)');
+    }, 1000);
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && hasMore && !loadingMore) {
+          if (entry.isIntersecting && hasMore && !loadingMore && isInitialized) {
             console.log('무한 스크롤 트리거됨');
             onLoadMore?.();
           }
@@ -157,6 +168,7 @@ export const RealtimeChat = ({
     observer.observe(loadTrigger);
 
     return () => {
+      clearTimeout(initializationTimer);
       observer.disconnect();
     };
   }, [hasMore, loadingMore, onLoadMore]);
@@ -285,7 +297,7 @@ export const RealtimeChat = ({
         justifyContent: 'space-between'
       }}>
         <span>{isConnected ? '🟢 실시간 연결됨' : '🔴 연결 중...'}</span>
-        {(loadingMore || isInitialScroll) && (
+        {(loadingMore || isInitialScroll || isInitializing) && (
                       <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -303,7 +315,7 @@ export const RealtimeChat = ({
                 animation: 'spin 1s linear infinite',
                 boxShadow: '0 0 6px rgba(0,255,255,0.4)'
               }}></div>
-              {isInitialScroll ? '최신 메시지로 이동 중...' : '이전 메시지 불러오는 중...'}
+              {isInitializing ? '초기화 중...' : isInitialScroll ? '최신 메시지로 이동 중...' : '이전 메시지 불러오는 중...'}
             </div>
         )}
       </div>

@@ -41,7 +41,10 @@ function ChatRoomPageContent() {
   useEffect(() => {
     if (id) {
       fetchChatRoom();
-      fetchMessages();
+      // 1초 후에 메시지 로딩 시작
+      setTimeout(() => {
+        fetchMessages();
+      }, 1000);
     }
   }, [id]);
 
