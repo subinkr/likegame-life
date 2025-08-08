@@ -17,6 +17,55 @@ interface RealtimeChatProps {
   onScroll?: (scrollTop: number) => void
 }
 
+// 미리보기 컴포넌트
+const NewMessagePreview = ({ message, onScrollToBottom }: { 
+  message: ChatMessage; 
+  onScrollToBottom: () => void;
+}) => {
+  return (
+    <div 
+      onClick={onScrollToBottom}
+      style={{
+        position: 'fixed',
+        bottom: '80px',
+        left: '16px',
+        right: '16px',
+        zIndex: 1000,
+        background: 'rgba(0,255,255,0.95)',
+        border: '2px solid rgba(0,255,255,0.8)',
+        borderRadius: '12px',
+        padding: '12px 16px',
+        boxShadow: '0 4px 20px rgba(0,255,255,0.4)',
+        backdropFilter: 'blur(10px)',
+        animation: 'fadeInUp 0.2s ease-out',
+        cursor: 'pointer',
+        transition: 'all 0.15s ease'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = 'rgba(0,255,255,0.98)';
+        e.currentTarget.style.boxShadow = '0 6px 25px rgba(0,255,255,0.5)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'rgba(0,255,255,0.95)';
+        e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,255,255,0.4)';
+      }}
+    >
+      <div style={{
+        fontSize: '0.8rem',
+        fontWeight: 600,
+        color: '#000000',
+        fontFamily: 'Press Start 2P, cursive',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        lineHeight: '1.2'
+      }}>
+        {message.user.name}: {message.content}
+      </div>
+    </div>
+  );
+};
+
 export const RealtimeChat = ({ 
   roomName, 
   username, 
@@ -36,6 +85,11 @@ export const RealtimeChat = ({
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [oldestMessageId, setOldestMessageId] = useState<string | null>(null)
   const [isScrollingToBottom, setIsScrollingToBottom] = useState(false)
+  
+  // 미리보기 관련 상태 추가
+  const [newMessagePreview, setNewMessagePreview] = useState<ChatMessage | null>(null)
+  const [showNewMessageIndicator, setShowNewMessageIndicator] = useState(false)
+  const [isUserScrollingUp, setIsUserScrollingUp] = useState(false)
 
   const { messages, sendMessage, isConnected } = useRealtimeChat({
     roomName,
@@ -52,15 +106,29 @@ export const RealtimeChat = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-
-
-
-
-  // 스크롤 위치를 부모 컴포넌트에 전달
+  // 스크롤 위치를 부모 컴포넌트에 전달하고 미리보기 조건 확인
   const handleScroll = () => {
     if (!messagesContainerRef.current) return;
-    const { scrollTop } = messagesContainerRef.current;
+    const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
     onScroll?.(scrollTop);
+    
+    // 맨 아래에서의 거리 계산
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+    
+    // 맨 아래 10% 이내에 있으면 맨 아래로 간주
+    const bottomThreshold = scrollHeight * 0.1;
+    const isNearBottom = distanceFromBottom <= bottomThreshold;
+    
+    // 사용자가 맨 아래에서 10% 이상 올라가 있으면 미리보기 표시 대상
+    const shouldShowPreview = !isNearBottom && distanceFromBottom > 0;
+    
+    setIsUserScrollingUp(shouldShowPreview);
+    
+    // 맨 아래로 스크롤했을 때 미리보기 숨김
+    if (isNearBottom && showNewMessageIndicator) {
+      setShowNewMessageIndicator(false);
+      setNewMessagePreview(null);
+    }
     
     // 스크롤이 맨 위에 있으면 자동으로 이전 메시지 불러오기 (맨 아래 스크롤 중이 아닐 때만)
     if (scrollTop <= 10 && hasMore && !loadingMore && !isLoadingMore && !isScrollingToBottom) {
@@ -78,7 +146,7 @@ export const RealtimeChat = ({
     }
   };
 
-  // 마지막 메시지 ID가 바뀌면 맨 아래로 스크롤
+  // 마지막 메시지 ID가 바뀌면 새 메시지 처리
   useEffect(() => {
     if (allMessages.length > 0) {
       const currentLastMessageId = allMessages[allMessages.length - 1]?.id;
@@ -86,18 +154,27 @@ export const RealtimeChat = ({
       // 마지막 메시지 ID가 바뀌었으면 새 메시지가 추가된 것
       if (currentLastMessageId && currentLastMessageId !== lastMessageId) {
         setLastMessageId(currentLastMessageId);
-        setIsScrollingToBottom(true); // 맨 아래 스크롤 시작
-        // 약간의 지연을 두어 DOM이 완전히 렌더링된 후 스크롤
-        setTimeout(() => {
-          scrollToBottom();
-          // 스크롤 완료 후 플래그 해제
+        
+        // 사용자가 맨 아래에서 10% 이상 올라가 있으면 미리보기 표시
+        if (isUserScrollingUp) {
+          const newMessage = allMessages[allMessages.length - 1];
+          setNewMessagePreview(newMessage);
+          setShowNewMessageIndicator(true);
+        } else {
+          // 사용자가 맨 아래 10% 이내에 있으면 바로 스크롤하고 미리보기 숨김
+          setShowNewMessageIndicator(false);
+          setNewMessagePreview(null);
+          setIsScrollingToBottom(true);
           setTimeout(() => {
-            setIsScrollingToBottom(false);
-          }, 500); // 스크롤 애니메이션 완료 후 해제
-        }, 100);
+            scrollToBottom();
+            setTimeout(() => {
+              setIsScrollingToBottom(false);
+            }, 500);
+          }, 100);
+        }
       }
     }
-  }, [allMessages, lastMessageId])
+  }, [allMessages, lastMessageId, isUserScrollingUp])
 
   // 이전 메시지 로드 완료 후 기준 채팅 위치로 스크롤
   useEffect(() => {
@@ -182,6 +259,24 @@ export const RealtimeChat = ({
         )}
       </div>
 
+      {/* New Message Preview */}
+      {showNewMessageIndicator && newMessagePreview && (
+        <NewMessagePreview
+          message={newMessagePreview}
+          onScrollToBottom={() => {
+            // 미리보기를 즉시 숨김 (애니메이션 없이)
+            setShowNewMessageIndicator(false);
+            setNewMessagePreview(null);
+            
+            // 스크롤 실행
+            setIsScrollingToBottom(true);
+            scrollToBottom();
+            setTimeout(() => {
+              setIsScrollingToBottom(false);
+            }, 500);
+          }}
+        />
+      )}
 
 
       {/* Scrollable Messages Area */}

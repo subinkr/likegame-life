@@ -106,7 +106,6 @@ export async function POST(
       }
 
       // 생성자와 수락자를 채팅방에 추가 (중복 체크 없이)
-      console.log('생성자를 채팅방에 추가합니다:', quest.creator_id);
       const { error: creatorParticipantError } = await supabaseAdmin
         .from('chat_room_participants')
         .upsert({
@@ -115,17 +114,13 @@ export async function POST(
         }, { onConflict: 'chat_room_id,user_id' });
 
       if (creatorParticipantError) {
-        console.log('생성자 참가자 추가 실패:', creatorParticipantError);
         return NextResponse.json(
           { error: '채팅방 참가자 추가에 실패했습니다.' },
           { status: 500 }
         );
       }
 
-      console.log('생성자 참가자 추가 성공');
-
       // 수락자를 채팅방에 추가 (중복 체크 없이)
-      console.log('수락자를 채팅방에 추가합니다:', user.id);
       const { error: participantError } = await supabaseAdmin
         .from('chat_room_participants')
         .upsert({
@@ -134,14 +129,11 @@ export async function POST(
         }, { onConflict: 'chat_room_id,user_id' });
 
       if (participantError) {
-        console.log('수락자 참가자 추가 실패:', participantError);
         return NextResponse.json(
           { error: '서버 오류가 발생했습니다.' },
           { status: 500 }
         );
       }
-
-      console.log('수락자 참가자 추가 성공');
 
       // 시스템 메시지 생성
       const { error: messageError } = await supabaseAdmin
@@ -163,7 +155,6 @@ export async function POST(
     }
 
     // 퀘스트 수락자를 채팅방에 추가 (중복 체크 없이)
-    console.log('기존 채팅방에 수락자를 추가합니다:', user.id);
     const { error: participantError } = await supabaseAdmin
       .from('chat_room_participants')
       .upsert({
@@ -172,14 +163,11 @@ export async function POST(
       }, { onConflict: 'chat_room_id,user_id' });
 
     if (participantError) {
-      console.log('수락자 참가자 추가 실패:', participantError);
       return NextResponse.json(
         { error: '서버 오류가 발생했습니다.' },
         { status: 500 }
       );
     }
-
-    console.log('수락자 참가자 추가 성공');
 
     // 시스템 메시지 생성 (수락자가 참가)
     const { error: messageError } = await supabaseAdmin
