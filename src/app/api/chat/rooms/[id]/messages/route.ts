@@ -39,6 +39,7 @@ export async function GET(
     const offset = parseInt(searchParams.get('offset') || '0');
     const before = searchParams.get('before'); // 특정 메시지 ID 이전의 메시지들
 
+    // 먼저 메시지만 가져오기
     let query = supabaseAdmin
       .from('chat_messages')
       .select(`
@@ -47,8 +48,7 @@ export async function GET(
         user_id,
         content,
         system_type,
-        created_at,
-        users!inner(nickname)
+        created_at
       `)
       .eq('chat_room_id', id)
       .order('created_at', { ascending: false })
@@ -87,6 +87,19 @@ export async function GET(
       console.log('First message structure:', JSON.stringify(messages[0], null, 2));
       console.log('All created_at values:', messages.map(m => ({ id: m.id, created_at: m.created_at, type: typeof m.created_at })));
     }
+
+    // 사용자 정보 별도로 조회
+    const userIds = messages?.map(m => m.user_id) || [];
+    const { data: users, error: usersError } = await supabaseAdmin
+      .from('users')
+      .select('id, nickname')
+      .in('id', userIds);
+
+    if (usersError) {
+      console.error('Error fetching users:', usersError);
+    }
+
+    const userMap = new Map(users?.map(u => [u.id, u.nickname]) || []);
 
     const formattedMessages = (messages || []).map((message: any) => {
       // 안전한 날짜 변환
@@ -127,7 +140,7 @@ export async function GET(
         id: message.id,
         content: message.content,
         user: {
-          name: message.users?.nickname || 'Unknown User'
+          name: userMap.get(message.user_id) || 'Unknown User'
         },
         createdAt,
         isSystemMessage: !!message.system_type,
@@ -207,8 +220,7 @@ export async function POST(
         user_id,
         content,
         system_type,
-        created_at,
-        users!inner(nickname)
+        created_at
       `)
       .single();
 
@@ -220,11 +232,22 @@ export async function POST(
       );
     }
 
+    // 사용자 정보 조회
+    const { data: userData, error: userError } = await supabaseAdmin
+      .from('users')
+      .select('nickname')
+      .eq('id', user.id)
+      .single();
+
+    if (userError) {
+      console.error('Error fetching user data:', userError);
+    }
+
     const formattedMessage = {
       id: message.id,
       content: message.content,
       user: {
-        name: (message.users as any)?.nickname || 'Unknown User'
+        name: userData?.nickname || 'Unknown User'
       },
       createdAt: (() => {
         try {
