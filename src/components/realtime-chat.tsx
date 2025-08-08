@@ -11,7 +11,7 @@ interface RealtimeChatProps {
   }>;
   onMessage?: (messages: ChatMessage[]) => void
   messages?: ChatMessage[]
-  onLoadMore?: () => void
+  onLoadMore?: (scrollInfo?: { scrollTop: number; scrollHeight: number; clientHeight: number }) => void
   hasMore?: boolean
   loadingMore?: boolean
   onScroll?: (scrollTop: number) => void
@@ -112,6 +112,10 @@ export const RealtimeChat = ({
     const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
     onScroll?.(scrollTop);
     
+    // 현재 스크롤 정보 저장
+    const currentScrollTop = scrollTop;
+    const currentScrollHeight = scrollHeight;
+    
     // 맨 아래에서의 거리 계산
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
     
@@ -130,19 +134,28 @@ export const RealtimeChat = ({
       setNewMessagePreview(null);
     }
     
-    // 스크롤이 맨 위에 있으면 자동으로 이전 메시지 불러오기 (맨 아래 스크롤 중이 아닐 때만)
+    // 스크롤이 맨 위에 있으면 자동으로 이전 메시지 불러오기
     if (scrollTop <= 10 && hasMore && !loadingMore && !isLoadingMore && !isScrollingToBottom) {
+      // 현재 스크롤 정보 저장
+      const scrollInfo = {
+        scrollTop: currentScrollTop,
+        scrollHeight: currentScrollHeight,
+        clientHeight
+      };
+      
       setIsLoadingMore(true);
-      // 현재 가장 오래된 메시지 ID 저장 (기준 채팅)
+      // 현재 가장 오래된 메시지 ID 저장
       if (allMessages.length > 0) {
         setOldestMessageId(allMessages[0].id);
       }
-      onLoadMore?.();
       
-      // 디바운싱: 1초 후에 다시 로딩 가능하도록 설정
+      // 스크롤 정보를 onLoadMore에 전달
+      onLoadMore?.(scrollInfo);
+      
+      // 디바운싱: 300ms 후에 다시 로딩 가능하도록 설정
       setTimeout(() => {
         setIsLoadingMore(false);
-      }, 1000);
+      }, 300);
     }
   };
 
@@ -176,21 +189,7 @@ export const RealtimeChat = ({
     }
   }, [allMessages, lastMessageId, isUserScrollingUp])
 
-  // 이전 메시지 로드 완료 후 기준 채팅 위치로 스크롤
-  useEffect(() => {
-    if (!loadingMore && oldestMessageId && messagesContainerRef.current) {
-      // 약간의 지연을 두어 DOM이 완전히 렌더링된 후 스크롤
-      setTimeout(() => {
-        // 기준이 되었던 메시지 요소 찾기
-        const targetElement = document.querySelector(`[data-message-id="${oldestMessageId}"]`);
-        if (targetElement) {
-          // 기준 메시지의 위치로 스크롤 (부드럽지 않게)
-          targetElement.scrollIntoView({ behavior: 'auto', block: 'start' });
-        }
-        setOldestMessageId(null); // 사용 후 초기화
-      }, 50);
-    }
-  }, [loadingMore, oldestMessageId])
+  // 스크롤 위치 복원은 부모 컴포넌트에서 처리
 
 
 

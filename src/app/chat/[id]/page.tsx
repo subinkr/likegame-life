@@ -96,7 +96,7 @@ function ChatRoomPageContent() {
     }
   };
 
-  const loadMoreMessages = async () => {
+  const loadMoreMessages = async (scrollInfo?: { scrollTop: number; scrollHeight: number; clientHeight: number }) => {
     if (loadingMore || !hasMoreMessages || initialMessages.length === 0) {
       return;
     }
@@ -106,30 +106,24 @@ function ChatRoomPageContent() {
     
     if (oldestMessageId) {
       await fetchMessages(oldestMessageId);
+      
+      // 로딩 완료 후 스크롤 위치 복원
+      if (scrollInfo) {
+        setTimeout(() => {
+          const messagesContainer = document.querySelector('[data-messages-container]');
+          if (messagesContainer) {
+            const newScrollHeight = messagesContainer.scrollHeight;
+            const heightDifference = newScrollHeight - scrollInfo.scrollHeight;
+            messagesContainer.scrollTop = scrollInfo.scrollTop + heightDifference;
+          }
+        }, 50);
+      }
     } else {
       setLoadingMore(false);
     }
   };
 
-  // 스크롤 위치 유지를 위한 useEffect
-  useEffect(() => {
-    if (loadingMore) {
-      // 로딩 시작 시 스크롤 위치 저장
-      const messagesContainer = document.querySelector('[data-messages-container]');
-      if (messagesContainer) {
-        scrollPositionRef.current = messagesContainer.scrollTop;
-      }
-    } else if (scrollPositionRef.current > 0) {
-      // 로딩 완료 후 스크롤 위치 복원
-      const messagesContainer = document.querySelector('[data-messages-container]');
-      if (messagesContainer) {
-        setTimeout(() => {
-          messagesContainer.scrollTop = scrollPositionRef.current;
-          scrollPositionRef.current = 0; // 리셋
-        }, 100);
-      }
-    }
-  }, [loadingMore]);
+  // 스크롤 위치 복원은 loadMoreMessages 함수 내에서 처리
 
   // 더 불러오기 버튼 클릭 처리
   const handleLoadMore = () => {
