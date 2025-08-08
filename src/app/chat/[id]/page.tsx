@@ -76,11 +76,25 @@ function ChatRoomPageContent() {
         },
         createdAt: (() => {
           try {
-            const date = new Date(msg.created_at);
-            if (isNaN(date.getTime())) {
-              return new Date().toISOString();
+            console.log('Chat page - Original created_at:', msg.created_at, typeof msg.created_at);
+            
+            if (typeof msg.created_at === 'string') {
+              const date = new Date(msg.created_at);
+              if (isNaN(date.getTime())) {
+                console.error('Chat page - Invalid date string:', msg.created_at);
+                return new Date().toISOString();
+              }
+              return date.toISOString();
+            } else if (msg.created_at instanceof Date) {
+              return msg.created_at.toISOString();
+            } else {
+              const date = new Date(msg.created_at);
+              if (isNaN(date.getTime())) {
+                console.error('Chat page - Invalid date value:', msg.created_at);
+                return new Date().toISOString();
+              }
+              return date.toISOString();
             }
-            return date.toISOString();
           } catch (error) {
             console.error('Error converting date in chat page:', error, msg.created_at);
             return new Date().toISOString();

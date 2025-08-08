@@ -79,12 +79,32 @@ export async function GET(
       // 안전한 날짜 변환
       let createdAt: string;
       try {
-        const date = new Date(message.created_at);
-        if (isNaN(date.getTime())) {
-          createdAt = new Date().toISOString(); // 현재 시간으로 대체
+        console.log('Original created_at:', message.created_at, typeof message.created_at);
+        
+        // 데이터베이스에서 가져온 날짜가 이미 문자열인 경우
+        if (typeof message.created_at === 'string') {
+          const date = new Date(message.created_at);
+          if (isNaN(date.getTime())) {
+            console.error('Invalid date string:', message.created_at);
+            createdAt = new Date().toISOString();
+          } else {
+            createdAt = date.toISOString();
+          }
+        } else if (message.created_at instanceof Date) {
+          // 이미 Date 객체인 경우
+          createdAt = message.created_at.toISOString();
         } else {
-          createdAt = date.toISOString();
+          // 기타 경우 (숫자 등)
+          const date = new Date(message.created_at);
+          if (isNaN(date.getTime())) {
+            console.error('Invalid date value:', message.created_at);
+            createdAt = new Date().toISOString();
+          } else {
+            createdAt = date.toISOString();
+          }
         }
+        
+        console.log('Converted createdAt:', createdAt);
       } catch (error) {
         console.error('Error converting date:', error, message.created_at);
         createdAt = new Date().toISOString();
@@ -190,11 +210,25 @@ export async function POST(
       },
       createdAt: (() => {
         try {
-          const date = new Date(message.created_at);
-          if (isNaN(date.getTime())) {
-            return new Date().toISOString();
+          console.log('POST - Original created_at:', message.created_at, typeof message.created_at);
+          
+          if (typeof message.created_at === 'string') {
+            const date = new Date(message.created_at);
+            if (isNaN(date.getTime())) {
+              console.error('POST - Invalid date string:', message.created_at);
+              return new Date().toISOString();
+            }
+            return date.toISOString();
+          } else if (message.created_at instanceof Date) {
+            return message.created_at.toISOString();
+          } else {
+            const date = new Date(message.created_at);
+            if (isNaN(date.getTime())) {
+              console.error('POST - Invalid date value:', message.created_at);
+              return new Date().toISOString();
+            }
+            return date.toISOString();
           }
-          return date.toISOString();
         } catch (error) {
           console.error('Error converting date in POST:', error, message.created_at);
           return new Date().toISOString();

@@ -133,11 +133,25 @@ export const useRealtimeChat = ({ roomName, username, participants = [], onMessa
             },
             createdAt: (() => {
               try {
-                const date = new Date(newMessage.created_at);
-                if (isNaN(date.getTime())) {
-                  return new Date().toISOString();
+                console.log('Realtime - Original created_at:', newMessage.created_at, typeof newMessage.created_at);
+                
+                if (typeof newMessage.created_at === 'string') {
+                  const date = new Date(newMessage.created_at);
+                  if (isNaN(date.getTime())) {
+                    console.error('Realtime - Invalid date string:', newMessage.created_at);
+                    return new Date().toISOString();
+                  }
+                  return date.toISOString();
+                } else if (newMessage.created_at instanceof Date) {
+                  return newMessage.created_at.toISOString();
+                } else {
+                  const date = new Date(newMessage.created_at);
+                  if (isNaN(date.getTime())) {
+                    console.error('Realtime - Invalid date value:', newMessage.created_at);
+                    return new Date().toISOString();
+                  }
+                  return date.toISOString();
                 }
-                return date.toISOString();
               } catch (error) {
                 console.error('Error converting date in realtime:', error, newMessage.created_at);
                 return new Date().toISOString();
