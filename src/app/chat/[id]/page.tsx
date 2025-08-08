@@ -100,7 +100,7 @@ function ChatRoomPageContent() {
             return new Date().toISOString();
           }
         })(),
-        isSystemMessage: msg.is_system_message || false,
+        isSystemMessage: !!msg.system_type,
         systemType: msg.system_type || undefined
       }));
       

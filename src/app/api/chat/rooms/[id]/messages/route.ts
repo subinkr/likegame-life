@@ -42,7 +42,12 @@ export async function GET(
     let query = supabaseAdmin
       .from('chat_messages')
       .select(`
-        *,
+        id,
+        chat_room_id,
+        user_id,
+        content,
+        system_type,
+        created_at,
         users!inner(nickname)
       `)
       .eq('chat_room_id', id)
@@ -74,6 +79,8 @@ export async function GET(
         { status: 500 }
       );
     }
+
+    console.log('Raw messages from DB:', messages);
 
     const formattedMessages = (messages || []).map((message: any) => {
       // 안전한 날짜 변환
@@ -117,7 +124,7 @@ export async function GET(
           name: message.users?.nickname || 'Unknown User'
         },
         createdAt,
-        isSystemMessage: message.is_system_message || false,
+        isSystemMessage: !!message.system_type,
         systemType: message.system_type || undefined
       };
     });
@@ -189,7 +196,12 @@ export async function POST(
         content: content.trim(),
       })
       .select(`
-        *,
+        id,
+        chat_room_id,
+        user_id,
+        content,
+        system_type,
+        created_at,
         users!inner(nickname)
       `)
       .single();
@@ -234,7 +246,7 @@ export async function POST(
           return new Date().toISOString();
         }
       })(),
-      isSystemMessage: message.is_system_message || false,
+      isSystemMessage: !!message.system_type,
       systemType: message.system_type || undefined
     };
 

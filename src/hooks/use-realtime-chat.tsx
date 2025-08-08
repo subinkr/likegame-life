@@ -157,7 +157,7 @@ export const useRealtimeChat = ({ roomName, username, participants = [], onMessa
                 return new Date().toISOString();
               }
             })(),
-            isSystemMessage: newMessage.is_system_message || false,
+            isSystemMessage: !!newMessage.system_type,
             systemType: newMessage.system_type || undefined
           }
 
