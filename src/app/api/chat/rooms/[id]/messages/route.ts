@@ -43,7 +43,7 @@ export async function GET(
       .from('chat_messages')
       .select(`
         *,
-        user:users(nickname)
+        users!inner(nickname)
       `)
       .eq('chat_room_id', id)
       .order('created_at', { ascending: false })
@@ -68,6 +68,7 @@ export async function GET(
     const { data: messages, error } = await query;
 
     if (error) {
+      console.error('Error fetching messages:', error);
       return NextResponse.json(
         { error: '메시지를 불러오는데 실패했습니다.' },
         { status: 500 }
@@ -78,7 +79,7 @@ export async function GET(
       id: message.id,
       content: message.content,
       user: {
-        name: message.user?.nickname || 'Unknown User'
+        name: message.users?.nickname || 'Unknown User'
       },
       createdAt: message.created_at,
       isSystemMessage: message.is_system_message || false,
@@ -94,7 +95,7 @@ export async function GET(
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Unexpected error in POST /api/chat/rooms/[id]/messages:', error);
+    console.error('Unexpected error in GET /api/chat/rooms/[id]/messages:', error);
     console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.', details: error instanceof Error ? error.message : 'Unknown error' },
@@ -143,8 +144,7 @@ export async function POST(
       );
     }
 
-    // 메시지 저장 (user_nickname 필드 제거)
-
+    // 메시지 저장
     const { data: message, error } = await supabaseAdmin
       .from('chat_messages')
       .insert({
@@ -154,11 +154,12 @@ export async function POST(
       })
       .select(`
         *,
-        user:users(nickname)
+        users!inner(nickname)
       `)
       .single();
 
     if (error) {
+      console.error('Error inserting message:', error);
       return NextResponse.json(
         { error: '메시지 전송에 실패했습니다.' },
         { status: 500 }
@@ -169,7 +170,7 @@ export async function POST(
       id: message.id,
       content: message.content,
       user: {
-        name: message.user?.nickname || 'Unknown User'
+        name: message.users?.nickname || 'Unknown User'
       },
       createdAt: message.created_at,
       isSystemMessage: message.is_system_message || false,
@@ -178,6 +179,7 @@ export async function POST(
 
     return NextResponse.json(formattedMessage);
   } catch (error) {
+    console.error('Unexpected error in POST /api/chat/rooms/[id]/messages:', error);
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }

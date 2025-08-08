@@ -72,7 +72,7 @@ function ChatRoomPageContent() {
         id: msg.id,
         content: msg.content,
         user: {
-          name: msg.user?.nickname || 'Unknown User'
+          name: msg.user?.name || 'Unknown User'
         },
         createdAt: msg.created_at,
         isSystemMessage: msg.is_system_message || false,
