@@ -82,6 +82,12 @@ export async function GET(
 
     console.log('Raw messages from DB:', messages);
 
+    // 각 메시지의 필드별 상태 확인
+    if (messages && messages.length > 0) {
+      console.log('First message structure:', JSON.stringify(messages[0], null, 2));
+      console.log('All created_at values:', messages.map(m => ({ id: m.id, created_at: m.created_at, type: typeof m.created_at })));
+    }
+
     const formattedMessages = (messages || []).map((message: any) => {
       // 안전한 날짜 변환
       let createdAt: string;
@@ -218,7 +224,7 @@ export async function POST(
       id: message.id,
       content: message.content,
       user: {
-        name: message.users?.nickname || 'Unknown User'
+        name: (message.users as any)?.nickname || 'Unknown User'
       },
       createdAt: (() => {
         try {

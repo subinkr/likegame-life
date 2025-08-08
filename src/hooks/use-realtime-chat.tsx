@@ -75,27 +75,6 @@ export const useRealtimeChat = ({ roomName, username, participants = [], onMessa
     }
   }, [roomName, username])
 
-  // 사용자 정보를 가져오는 함수
-  const getUserInfo = useCallback(async (userId: string) => {
-    try {
-      const { data: user, error } = await supabase
-        .from('users')
-        .select('nickname')
-        .eq('id', userId)
-        .single()
-      
-      if (error || !user) {
-        console.error('Error fetching user info:', error)
-        return 'Unknown User'
-      }
-      
-      return user.nickname || 'Unknown User'
-    } catch (error) {
-      console.error('Error fetching user info:', error)
-      return 'Unknown User'
-    }
-  }, [])
-
   useEffect(() => {
     // 가장 기본적인 구독: 모든 INSERT 이벤트 수신
     const channel = supabase
@@ -105,7 +84,7 @@ export const useRealtimeChat = ({ roomName, username, participants = [], onMessa
         schema: 'public',
         table: 'chat_messages'
         // 필터링 제거 - 모든 INSERT 이벤트 수신
-      }, async (payload) => {
+      }, (payload) => {
         const newMessage = payload.new as any
         if (!newMessage) {
           return
@@ -113,17 +92,9 @@ export const useRealtimeChat = ({ roomName, username, participants = [], onMessa
 
         // 채팅방 ID가 일치하는 경우에만 처리
         if (newMessage.chat_room_id === roomName) {
-          // participants 배열에서 사용자 정보 찾기
-          let messageUsername = 'Unknown User'
-          
-          // 먼저 participants 배열에서 찾기
+          // user_id를 사용하여 참가자 목록에서 닉네임을 찾음
           const participant = participants.find(p => p.id === newMessage.user_id)
-          if (participant) {
-            messageUsername = participant.nickname
-          } else {
-            // participants에 없으면 직접 사용자 정보 조회
-            messageUsername = await getUserInfo(newMessage.user_id)
-          }
+          const messageUsername = participant?.nickname || 'Unknown User'
           
           const chatMessage: ChatMessage = {
             id: newMessage.id,
@@ -131,33 +102,8 @@ export const useRealtimeChat = ({ roomName, username, participants = [], onMessa
             user: {
               name: messageUsername
             },
-            createdAt: (() => {
-              try {
-                console.log('Realtime - Original created_at:', newMessage.created_at, typeof newMessage.created_at);
-                
-                if (typeof newMessage.created_at === 'string') {
-                  const date = new Date(newMessage.created_at);
-                  if (isNaN(date.getTime())) {
-                    console.error('Realtime - Invalid date string:', newMessage.created_at);
-                    return new Date().toISOString();
-                  }
-                  return date.toISOString();
-                } else if (newMessage.created_at instanceof Date) {
-                  return newMessage.created_at.toISOString();
-                } else {
-                  const date = new Date(newMessage.created_at);
-                  if (isNaN(date.getTime())) {
-                    console.error('Realtime - Invalid date value:', newMessage.created_at);
-                    return new Date().toISOString();
-                  }
-                  return date.toISOString();
-                }
-              } catch (error) {
-                console.error('Error converting date in realtime:', error, newMessage.created_at);
-                return new Date().toISOString();
-              }
-            })(),
-            isSystemMessage: !!newMessage.system_type,
+            createdAt: newMessage.created_at,
+            isSystemMessage: newMessage.is_system_message || false,
             systemType: newMessage.system_type || undefined
           }
 
@@ -179,7 +125,7 @@ export const useRealtimeChat = ({ roomName, username, participants = [], onMessa
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [roomName, username, participants, onMessage, getUserInfo])
+  }, [roomName, username, onMessage])
 
   return {
     messages,

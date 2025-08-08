@@ -72,35 +72,10 @@ function ChatRoomPageContent() {
         id: msg.id,
         content: msg.content,
         user: {
-          name: msg.user?.name || 'Unknown User'
+          name: msg.user?.nickname || 'Unknown User'
         },
-        createdAt: (() => {
-          try {
-            console.log('Chat page - Original created_at:', msg.created_at, typeof msg.created_at);
-            
-            if (typeof msg.created_at === 'string') {
-              const date = new Date(msg.created_at);
-              if (isNaN(date.getTime())) {
-                console.error('Chat page - Invalid date string:', msg.created_at);
-                return new Date().toISOString();
-              }
-              return date.toISOString();
-            } else if (msg.created_at instanceof Date) {
-              return msg.created_at.toISOString();
-            } else {
-              const date = new Date(msg.created_at);
-              if (isNaN(date.getTime())) {
-                console.error('Chat page - Invalid date value:', msg.created_at);
-                return new Date().toISOString();
-              }
-              return date.toISOString();
-            }
-          } catch (error) {
-            console.error('Error converting date in chat page:', error, msg.created_at);
-            return new Date().toISOString();
-          }
-        })(),
-        isSystemMessage: !!msg.system_type,
+        createdAt: msg.created_at,
+        isSystemMessage: msg.is_system_message || false,
         systemType: msg.system_type || undefined
       }));
       
