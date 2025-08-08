@@ -414,7 +414,7 @@ function GuildPageContent() {
 
   return (
     <div style={{
-      padding: '16px 8px',
+      padding: '8px 4px',
       fontFamily: 'Orbitron, monospace'
     }}>
       {/* 탭 버튼 */}

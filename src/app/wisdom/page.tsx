@@ -301,34 +301,35 @@ function WisdomNotesPageContent() {
 
   return (
     <div style={{
-      padding: '16px',
+      padding: '8px',
       display: 'flex',
       flexDirection: 'column',
-      gap: '24px',
-      minHeight: 'calc(100dvh - 120px)',
+      gap: '16px',
+      minHeight: 'calc(100dvh - 140px)',
       height: '100%',
-      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%)'
+      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%)',
+      overflow: 'auto',
+      WebkitOverflowScrolling: 'touch'
     }}>
       {/* 스크롤 가능한 메인 콘텐츠 영역 */}
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '24px',
+        gap: '16px',
         flex: 1,
-        overflow: 'auto',
-        WebkitOverflowScrolling: 'touch'
+        paddingBottom: '20px'
       }}>
       
 
 
       {/* 통계 요약 - 그리드 스타일 */}
       <div style={{
-        padding: '0 8px'
+        padding: '0 4px'
       }}>
         <div style={{
           fontSize: '0.9rem',
           color: '#ffffff',
-          marginBottom: '12px',
+          marginBottom: '8px',
           textAlign: 'center',
           fontWeight: 600,
           fontFamily: 'Press Start 2P, cursive',
@@ -340,11 +341,11 @@ function WisdomNotesPageContent() {
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: '12px'
+          gap: '8px'
         }}>
           <div style={{
             textAlign: 'center',
-            padding: '16px 8px',
+            padding: '12px 6px',
             cursor: 'pointer',
             background: 'linear-gradient(135deg, rgba(153,0,255,0.1) 0%, rgba(153,0,255,0.05) 100%)',
             borderRadius: '12px',
@@ -383,7 +384,7 @@ function WisdomNotesPageContent() {
           
           <div style={{
             textAlign: 'center',
-            padding: '16px 8px',
+            padding: '12px 6px',
             cursor: 'pointer',
             background: 'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)',
             borderRadius: '12px',

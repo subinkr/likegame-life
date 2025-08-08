@@ -129,34 +129,35 @@ function ChatListPageContent() {
 
   return (
     <div style={{
-      padding: '16px',
+      padding: '8px',
       display: 'flex',
       flexDirection: 'column',
-      gap: '24px',
-      minHeight: 'calc(100dvh - 120px)',
+      gap: '16px',
+      minHeight: 'calc(100dvh - 140px)',
       height: '100%',
-      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%)'
+      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%)',
+      overflow: 'auto',
+      WebkitOverflowScrolling: 'touch'
     }}>
       {/* 스크롤 가능한 메인 콘텐츠 영역 */}
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '24px',
+        gap: '16px',
         flex: 1,
-        overflow: 'auto',
-        WebkitOverflowScrolling: 'touch'
+        paddingBottom: '20px'
       }}>
 
       {/* 헤더 */}
       <div style={{
-        padding: '0 8px'
+        padding: '0 4px'
       }}>
 
       </div>
 
       {/* 채팅방 목록 */}
       <div style={{
-        padding: '0 8px'
+        padding: '0 4px'
       }}>
         {chatRooms.length === 0 ? (
           <div style={{

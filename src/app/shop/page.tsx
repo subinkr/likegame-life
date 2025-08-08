@@ -35,8 +35,8 @@ export default function ShopPage() {
 
   return (
     <div style={{
-      minHeight: 'calc(100dvh - 120px)',
-      padding: '16px',
+      minHeight: 'calc(100dvh - 140px)',
+      padding: '8px',
       color: '#ffffff'
     }}>
       {/* 상점 요약 */}
@@ -129,7 +129,7 @@ export default function ShopPage() {
           flexDirection: 'column',
           alignItems: 'center',
           gap: '12px',
-          padding: '16px',
+          padding: '12px',
           background: 'rgba(0,255,255,0.1)',
           borderRadius: '6px'
         }}>

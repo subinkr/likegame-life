@@ -205,21 +205,21 @@ function HomeContent() {
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '24px',
+        gap: '16px',
         flex: 1,
         overflow: 'auto',
         WebkitOverflowScrolling: 'touch',
-        padding: '16px 8px'
+        padding: '8px 4px'
       }}>
       
       {/* 헤더 섹션 - 고정 높이 */}
       <div style={{
         textAlign: 'center',
-        padding: '12px 16px',
+        padding: '8px 12px',
         position: 'relative',
         overflow: 'hidden',
         borderRadius: '8px',
-        margin: '0 8px',
+        margin: '0 4px',
         background: 'rgba(0,255,255,0.05)',
         border: '1px solid rgba(0,255,255,0.1)',
         minHeight: '80px',
@@ -286,7 +286,7 @@ function HomeContent() {
 
       {/* 스탯 섹션 - 컴팩트 */}
       <div style={{
-        padding: '0 8px'
+        padding: '0 4px'
       }}>
         <div style={{
           fontSize: '0.9rem',
@@ -591,7 +591,7 @@ function HomeContent() {
         }}>
           <div style={{
             textAlign: 'center',
-            padding: '16px 8px',
+            padding: '12px 6px',
             cursor: 'pointer',
             background: 'linear-gradient(135deg, rgba(0,255,255,0.1) 0%, rgba(0,255,255,0.05) 100%)',
             borderRadius: '12px',
@@ -632,7 +632,7 @@ function HomeContent() {
           
           <div style={{
             textAlign: 'center',
-            padding: '16px 8px',
+            padding: '12px 6px',
             cursor: 'pointer',
             background: 'linear-gradient(135deg, rgba(255,255,0,0.1) 0%, rgba(255,255,0,0.05) 100%)',
             borderRadius: '12px',
@@ -673,7 +673,7 @@ function HomeContent() {
           
           <div style={{
             textAlign: 'center',
-            padding: '16px 8px',
+            padding: '12px 6px',
             cursor: 'pointer',
             background: 'linear-gradient(135deg, rgba(255,0,102,0.1) 0%, rgba(255,0,102,0.05) 100%)',
             borderRadius: '12px',

@@ -46,7 +46,7 @@ export default function ClientLayout({
         marginBottom: (isAuthPage || isChatPage) ? '0' : '60px',
         display: 'flex',
         flexDirection: 'column',
-        minHeight: isChatPage ? '100dvh' : 'auto',
+        minHeight: isChatPage ? '100dvh' : 'calc(100dvh - 120px)',
         overflow: 'auto',
         WebkitOverflowScrolling: 'touch'
       }}>
