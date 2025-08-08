@@ -90,6 +90,8 @@ export async function GET(
 
     // 사용자 정보 별도로 조회
     const userIds = messages?.map(m => m.user_id) || [];
+    console.log('User IDs to fetch:', userIds);
+    
     const { data: users, error: usersError } = await supabaseAdmin
       .from('users')
       .select('id, nickname')
@@ -99,7 +101,9 @@ export async function GET(
       console.error('Error fetching users:', usersError);
     }
 
+    console.log('Fetched users:', users);
     const userMap = new Map(users?.map(u => [u.id, u.nickname]) || []);
+    console.log('User map:', Array.from(userMap.entries()));
 
     const formattedMessages = (messages || []).map((message: any) => {
       // 안전한 날짜 변환
