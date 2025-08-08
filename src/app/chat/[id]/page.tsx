@@ -36,14 +36,16 @@ function ChatRoomPageContent() {
   const [initialMessages, setInitialMessages] = useState<ChatMessage[]>([]);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const scrollPositionRef = useRef<number>(0);
 
   useEffect(() => {
     if (id) {
       fetchChatRoom();
-      // 1초 후에 메시지 로딩 시작
+      // 초기 로딩만 1초 지연
       setTimeout(() => {
         fetchMessages();
+        setIsInitialLoad(false);
       }, 1000);
     }
   }, [id]);
@@ -118,6 +120,12 @@ function ChatRoomPageContent() {
 
   const loadMoreMessages = async () => {
     if (loadingMore || !hasMoreMessages || initialMessages.length === 0) {
+      return;
+    }
+    
+    // 초기 로딩 중이 아닌 경우에만 즉시 실행
+    if (isInitialLoad) {
+      console.log('초기 로딩 중이므로 무한 스크롤 대기');
       return;
     }
     

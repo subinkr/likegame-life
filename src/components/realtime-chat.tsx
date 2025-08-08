@@ -132,7 +132,7 @@ export const RealtimeChat = ({
     }
   }, [onScroll, showNewMessageIndicator]);
 
-  // 무한 스크롤 - Intersection Observer (1초 지연)
+  // 무한 스크롤 - Intersection Observer (초기 1초 지연, 이후 즉시)
   useEffect(() => {
     const loadTrigger = loadTriggerRef.current;
     const container = messagesContainerRef.current;
@@ -142,19 +142,22 @@ export const RealtimeChat = ({
     let isInitialized = false;
     let initializationTimer: NodeJS.Timeout;
 
-    // 1초 후에 Intersection Observer 활성화
+    // 초기 1초 후에 Intersection Observer 활성화
     initializationTimer = setTimeout(() => {
       isInitialized = true;
       setIsInitializing(false);
-      console.log('무한 스크롤 활성화됨 (1초 후)');
+      console.log('무한 스크롤 활성화됨 (초기 1초 후)');
     }, 1000);
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && hasMore && !loadingMore && isInitialized) {
-            console.log('무한 스크롤 트리거됨');
-            onLoadMore?.();
+          if (entry.isIntersecting && hasMore && !loadingMore) {
+            // 초기화가 완료되었거나 이미 한 번 로딩된 경우 즉시 실행
+            if (isInitialized || allMessages.length > 0) {
+              console.log('무한 스크롤 트리거됨');
+              onLoadMore?.();
+            }
           }
         });
       },
@@ -171,7 +174,7 @@ export const RealtimeChat = ({
       clearTimeout(initializationTimer);
       observer.disconnect();
     };
-  }, [hasMore, loadingMore, onLoadMore]);
+  }, [hasMore, loadingMore, onLoadMore, allMessages.length]);
 
   // 초기 로딩 시 최신 메시지 확인 후 자동 스크롤
   useEffect(() => {
