@@ -131,7 +131,7 @@ export const useRealtimeChat = ({ roomName, username, participants = [], onMessa
             user: {
               name: messageUsername
             },
-            createdAt: newMessage.created_at,
+            createdAt: new Date(newMessage.created_at).toISOString(),
             isSystemMessage: newMessage.is_system_message || false,
             systemType: newMessage.system_type || undefined
           }

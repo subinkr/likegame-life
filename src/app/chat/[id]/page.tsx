@@ -74,7 +74,7 @@ function ChatRoomPageContent() {
         user: {
           name: msg.user?.name || 'Unknown User'
         },
-        createdAt: msg.created_at,
+        createdAt: new Date(msg.created_at).toISOString(),
         isSystemMessage: msg.is_system_message || false,
         systemType: msg.system_type || undefined
       }));

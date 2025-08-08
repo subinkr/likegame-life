@@ -81,7 +81,7 @@ export async function GET(
       user: {
         name: message.users?.nickname || 'Unknown User'
       },
-      createdAt: message.created_at,
+      createdAt: new Date(message.created_at).toISOString(),
       isSystemMessage: message.is_system_message || false,
       systemType: message.system_type || undefined
     }));
@@ -172,7 +172,7 @@ export async function POST(
       user: {
         name: message.users?.nickname || 'Unknown User'
       },
-      createdAt: message.created_at,
+      createdAt: new Date(message.created_at).toISOString(),
       isSystemMessage: message.is_system_message || false,
       systemType: message.system_type || undefined
     };

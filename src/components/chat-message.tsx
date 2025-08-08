@@ -6,6 +6,24 @@ interface ChatMessageItemProps {
   showHeader: boolean
 }
 
+// 안전한 날짜 변환 함수
+const formatTime = (dateString: string) => {
+  try {
+    const date = new Date(dateString)
+    if (isNaN(date.getTime())) {
+      return '--:--'
+    }
+    return date.toLocaleTimeString('ko-KR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    })
+  } catch (error) {
+    console.error('Error formatting date:', error, dateString)
+    return '--:--'
+  }
+}
+
 export const ChatMessageItem = ({ message, isOwnMessage, showHeader }: ChatMessageItemProps) => {
   // 시스템 메시지인 경우 전용 디자인 적용
   if (message.isSystemMessage) {
@@ -78,11 +96,7 @@ export const ChatMessageItem = ({ message, isOwnMessage, showHeader }: ChatMessa
               color: '#9ca3af', 
               fontSize: '11px'
             }}>
-              {new Date(message.createdAt).toLocaleTimeString('ko-KR', {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
-              })}
+              {formatTime(message.createdAt)}
             </span>
           </div>
         )}
