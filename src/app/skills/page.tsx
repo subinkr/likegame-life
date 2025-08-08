@@ -149,7 +149,7 @@ function SkillsPageContent() {
           fontSize: '3rem',
           animation: 'pulse 2s ease-in-out infinite',
           filter: 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.8))'
-        }}>📚</div>
+        }}>🪪</div>
         <div style={{ 
           color: '#00ffff', 
           fontSize: '1rem',
@@ -186,21 +186,21 @@ function SkillsPageContent() {
       
       
 
-      {/* 자격증 등록 */}
+      {/* 스킬 등록 */}
       <div style={{
         padding: '0 4px'
       }}>
-                           <div style={{
-            fontSize: '0.9rem',
-            color: '#00ffff',
-            marginBottom: '12px',
-            textAlign: 'center',
-            fontWeight: 600,
-            fontFamily: 'Press Start 2P, cursive',
-            textShadow: '0 0 8px rgba(0,255,255,0.6)'
-          }}>
-            스킬 ({validSkills}/{totalSkills})
-          </div>
+        <div style={{
+          fontSize: '0.9rem',
+          color: '#ffffff',
+          marginBottom: '8px',
+          textAlign: 'center',
+          fontWeight: 600,
+          fontFamily: 'Press Start 2P, cursive',
+          textShadow: '0 0 8px rgba(0,255,255,0.6)'
+        }}>
+          스킬 ({validSkills}/{totalSkills})
+        </div>
         <button
           onClick={() => {
             setShowSkillModal(true);
@@ -235,18 +235,18 @@ function SkillsPageContent() {
         </button>
       </div>
 
-      {/* 자격증 목록 */}
+      {/* 스킬 목록 */}
       <div style={{
         padding: '0 4px'
       }}>
         <div style={{
           fontSize: '0.9rem',
-          color: '#ffff00',
-          marginBottom: '12px',
+          color: '#ffffff',
+          marginBottom: '8px',
           textAlign: 'center',
           fontWeight: 600,
           fontFamily: 'Press Start 2P, cursive',
-          textShadow: '0 0 8px rgba(255,255,0,0.6)'
+          textShadow: '0 0 8px rgba(0,255,255,0.6)'
         }}>
           스킬 목록
         </div>
@@ -258,9 +258,9 @@ function SkillsPageContent() {
             fontSize: '0.75rem',
             padding: '12px',
             fontFamily: 'Orbitron, monospace',
-            background: 'rgba(255,255,255,0.05)',
+            background: 'rgba(0,255,255,0.05)',
             borderRadius: '8px',
-            border: '1px solid rgba(255,255,255,0.1)'
+            border: '1px solid rgba(0,255,255,0.1)'
           }}>🪪 로딩 중...</div>
         ) : skills.length === 0 ? (
           <div style={{
@@ -269,9 +269,9 @@ function SkillsPageContent() {
             fontSize: '0.75rem',
             padding: '12px',
             fontFamily: 'Orbitron, monospace',
-            background: 'rgba(255,255,255,0.05)',
+            background: 'rgba(0,255,255,0.05)',
             borderRadius: '8px',
-            border: '1px solid rgba(255,255,255,0.1)'
+            border: '1px solid rgba(0,255,255,0.1)'
           }}>등록된 스킬이 없습니다.</div>
         ) : (
           <div style={{
@@ -283,7 +283,7 @@ function SkillsPageContent() {
               <div
                 key={skill.id}
                 style={{
-                  background: 'rgba(255,255,255,0.05)',
+                  background: 'rgba(0,255,255,0.05)',
                   borderRadius: '8px',
                   padding: '12px',
                   border: `2px solid ${getStatusColor(skill.expiryDate)}`,
@@ -292,11 +292,11 @@ function SkillsPageContent() {
                   cursor: 'pointer'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-                  e.currentTarget.style.boxShadow = '0 0 10px rgba(255,255,255,0.2)';
+                  e.currentTarget.style.background = 'rgba(0,255,255,0.08)';
+                  e.currentTarget.style.boxShadow = '0 0 10px rgba(0,255,255,0.2)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                  e.currentTarget.style.background = 'rgba(0,255,255,0.05)';
                   e.currentTarget.style.boxShadow = 'none';
                 }}
               >

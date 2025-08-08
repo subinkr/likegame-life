@@ -262,6 +262,10 @@ function AchievementsPageContent() {
   // 로딩 중이거나 로그인되지 않은 경우
   if (loading || !user) {
     const loadingEmoji = activeTab === 'titles' ? '👑' : '🎖️';
+    const textColor = activeTab === 'titles' ? '#ffd700' : '#ff0066';
+    const textShadow = activeTab === 'titles' ? 'rgba(255, 215, 0, 0.8)' : 'rgba(255, 0, 102, 0.8)';
+    const filterShadow = activeTab === 'titles' ? 'rgba(255, 215, 0, 0.8)' : 'rgba(255, 0, 102, 0.8)';
+    
     return (
       <div style={{
         position: 'fixed',
@@ -280,13 +284,13 @@ function AchievementsPageContent() {
         <div style={{ 
           fontSize: '3rem',
           animation: 'pulse 2s ease-in-out infinite',
-          filter: 'drop-shadow(0 0 15px rgba(255, 215, 0, 0.8))'
+          filter: `drop-shadow(0 0 15px ${filterShadow})`
         }}>{loadingEmoji}</div>
         <div style={{ 
-          color: '#ffd700', 
+          color: textColor, 
           fontSize: '1rem',
           fontFamily: 'Press Start 2P, cursive',
-          textShadow: '0 0 10px rgba(255, 215, 0, 0.8)',
+          textShadow: `0 0 10px ${textShadow}`,
           textAlign: 'center'
         }}>
           {loading ? '시스템 로딩 중...' : '로그인이 필요합니다.'}

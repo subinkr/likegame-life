@@ -428,12 +428,12 @@ function WisdomNotesPageContent() {
       {/* 현재 랭크 표시 */}
       {totalNotes > 0 && (
         <div style={{
-          padding: '0 8px'
+          padding: '0 4px'
         }}>
           <div style={{
             fontSize: '0.9rem',
             color: '#ffffff',
-            marginBottom: '12px',
+            marginBottom: '8px',
             textAlign: 'center',
             fontWeight: 600,
             fontFamily: 'Press Start 2P, cursive',
@@ -529,16 +529,16 @@ function WisdomNotesPageContent() {
 
       {/* 책 선택 */}
       <div style={{
-        padding: '0 8px'
+        padding: '0 4px'
       }}>
         <div style={{
           fontSize: '0.9rem',
           color: '#ffffff',
-          marginBottom: '12px',
+          marginBottom: '8px',
           textAlign: 'center',
           fontWeight: 600,
           fontFamily: 'Press Start 2P, cursive',
-          textShadow: '0 0 8px rgba(0,255,255,0.6)'
+          textShadow: '0 0 8px rgba(153,0,255,0.6)'
         }}>
           책 선택
         </div>
@@ -604,7 +604,7 @@ function WisdomNotesPageContent() {
 
       {/* 초서 추가 */}
       <div style={{
-        padding: '0 8px'
+        padding: '0 4px'
       }}>
         <div style={{
           display: 'flex',
@@ -674,16 +674,16 @@ function WisdomNotesPageContent() {
 
       {/* 초서 목록 */}
       <div style={{
-        padding: '0 8px'
+        padding: '0 4px'
       }}>
         <div style={{
           fontSize: '0.9rem',
           color: '#ffffff',
-          marginBottom: '12px',
+          marginBottom: '8px',
           textAlign: 'center',
           fontWeight: 600,
           fontFamily: 'Press Start 2P, cursive',
-          textShadow: '0 0 8px rgba(255,215,0,0.6)'
+          textShadow: '0 0 8px rgba(153,0,255,0.6)'
         }}>
           초서 목록
         </div>

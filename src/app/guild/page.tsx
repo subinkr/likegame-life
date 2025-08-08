@@ -392,13 +392,17 @@ function GuildPageContent() {
               <div style={{ 
                 fontSize: '3rem',
                 animation: 'pulse 2s ease-in-out infinite',
-                filter: 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.8))'
+                filter: activeTab === 'quests' 
+                  ? 'drop-shadow(0 0 15px rgba(255, 215, 0, 0.8))'
+                  : 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.8))'
         }}>{activeTab === 'quests' ? '📜' : '👥'}</div>
               <div style={{ 
-                color: '#00ffff', 
+                color: activeTab === 'quests' ? '#ffd700' : '#00ffff', 
                 fontSize: '1rem',
                 fontFamily: 'Press Start 2P, cursive',
-                textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
+                textShadow: activeTab === 'quests' 
+                  ? '0 0 10px rgba(255, 215, 0, 0.8)'
+                  : '0 0 10px rgba(0, 255, 255, 0.8)',
                 textAlign: 'center'
               }}>
                 시스템 로딩 중...
@@ -705,14 +709,15 @@ function GuildPageContent() {
               {questSections.created.length > 0 && (
                 <div>
                       <div style={{
-                        fontSize: '0.8rem',
-                    color: '#ffd700',
-                    marginBottom: '8px',
-                    fontWeight: 600,
-                    fontFamily: 'Press Start 2P, cursive',
-                    textShadow: '0 0 8px rgba(255,215,0,0.6)'
+                        fontSize: '0.9rem',
+                        color: '#ffffff',
+                        marginBottom: '8px',
+                        textAlign: 'center',
+                        fontWeight: 600,
+                        fontFamily: 'Press Start 2P, cursive',
+                        textShadow: '0 0 8px rgba(255,215,0,0.6)'
                   }}>
-                    👑 내가 생성한 퀘스트
+                    생성한 퀘스트
                       </div>
                   <div style={{
                     display: 'grid',
@@ -740,14 +745,15 @@ function GuildPageContent() {
               {questSections.accepted.length > 0 && (
             <div>
               <div style={{ 
-                    fontSize: '0.8rem',
-                    color: '#00ffff',
+                    fontSize: '0.9rem',
+                    color: '#ffffff',
                     marginBottom: '8px',
+                    textAlign: 'center',
                     fontWeight: 600,
                     fontFamily: 'Press Start 2P, cursive',
-                    textShadow: '0 0 8px rgba(0,255,255,0.6)'
+                    textShadow: '0 0 8px rgba(255,215,0,0.6)'
                   }}>
-                    ⚔️ 내가 수락한 퀘스트
+                    수락한 퀘스트
               </div>
               <div style={{ 
                 display: 'grid',
@@ -775,14 +781,15 @@ function GuildPageContent() {
               {questSections.available.length > 0 && (
                 <div>
                   <div style={{
-                    fontSize: '0.8rem',
-                          color: '#00ff00',
+                    fontSize: '0.9rem',
+                    color: '#ffffff',
                     marginBottom: '8px',
+                    textAlign: 'center',
                     fontWeight: 600,
                           fontFamily: 'Press Start 2P, cursive',
-                    textShadow: '0 0 8px rgba(0,255,0,0.6)'
+                    textShadow: '0 0 8px rgba(255,215,0,0.6)'
                   }}>
-                    📋 수락 가능 퀘스트
+                    수락 가능한 퀘스트
                   </div>
                   <div style={{
                     display: 'grid',
@@ -810,14 +817,15 @@ function GuildPageContent() {
               {questSections.completed.length > 0 && (
                 <div>
                       <div style={{
-                    fontSize: '0.8rem',
-                    color: '#00ff00',
+                    fontSize: '0.9rem',
+                    color: '#ffffff',
                     marginBottom: '8px',
+                    textAlign: 'center',
                     fontWeight: 600,
                     fontFamily: 'Press Start 2P, cursive',
-                    textShadow: '0 0 8px rgba(0,255,0,0.6)'
+                    textShadow: '0 0 8px rgba(255,215,0,0.6)'
                   }}>
-                    ✅ 완료 퀘스트
+                    완료 퀘스트
                   </div>
                         <div style={{
                     display: 'grid',
@@ -1068,14 +1076,15 @@ function GuildPageContent() {
               {partySections.joined.length > 0 && (
                 <div>
               <div style={{
-                    fontSize: '0.8rem',
-                  color: '#00ffff', 
+                    fontSize: '0.9rem',
+                    color: '#ffffff',
                     marginBottom: '8px',
+                    textAlign: 'center',
                     fontWeight: 600,
                     fontFamily: 'Press Start 2P, cursive',
                     textShadow: '0 0 8px rgba(0,255,255,0.6)'
                   }}>
-                    👥 내가 참가한 파티
+                    참가한 파티
       </div>
                   <div style={{
                     display: 'grid',
@@ -1106,14 +1115,15 @@ function GuildPageContent() {
               {partySections.available.length > 0 && (
                 <div>
                   <div style={{
-                    fontSize: '0.8rem',
-                    color: '#00ff00',
+                    fontSize: '0.9rem',
+                    color: '#ffffff',
                     marginBottom: '8px',
+                    textAlign: 'center',
                     fontWeight: 600,
                     fontFamily: 'Press Start 2P, cursive',
-                    textShadow: '0 0 8px rgba(0,255,0,0.6)'
+                    textShadow: '0 0 8px rgba(0,255,255,0.6)'
                   }}>
-                    📋 참가 가능한 파티
+                    참가 가능한 파티
                   </div>
                   <div style={{
                     display: 'grid',
