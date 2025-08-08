@@ -74,7 +74,18 @@ function ChatRoomPageContent() {
         user: {
           name: msg.user?.name || 'Unknown User'
         },
-        createdAt: new Date(msg.created_at).toISOString(),
+        createdAt: (() => {
+          try {
+            const date = new Date(msg.created_at);
+            if (isNaN(date.getTime())) {
+              return new Date().toISOString();
+            }
+            return date.toISOString();
+          } catch (error) {
+            console.error('Error converting date in chat page:', error, msg.created_at);
+            return new Date().toISOString();
+          }
+        })(),
         isSystemMessage: msg.is_system_message || false,
         systemType: msg.system_type || undefined
       }));

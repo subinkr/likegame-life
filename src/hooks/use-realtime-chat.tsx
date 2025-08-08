@@ -131,7 +131,18 @@ export const useRealtimeChat = ({ roomName, username, participants = [], onMessa
             user: {
               name: messageUsername
             },
-            createdAt: new Date(newMessage.created_at).toISOString(),
+            createdAt: (() => {
+              try {
+                const date = new Date(newMessage.created_at);
+                if (isNaN(date.getTime())) {
+                  return new Date().toISOString();
+                }
+                return date.toISOString();
+              } catch (error) {
+                console.error('Error converting date in realtime:', error, newMessage.created_at);
+                return new Date().toISOString();
+              }
+            })(),
             isSystemMessage: newMessage.is_system_message || false,
             systemType: newMessage.system_type || undefined
           }

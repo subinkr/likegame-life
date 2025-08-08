@@ -75,16 +75,32 @@ export async function GET(
       );
     }
 
-    const formattedMessages = (messages || []).map((message: any) => ({
-      id: message.id,
-      content: message.content,
-      user: {
-        name: message.users?.nickname || 'Unknown User'
-      },
-      createdAt: new Date(message.created_at).toISOString(),
-      isSystemMessage: message.is_system_message || false,
-      systemType: message.system_type || undefined
-    }));
+    const formattedMessages = (messages || []).map((message: any) => {
+      // 안전한 날짜 변환
+      let createdAt: string;
+      try {
+        const date = new Date(message.created_at);
+        if (isNaN(date.getTime())) {
+          createdAt = new Date().toISOString(); // 현재 시간으로 대체
+        } else {
+          createdAt = date.toISOString();
+        }
+      } catch (error) {
+        console.error('Error converting date:', error, message.created_at);
+        createdAt = new Date().toISOString();
+      }
+
+      return {
+        id: message.id,
+        content: message.content,
+        user: {
+          name: message.users?.nickname || 'Unknown User'
+        },
+        createdAt,
+        isSystemMessage: message.is_system_message || false,
+        systemType: message.system_type || undefined
+      };
+    });
 
     // 응답에 페이지네이션 정보 포함
     const response = {
@@ -172,7 +188,18 @@ export async function POST(
       user: {
         name: message.users?.nickname || 'Unknown User'
       },
-      createdAt: new Date(message.created_at).toISOString(),
+      createdAt: (() => {
+        try {
+          const date = new Date(message.created_at);
+          if (isNaN(date.getTime())) {
+            return new Date().toISOString();
+          }
+          return date.toISOString();
+        } catch (error) {
+          console.error('Error converting date in POST:', error, message.created_at);
+          return new Date().toISOString();
+        }
+      })(),
       isSystemMessage: message.is_system_message || false,
       systemType: message.system_type || undefined
     };
