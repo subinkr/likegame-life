@@ -74,16 +74,45 @@ function AgilityPageContent() {
     return 'F';
   };
 
-  const getRankColor = (rank: string) => {
-    switch (rank) {
-      case 'S': return '#00ffff';
-      case 'A': return '#ff6600';
-      case 'B': return '#ffff00';
-      case 'C': return '#00ff00';
-      case 'D': return '#ff0066';
-      case 'E': return '#0066ff';
-      default: return '#666666';
+  const getProgressToNextRank = (distance: number) => {
+    const thresholds = { F: 0, E: 100, D: 200, C: 300, B: 400, A: 500, S: 600 };
+    const currentRank = getRank(distance);
+    
+    if (currentRank === 'S') return { progress: 100, nextRank: 'S', currentThreshold: thresholds.S, nextThreshold: thresholds.S };
+    
+    let currentThreshold = 0;
+    let nextThreshold = 0;
+    let nextRank = 'S';
+    
+    if (currentRank === 'F') {
+      currentThreshold = thresholds.F;
+      nextThreshold = thresholds.E;
+      nextRank = 'E';
+    } else if (currentRank === 'E') {
+      currentThreshold = thresholds.E;
+      nextThreshold = thresholds.D;
+      nextRank = 'D';
+    } else if (currentRank === 'D') {
+      currentThreshold = thresholds.D;
+      nextThreshold = thresholds.C;
+      nextRank = 'C';
+    } else if (currentRank === 'C') {
+      currentThreshold = thresholds.C;
+      nextThreshold = thresholds.B;
+      nextRank = 'B';
+    } else if (currentRank === 'B') {
+      currentThreshold = thresholds.B;
+      nextThreshold = thresholds.A;
+      nextRank = 'A';
+    } else if (currentRank === 'A') {
+      currentThreshold = thresholds.A;
+      nextThreshold = thresholds.S;
+      nextRank = 'S';
     }
+    
+    const progress = Math.min(100, ((distance - currentThreshold) / (nextThreshold - currentThreshold)) * 100);
+    
+    return { progress, nextRank, currentThreshold, nextThreshold };
   };
 
   const formatDate = (dateString: string) => {
@@ -99,16 +128,36 @@ function AgilityPageContent() {
     }
   };
 
+  // 최근 30일간의 거리 누적 계산
+  const getLast30DaysDistance = () => {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    return records
+      .filter(record => new Date(record.created_at) >= thirtyDaysAgo)
+      .reduce((sum, record) => sum + record.distance, 0);
+  };
+
+  // 통계 계산
+  const totalRecords = records.length;
+  const last30DaysDistance = getLast30DaysDistance();
+  const avgDistance = records.length > 0 ? Math.round(records.reduce((sum, r) => sum + r.distance, 0) / records.length * 10) / 10 : 0;
+
   if (isLoading) {
     return (
       <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: 'calc(100vh - 130px)',
         flexDirection: 'column',
         gap: '24px',
-        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)'
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
+        zIndex: 1000
       }}>
         <div style={{ 
           fontSize: '3rem',
@@ -122,7 +171,7 @@ function AgilityPageContent() {
           textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
           textAlign: 'center'
         }}>
-                      걷기, 달리기 거리 기록 로딩 중...
+          시스템 로딩 중...
         </div>
       </div>
     );
@@ -131,73 +180,264 @@ function AgilityPageContent() {
   return (
     <div style={{
       padding: '16px',
-      color: '#ffffff',
-      minHeight: 'calc(100dvh - 120px)'
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '24px',
+      minHeight: 'calc(100dvh - 120px)',
+      height: '100%',
+      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%)'
     }}>
-      {/* 민첩 요약 */}
+      {/* 스크롤 가능한 메인 콘텐츠 영역 */}
       <div style={{
-        background: 'rgba(0,255,255,0.05)',
-        borderRadius: '8px',
-        padding: '12px',
-        marginBottom: '12px'
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '24px',
+        flex: 1,
+        overflow: 'auto',
+        WebkitOverflowScrolling: 'touch'
+      }}>
+      
+
+
+      {/* 통계 요약 - 그리드 스타일 */}
+      <div style={{
+        padding: '0 8px'
       }}>
         <div style={{
-          display: 'flex',
-          justifyContent: 'space-around',
-          gap: '4px'
+          fontSize: '0.9rem',
+          color: '#ffffff',
+          marginBottom: '12px',
+          textAlign: 'center',
+          fontWeight: 600,
+          fontFamily: 'Press Start 2P, cursive',
+          textShadow: '0 0 8px rgba(0,255,255,0.6)'
+        }}>
+          통계
+        </div>
+        
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '12px'
         }}>
           <div style={{
             textAlign: 'center',
-            padding: '6px',
-            background: 'rgba(0,255,255,0.1)',
-            borderRadius: '4px',
-            flex: 1
+            padding: '16px 8px',
+            cursor: 'pointer',
+            background: 'linear-gradient(135deg, rgba(0,255,255,0.1) 0%, rgba(0,255,255,0.05) 100%)',
+            borderRadius: '12px',
+            border: '1px solid rgba(0,255,255,0.2)',
+            position: 'relative',
+            overflow: 'hidden'
           }}>
-            <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>📊</div>
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'radial-gradient(circle at 30% 30%, rgba(0,255,255,0.1) 0%, transparent 50%)',
+              opacity: 0.5
+            }} />
+            <div style={{fontSize: '1.4rem', marginBottom: '4px', position: 'relative', zIndex: 1}}>📊</div>
             <div style={{
               fontSize: '0.75rem',
               fontWeight: 600,
               color: '#ffffff',
-              fontFamily: 'Press Start 2P, cursive'
+              fontFamily: 'Press Start 2P, cursive',
+              position: 'relative',
+              zIndex: 1
             }}>기록</div>
             <div style={{
-              fontSize: '0.8rem',
+              fontSize: '0.9rem',
               fontWeight: 700,
               color: '#00ffff',
-              fontFamily: 'Press Start 2P, cursive'
-            }}>{records.length}</div>
+              fontFamily: 'Press Start 2P, cursive',
+              textShadow: '0 0 10px rgba(0,255,255,0.6)',
+              position: 'relative',
+              zIndex: 1
+            }}>{totalRecords}</div>
           </div>
           
           <div style={{
             textAlign: 'center',
-            padding: '6px',
-            background: 'rgba(255,215,0,0.1)',
-            borderRadius: '4px',
-            flex: 1
+            padding: '16px 8px',
+            cursor: 'pointer',
+            background: 'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)',
+            borderRadius: '12px',
+            border: '1px solid rgba(255,215,0,0.2)',
+            position: 'relative',
+            overflow: 'hidden'
           }}>
-            <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>🏆</div>
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'radial-gradient(circle at 70% 70%, rgba(255,215,0,0.1) 0%, transparent 50%)',
+              opacity: 0.5
+            }} />
+            <div style={{fontSize: '1.4rem', marginBottom: '4px', position: 'relative', zIndex: 1}}>📅</div>
             <div style={{
               fontSize: '0.75rem',
               fontWeight: 600,
               color: '#ffffff',
-              fontFamily: 'Press Start 2P, cursive'
-            }}>최고</div>
+              fontFamily: 'Press Start 2P, cursive',
+              position: 'relative',
+              zIndex: 1
+            }}>30일</div>
             <div style={{
-              fontSize: '0.8rem',
+              fontSize: '0.9rem',
               fontWeight: 700,
               color: '#ffd700',
-              fontFamily: 'Press Start 2P, cursive'
-            }}>{records.length > 0 ? Math.max(...records.map(r => r.distance)) : 0}km</div>
+              fontFamily: 'Press Start 2P, cursive',
+              textShadow: '0 0 10px rgba(255,215,0,0.6)',
+              position: 'relative',
+              zIndex: 1
+            }}>{last30DaysDistance}km</div>
+          </div>
+          
+          <div style={{
+            textAlign: 'center',
+            padding: '16px 8px',
+            cursor: 'pointer',
+            background: 'linear-gradient(135deg, rgba(0,255,0,0.1) 0%, rgba(0,255,0,0.05) 100%)',
+            borderRadius: '12px',
+            border: '1px solid rgba(0,255,0,0.2)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'radial-gradient(circle at 50% 50%, rgba(0,255,0,0.1) 0%, transparent 50%)',
+              opacity: 0.5
+            }} />
+            <div style={{fontSize: '1.4rem', marginBottom: '4px', position: 'relative', zIndex: 1}}>📈</div>
+            <div style={{
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              color: '#ffffff',
+              fontFamily: 'Press Start 2P, cursive',
+              position: 'relative',
+              zIndex: 1
+            }}>평균</div>
+            <div style={{
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              color: '#00ff00',
+              fontFamily: 'Press Start 2P, cursive',
+              textShadow: '0 0 10px rgba(0,255,0,0.6)',
+              position: 'relative',
+              zIndex: 1
+            }}>{avgDistance}km</div>
           </div>
         </div>
       </div>
 
+      {/* 현재 랭크 표시 */}
+      {last30DaysDistance > 0 && (
+        <div style={{
+          padding: '0 8px'
+        }}>
+          <div style={{
+            fontSize: '0.9rem',
+            color: '#ffffff',
+            marginBottom: '12px',
+            textAlign: 'center',
+            fontWeight: 600,
+            fontFamily: 'Press Start 2P, cursive',
+            textShadow: '0 0 8px rgba(0,255,255,0.6)'
+          }}>
+            현재 랭크
+          </div>
+          
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+            padding: '8px 12px',
+            background: 'rgba(0,255,255,0.1)',
+            borderRadius: '8px',
+            border: '1px solid rgba(0,255,255,0.2)',
+            transition: 'all 0.2s ease'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{fontSize: '1rem'}}>🏃</span>
+                <span style={{
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  color: '#ffffff',
+                  fontFamily: 'Orbitron, monospace'
+                }}>누적 기록</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{
+                  fontSize: '0.9rem',
+                  fontWeight: 700,
+                  color: '#00ffff',
+                  fontFamily: 'Press Start 2P, cursive'
+                }}>{last30DaysDistance}km</span>
+                <div style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  padding: '2px 6px',
+                  background: 'rgba(0,255,255,0.3)',
+                  color: '#fff',
+                  borderRadius: '6px',
+                  fontFamily: 'Press Start 2P, cursive',
+                  border: '1px solid rgba(0,255,255,0.5)'
+                }}>
+                  {getRank(last30DaysDistance)}
+                </div>
+              </div>
+            </div>
+            
+            {/* 프로그레스 바 */}
+            {(() => {
+              const progress = getProgressToNextRank(last30DaysDistance);
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  <div style={{
+                    width: '100%',
+                    height: '4px',
+                    background: 'rgba(255,255,255,0.1)',
+                    borderRadius: '2px',
+                    overflow: 'hidden',
+                    border: '1px solid rgba(255,255,255,0.2)'
+                  }}>
+                    <div style={{
+                      width: `${progress.progress}%`,
+                      height: '100%',
+                      background: 'linear-gradient(90deg, #00ffff 0%, #40ffff 100%)',
+                      borderRadius: '2px',
+                      transition: 'width 0.3s ease',
+                      boxShadow: '0 0 6px rgba(0,255,255,0.4)'
+                    }} />
+                  </div>
+                  <div style={{
+                    fontSize: '0.75rem',
+                    color: '#888',
+                    textAlign: 'right',
+                    fontFamily: 'Orbitron, monospace'
+                  }}>
+                    {progress.nextRank !== 'S' ? `${last30DaysDistance}/${progress.nextThreshold}km` : '최고 등급'}
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
       {/* 기록 추가 버튼 */}
       <div style={{
-        background: 'rgba(0,255,255,0.05)',
-        borderRadius: '8px',
-        padding: '12px',
-        marginBottom: '12px'
+        padding: '0 8px'
       }}>
         <button
           onClick={() => setShowAddForm(true)}
@@ -211,7 +451,19 @@ function AgilityPageContent() {
             cursor: 'pointer',
             fontWeight: 'bold',
             fontSize: '0.9rem',
-            fontFamily: 'Press Start 2P, cursive'
+            fontFamily: 'Press Start 2P, cursive',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 0 10px rgba(0,255,255,0.3)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(0,255,255,0.3)';
+            e.currentTarget.style.boxShadow = '0 0 15px rgba(0,255,255,0.5)';
+            e.currentTarget.style.transform = 'translateY(-2px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(0,255,255,0.2)';
+            e.currentTarget.style.boxShadow = '0 0 10px rgba(0,255,255,0.3)';
+            e.currentTarget.style.transform = 'translateY(0)';
           }}
         >
           🏃 새 기록 추가
@@ -220,19 +472,18 @@ function AgilityPageContent() {
 
       {/* 기록 목록 */}
       <div style={{
-        background: 'rgba(255,255,255,0.05)',
-        borderRadius: '8px',
-        padding: '12px'
+        padding: '0 8px'
       }}>
         <div style={{
           fontSize: '0.9rem',
           color: '#ffffff',
-          marginBottom: '8px',
+          marginBottom: '12px',
           textAlign: 'center',
           fontWeight: 600,
-          fontFamily: 'Press Start 2P, cursive'
+          fontFamily: 'Press Start 2P, cursive',
+          textShadow: '0 0 8px rgba(0,255,255,0.6)'
         }}>
-                      걷기, 달리기 거리 목록
+          걷기, 달리기 거리 목록
         </div>
         
         {records.length === 0 ? (
@@ -241,7 +492,10 @@ function AgilityPageContent() {
             color: '#666',
             fontSize: '0.8rem',
             padding: '20px',
-            fontFamily: 'Orbitron, monospace'
+            fontFamily: 'Orbitron, monospace',
+            background: 'rgba(255,255,255,0.05)',
+            borderRadius: '8px',
+            border: '1px solid rgba(255,255,255,0.1)'
           }}>
             아직 걷기, 달리기 거리 기록이 없습니다.
           </div>
@@ -254,11 +508,21 @@ function AgilityPageContent() {
             {records.map((record) => (
               <div key={record.id} style={{
                 background: 'rgba(0,255,255,0.1)',
-                borderRadius: '6px',
+                borderRadius: '8px',
                 padding: '12px',
                 border: '1px solid rgba(0,255,255,0.3)',
-                transition: 'all 0.3s ease'
-              }}>
+                transition: 'all 0.3s ease',
+                cursor: 'pointer'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(0,255,255,0.15)';
+                e.currentTarget.style.boxShadow = '0 0 10px rgba(0,255,255,0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(0,255,255,0.1)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+              >
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -274,10 +538,12 @@ function AgilityPageContent() {
                     }}>
                       📅 {formatDate(record.created_at)}
                     </div>
-
                   </div>
                   <button
-                    onClick={() => handleDelete(record.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(record.id);
+                    }}
                     style={{
                       background: 'rgba(0,255,255,0.2)',
                       border: '1px solid rgba(0,255,255,0.3)',
@@ -285,12 +551,12 @@ function AgilityPageContent() {
                       fontWeight: 600,
                       fontSize: '0.75rem',
                       cursor: 'pointer',
-                      padding: '2px 4px',
+                      padding: '4px 8px',
                       borderRadius: '4px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      minWidth: '32px',
+                      minWidth: '50px',
                       fontFamily: 'Press Start 2P, cursive',
                       transition: 'all 0.3s ease'
                     }}
@@ -310,15 +576,14 @@ function AgilityPageContent() {
                 <div style={{
                   background: 'rgba(255,255,255,0.05)',
                   borderRadius: '4px',
-                  padding: '8px'
+                  padding: '8px',
+                  textAlign: 'center'
                 }}>
-
                   <div style={{
                     fontSize: '0.9rem',
                     color: '#ffffff',
                     fontWeight: 'bold',
-                    fontFamily: 'Press Start 2P, cursive',
-                    textAlign: 'center'
+                    fontFamily: 'Press Start 2P, cursive'
                   }}>
                     {record.distance}km
                   </div>
@@ -327,6 +592,7 @@ function AgilityPageContent() {
             ))}
           </div>
         )}
+      </div>
       </div>
 
       {/* 기록 추가 모달 */}

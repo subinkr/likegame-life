@@ -214,58 +214,51 @@ function HomeContent() {
         WebkitOverflowScrolling: 'touch'
       }}>
       
-      {/* 헤더 섹션 - 게임 스타일 */}
+      {/* 헤더 섹션 - 컴팩트 디자인 */}
       <div style={{
         textAlign: 'center',
-        padding: '20px 16px',
+        padding: '12px 16px',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        borderRadius: '8px',
+        margin: '0 4px',
+        background: 'rgba(0,255,255,0.05)',
+        border: '1px solid rgba(0,255,255,0.1)'
       }}>
-        {/* 배경 효과 */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'radial-gradient(circle at 50% 50%, rgba(0,255,255,0.1) 0%, transparent 70%)',
-          animation: 'pulse 3s ease-in-out infinite'
-        }} />
-        
         {user && (
           <div style={{ position: 'relative', zIndex: 1 }}>
-            {/* 선택된 칭호 */}
+            {/* 칭호 */}
             {selectedTitle ? (
               <div style={{
-                fontSize: '0.9rem',
+                fontSize: '0.7rem',
                 fontWeight: 600,
-                padding: '8px 16px',
-                background: 'linear-gradient(135deg, rgba(255,255,0,0.2) 0%, rgba(255,255,0,0.1) 100%)',
+                padding: '4px 12px',
+                background: 'rgba(255,255,0,0.15)',
                 color: '#ffff00',
-                borderRadius: '20px',
+                borderRadius: '12px',
                 display: 'inline-block',
-                margin: '0 auto 12px',
+                margin: '0 auto 8px',
                 fontFamily: 'Press Start 2P, cursive',
                 border: '1px solid rgba(255,255,0,0.3)',
-                boxShadow: '0 0 20px rgba(255,255,0,0.3)',
-                backdropFilter: 'blur(10px)'
+                maxWidth: '200px',
+                wordBreak: 'break-word'
               }}>
-                <span style={{fontSize: '1rem', marginRight: '6px'}}>👑</span>
+                <span style={{fontSize: '0.8rem', marginRight: '4px'}}>👑</span>
                 {selectedTitle.name}
               </div>
             ) : (
               <div style={{
                 display: 'inline-block',
                 color: '#666',
-                fontSize: '0.8rem',
-                padding: '6px 12px',
-                borderRadius: '16px',
+                fontSize: '0.7rem',
+                padding: '4px 12px',
+                borderRadius: '12px',
                 background: 'rgba(102,102,102,0.1)',
                 fontFamily: 'Orbitron, monospace',
-                marginBottom: '12px',
+                marginBottom: '8px',
                 border: '1px solid rgba(102,102,102,0.2)'
               }}>
-                <span style={{fontSize: '0.9rem', marginRight: '4px'}}>🏆</span>
+                <span style={{fontSize: '0.8rem', marginRight: '4px'}}>🏆</span>
                 칭호 없음
               </div>
             )}
@@ -273,107 +266,88 @@ function HomeContent() {
             {/* 닉네임 */}
             <div style={{
               color: '#ffffff',
-              fontSize: '1.4rem',
+              fontSize: '1.2rem',
               fontWeight: 700,
               fontFamily: 'Press Start 2P, cursive',
-              textShadow: '0 0 20px rgba(0,255,255,0.8)',
-              marginBottom: '8px'
+              textShadow: '0 0 10px rgba(0,255,255,0.6)',
+              marginBottom: '6px',
+              wordBreak: 'break-word',
+              maxWidth: '100%'
             }}>
               {user.user_metadata?.nickname || user.email?.split('@')[0] || '플레이어'}
             </div>
             
-            {/* 레벨 표시 */}
-            <div style={{
-              fontSize: '0.8rem',
-              color: '#00ffff',
-              fontFamily: 'Orbitron, monospace',
-              opacity: 0.8
-            }}>
-              LEVEL {Math.floor((safeStats.strength + safeStats.agility + safeStats.wisdom) / 10) + 1}
-            </div>
+
           </div>
         )}
       </div>
 
-      {/* 스탯 섹션 - 카드 스타일 */}
+      {/* 스탯 섹션 - 컴팩트 */}
       <div style={{
         padding: '0 8px'
       }}>
         <div style={{
-          fontSize: '1rem',
+          fontSize: '0.9rem',
           color: '#ffffff',
-          marginBottom: '16px',
+          marginBottom: '12px',
           textAlign: 'center',
           fontWeight: 600,
           fontFamily: 'Press Start 2P, cursive',
-          textShadow: '0 0 10px rgba(0,255,255,0.6)'
+          textShadow: '0 0 8px rgba(0,255,255,0.6)'
         }}>
           스탯
         </div>
         
-        {/* 스탯을 카드 스타일로 표시 */}
+        {/* 스탯을 컴팩트하게 표시 */}
         <div style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '16px'
+          gap: '8px'
         }}>
           {/* 힘 스탯 */}
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '8px',
-            padding: '16px',
+            gap: '6px',
+            padding: '8px 12px',
             cursor: 'pointer',
-            background: 'linear-gradient(135deg, rgba(255,0,102,0.1) 0%, rgba(255,0,102,0.05) 100%)',
-            borderRadius: '12px',
+            background: 'rgba(255,0,102,0.1)',
+            borderRadius: '8px',
             border: '1px solid rgba(255,0,102,0.2)',
-            position: 'relative',
-            overflow: 'hidden'
+            transition: 'all 0.2s ease'
           }}
           onClick={() => router.push('/strength')}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(255,0,102,0.15)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(255,0,102,0.1)';
+          }}
           >
-            {/* 배경 효과 */}
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'radial-gradient(circle at 20% 50%, rgba(255,0,102,0.1) 0%, transparent 50%)',
-              opacity: 0.5
-            }} />
-            
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              position: 'relative',
-              zIndex: 1
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{fontSize: '1.3rem'}}>💪</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{fontSize: '1rem'}}>💪</span>
                 <span style={{
-                  fontSize: '0.9rem',
+                  fontSize: '0.8rem',
                   fontWeight: 600,
                   color: '#ffffff',
                   fontFamily: 'Orbitron, monospace'
                 }}>힘</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{
-                  fontSize: '1rem',
+                  fontSize: '0.9rem',
                   fontWeight: 700,
                   color: '#ff0066',
-                  fontFamily: 'Press Start 2P, cursive',
-                  textShadow: '0 0 10px rgba(255,0,102,0.6)'
+                  fontFamily: 'Press Start 2P, cursive'
                 }}>{safeStats.strength}kg</span>
                 <div style={{
-                  fontSize: '0.8rem',
+                  fontSize: '0.7rem',
                   fontWeight: 700,
-                  padding: '4px 8px',
+                  padding: '2px 6px',
                   background: 'rgba(255,0,102,0.3)',
                   color: '#fff',
-                  borderRadius: '8px',
+                  borderRadius: '6px',
                   fontFamily: 'Press Start 2P, cursive',
                   border: '1px solid rgba(255,0,102,0.5)'
                 }}>
@@ -381,27 +355,17 @@ function HomeContent() {
                 </div>
               </div>
             </div>
+            
             {/* 프로그레스 바 */}
             {(() => {
               const progress = getProgressToNextRank(safeStats.strength, 'strength');
               return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', position: 'relative', zIndex: 1 }}>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    fontSize: '0.75rem',
-                    color: '#888',
-                    fontFamily: 'Orbitron, monospace'
-                  }}>
-                    <span>F→E→D→C→B→A→S</span>
-                    <span>{progress.nextRank !== 'S' ? `다음: ${progress.nextRank}` : '최고'}</span>
-                  </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                   <div style={{
                     width: '100%',
-                    height: '6px',
+                    height: '4px',
                     background: 'rgba(255,255,255,0.1)',
-                    borderRadius: '3px',
+                    borderRadius: '2px',
                     overflow: 'hidden',
                     border: '1px solid rgba(255,255,255,0.2)'
                   }}>
@@ -409,9 +373,9 @@ function HomeContent() {
                       width: `${progress.progress}%`,
                       height: '100%',
                       background: 'linear-gradient(90deg, #ff0066 0%, #ff4080 100%)',
-                      borderRadius: '3px',
+                      borderRadius: '2px',
                       transition: 'width 0.3s ease',
-                      boxShadow: '0 0 10px rgba(255,0,102,0.5)'
+                      boxShadow: '0 0 6px rgba(255,0,102,0.4)'
                     }} />
                   </div>
                   <div style={{
@@ -431,59 +395,46 @@ function HomeContent() {
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '8px',
-            padding: '16px',
+            gap: '6px',
+            padding: '8px 12px',
             cursor: 'pointer',
-            background: 'linear-gradient(135deg, rgba(0,255,255,0.1) 0%, rgba(0,255,255,0.05) 100%)',
-            borderRadius: '12px',
+            background: 'rgba(0,255,255,0.1)',
+            borderRadius: '8px',
             border: '1px solid rgba(0,255,255,0.2)',
-            position: 'relative',
-            overflow: 'hidden'
+            transition: 'all 0.2s ease'
           }}
           onClick={() => router.push('/agility')}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(0,255,255,0.15)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(0,255,255,0.1)';
+          }}
           >
-            {/* 배경 효과 */}
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'radial-gradient(circle at 80% 50%, rgba(0,255,255,0.1) 0%, transparent 50%)',
-              opacity: 0.5
-            }} />
-            
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              position: 'relative',
-              zIndex: 1
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{fontSize: '1.3rem'}}>🏃</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{fontSize: '1rem'}}>🏃</span>
                 <span style={{
-                  fontSize: '0.9rem',
+                  fontSize: '0.8rem',
                   fontWeight: 600,
                   color: '#ffffff',
                   fontFamily: 'Orbitron, monospace'
                 }}>민첩</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{
-                  fontSize: '1rem',
+                  fontSize: '0.9rem',
                   fontWeight: 700,
                   color: '#00ffff',
-                  fontFamily: 'Press Start 2P, cursive',
-                  textShadow: '0 0 10px rgba(0,255,255,0.6)'
+                  fontFamily: 'Press Start 2P, cursive'
                 }}>{safeStats.agility}km</span>
                 <div style={{
-                  fontSize: '0.8rem',
+                  fontSize: '0.75rem',
                   fontWeight: 700,
-                  padding: '4px 8px',
+                  padding: '2px 6px',
                   background: 'rgba(0,255,255,0.3)',
                   color: '#fff',
-                  borderRadius: '8px',
+                  borderRadius: '6px',
                   fontFamily: 'Press Start 2P, cursive',
                   border: '1px solid rgba(0,255,255,0.5)'
                 }}>
@@ -491,27 +442,17 @@ function HomeContent() {
                 </div>
               </div>
             </div>
+            
             {/* 프로그레스 바 */}
             {(() => {
               const progress = getProgressToNextRank(safeStats.agility, 'agility');
               return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', position: 'relative', zIndex: 1 }}>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    fontSize: '0.75rem',
-                    color: '#888',
-                    fontFamily: 'Orbitron, monospace'
-                  }}>
-                    <span>F→E→D→C→B→A→S</span>
-                    <span>{progress.nextRank !== 'S' ? `다음: ${progress.nextRank}` : '최고'}</span>
-                  </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                   <div style={{
                     width: '100%',
-                    height: '6px',
+                    height: '4px',
                     background: 'rgba(255,255,255,0.1)',
-                    borderRadius: '3px',
+                    borderRadius: '2px',
                     overflow: 'hidden',
                     border: '1px solid rgba(255,255,255,0.2)'
                   }}>
@@ -519,9 +460,9 @@ function HomeContent() {
                       width: `${progress.progress}%`,
                       height: '100%',
                       background: 'linear-gradient(90deg, #00ffff 0%, #40ffff 100%)',
-                      borderRadius: '3px',
+                      borderRadius: '2px',
                       transition: 'width 0.3s ease',
-                      boxShadow: '0 0 10px rgba(0,255,255,0.5)'
+                      boxShadow: '0 0 6px rgba(0,255,255,0.4)'
                     }} />
                   </div>
                   <div style={{
@@ -541,59 +482,46 @@ function HomeContent() {
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '8px',
-            padding: '16px',
+            gap: '6px',
+            padding: '8px 12px',
             cursor: 'pointer',
-            background: 'linear-gradient(135deg, rgba(153,0,255,0.1) 0%, rgba(153,0,255,0.05) 100%)',
-            borderRadius: '12px',
+            background: 'rgba(153,0,255,0.1)',
+            borderRadius: '8px',
             border: '1px solid rgba(153,0,255,0.2)',
-            position: 'relative',
-            overflow: 'hidden'
+            transition: 'all 0.2s ease'
           }}
           onClick={() => router.push('/wisdom')}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(153,0,255,0.15)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(153,0,255,0.1)';
+          }}
           >
-            {/* 배경 효과 */}
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'radial-gradient(circle at 50% 20%, rgba(153,0,255,0.1) 0%, transparent 50%)',
-              opacity: 0.5
-            }} />
-            
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              position: 'relative',
-              zIndex: 1
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{fontSize: '1.3rem'}}>🧠</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{fontSize: '1rem'}}>🧠</span>
                 <span style={{
-                  fontSize: '0.9rem',
+                  fontSize: '0.8rem',
                   fontWeight: 600,
                   color: '#ffffff',
                   fontFamily: 'Orbitron, monospace'
                 }}>지혜</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{
-                  fontSize: '1rem',
+                  fontSize: '0.9rem',
                   fontWeight: 700,
                   color: '#9900ff',
-                  fontFamily: 'Press Start 2P, cursive',
-                  textShadow: '0 0 10px rgba(153,0,255,0.6)'
+                  fontFamily: 'Press Start 2P, cursive'
                 }}>{safeStats.wisdom}개</span>
                 <div style={{
-                  fontSize: '0.8rem',
+                  fontSize: '0.7rem',
                   fontWeight: 700,
-                  padding: '4px 8px',
+                  padding: '2px 6px',
                   background: 'rgba(153,0,255,0.3)',
                   color: '#fff',
-                  borderRadius: '8px',
+                  borderRadius: '6px',
                   fontFamily: 'Press Start 2P, cursive',
                   border: '1px solid rgba(153,0,255,0.5)'
                 }}>
@@ -601,27 +529,17 @@ function HomeContent() {
                 </div>
               </div>
             </div>
+            
             {/* 프로그레스 바 */}
             {(() => {
               const progress = getProgressToNextRank(safeStats.wisdom, 'wisdom');
               return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', position: 'relative', zIndex: 1 }}>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    fontSize: '0.75rem',
-                    color: '#888',
-                    fontFamily: 'Orbitron, monospace'
-                  }}>
-                    <span>F→E→D→C→B→A→S</span>
-                    <span>{progress.nextRank !== 'S' ? `다음: ${progress.nextRank}` : '최고'}</span>
-                  </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                   <div style={{
                     width: '100%',
-                    height: '6px',
+                    height: '4px',
                     background: 'rgba(255,255,255,0.1)',
-                    borderRadius: '3px',
+                    borderRadius: '2px',
                     overflow: 'hidden',
                     border: '1px solid rgba(255,255,255,0.2)'
                   }}>
@@ -629,9 +547,9 @@ function HomeContent() {
                       width: `${progress.progress}%`,
                       height: '100%',
                       background: 'linear-gradient(90deg, #9900ff 0%, #cc40ff 100%)',
-                      borderRadius: '3px',
+                      borderRadius: '2px',
                       transition: 'width 0.3s ease',
-                      boxShadow: '0 0 10px rgba(153,0,255,0.5)'
+                      boxShadow: '0 0 6px rgba(153,0,255,0.4)'
                     }} />
                   </div>
                   <div style={{
@@ -690,7 +608,7 @@ function HomeContent() {
               background: 'radial-gradient(circle at 30% 30%, rgba(0,255,255,0.1) 0%, transparent 50%)',
               opacity: 0.5
             }} />
-            <div style={{fontSize: '1.4rem', marginBottom: '4px', position: 'relative', zIndex: 1}}>📜</div>
+            <div style={{fontSize: '1.4rem', marginBottom: '4px', position: 'relative', zIndex: 1}}>🪪</div>
             <div style={{
               fontSize: '0.75rem',
               fontWeight: 600,

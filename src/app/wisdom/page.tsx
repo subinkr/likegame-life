@@ -136,6 +136,24 @@ function WisdomNotesPageContent() {
     }
   };
 
+  const handleDeleteBook = async (bookId: string) => {
+    if (!confirm('정말로 이 책을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      await booksAPI.delete(bookId);
+      fetchBooks();
+      
+      // 선택된 책이 삭제된 책이었다면 선택 해제
+      if (selectedBook?.id === bookId) {
+        setSelectedBook(null);
+      }
+    } catch (error) {
+      alert('책 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
   const loadMore = () => {
     if (!isLoadingMore && hasNextPage) {
       fetchWisdomNotes(currentPage + 1, true);
@@ -186,27 +204,89 @@ function WisdomNotesPageContent() {
     ? wisdomNotes.filter(note => note.book.id === selectedBook.id)
     : wisdomNotes;
 
+  // 랭크 계산 함수들
+  const getRank = (notes: number) => {
+    if (notes >= 100) return 'S';
+    if (notes >= 80) return 'A';
+    if (notes >= 60) return 'B';
+    if (notes >= 40) return 'C';
+    if (notes >= 20) return 'D';
+    if (notes >= 10) return 'E';
+    return 'F';
+  };
+
+  const getProgressToNextRank = (notes: number) => {
+    const thresholds = { F: 0, E: 10, D: 20, C: 40, B: 60, A: 80, S: 100 };
+    const currentRank = getRank(notes);
+    
+    if (currentRank === 'S') return { progress: 100, nextRank: 'S', currentThreshold: thresholds.S, nextThreshold: thresholds.S };
+    
+    let currentThreshold = 0;
+    let nextThreshold = 0;
+    let nextRank = 'S';
+    
+    if (currentRank === 'F') {
+      currentThreshold = thresholds.F;
+      nextThreshold = thresholds.E;
+      nextRank = 'E';
+    } else if (currentRank === 'E') {
+      currentThreshold = thresholds.E;
+      nextThreshold = thresholds.D;
+      nextRank = 'D';
+    } else if (currentRank === 'D') {
+      currentThreshold = thresholds.D;
+      nextThreshold = thresholds.C;
+      nextRank = 'C';
+    } else if (currentRank === 'C') {
+      currentThreshold = thresholds.C;
+      nextThreshold = thresholds.B;
+      nextRank = 'B';
+    } else if (currentRank === 'B') {
+      currentThreshold = thresholds.B;
+      nextThreshold = thresholds.A;
+      nextRank = 'A';
+    } else if (currentRank === 'A') {
+      currentThreshold = thresholds.A;
+      nextThreshold = thresholds.S;
+      nextRank = 'S';
+    }
+    
+    const progress = Math.min(100, ((notes - currentThreshold) / (nextThreshold - currentThreshold)) * 100);
+    
+    return { progress, nextRank, currentThreshold, nextThreshold };
+  };
+
+  // 통계 계산
+  const totalNotes = filteredNotes.length;
+  const totalBooks = books.length;
+  const avgNotesPerBook = totalBooks > 0 ? Math.round(totalNotes / totalBooks * 10) / 10 : 0;
+
   if (loading || isLoading) {
     return (
       <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: 'calc(100vh - 130px)',
         flexDirection: 'column',
         gap: '24px',
-        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)'
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
+        zIndex: 1000
       }}>
         <div style={{ 
           fontSize: '3rem',
           animation: 'pulse 2s ease-in-out infinite',
-          filter: 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.8))'
+          filter: 'drop-shadow(0 0 15px rgba(153, 0, 255, 0.8))'
         }}>🧠</div>
         <div style={{ 
-          color: '#00ffff', 
+          color: '#9900ff', 
           fontSize: '1rem',
           fontFamily: 'Press Start 2P, cursive',
-          textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
+          textShadow: '0 0 10px rgba(153, 0, 255, 0.8)',
           textAlign: 'center'
         }}>
           시스템 로딩 중...
@@ -222,125 +302,242 @@ function WisdomNotesPageContent() {
   return (
     <div style={{
       padding: '16px',
-      color: '#ffffff',
-      minHeight: 'calc(100dvh - 120px)'
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '24px',
+      minHeight: 'calc(100dvh - 120px)',
+      height: '100%',
+      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%)'
     }}>
-      {/* 지혜 요약 */}
+      {/* 스크롤 가능한 메인 콘텐츠 영역 */}
       <div style={{
-        background: 'rgba(153,0,255,0.05)',
-        borderRadius: '8px',
-        padding: '12px',
-        marginBottom: '12px'
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '24px',
+        flex: 1,
+        overflow: 'auto',
+        WebkitOverflowScrolling: 'touch'
       }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-around',
-          gap: '4px'
-        }}>
-          <div style={{
-            textAlign: 'center',
-            padding: '6px',
-            background: 'rgba(153,0,255,0.1)',
-            borderRadius: '4px',
-            flex: 1
-          }}>
-            <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>📝</div>
-            <div style={{
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              color: '#ffffff',
-              fontFamily: 'Press Start 2P, cursive'
-            }}>노트</div>
-            <div style={{
-              fontSize: '0.8rem',
-              fontWeight: 700,
-              color: '#9900ff',
-              fontFamily: 'Press Start 2P, cursive'
-            }}>{filteredNotes.length}</div>
-          </div>
-          
-          <div style={{
-            textAlign: 'center',
-            padding: '6px',
-            background: 'rgba(255,215,0,0.1)',
-            borderRadius: '4px',
-            flex: 1
-          }}>
-            <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>📚</div>
-            <div style={{
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              color: '#ffffff',
-              fontFamily: 'Press Start 2P, cursive'
-            }}>책</div>
-            <div style={{
-              fontSize: '0.8rem',
-              fontWeight: 700,
-              color: '#ffff00',
-              fontFamily: 'Press Start 2P, cursive'
-            }}>{books.length}</div>
-          </div>
-        </div>
-      </div>
+      
 
-      {/* 선택된 책 정보 */}
-      {selectedBook && (
-        <div style={{
-          background: 'rgba(255,215,0,0.1)',
-          borderRadius: '8px',
-          padding: '12px',
-          marginBottom: '12px'
-        }}>
-          <div style={{
-            fontSize: '0.8rem',
-            color: '#ffff00',
-            marginBottom: '8px',
-            textAlign: 'center',
-            fontWeight: 600,
-            fontFamily: 'Press Start 2P, cursive'
-          }}>
-            📖 선택된 책
-          </div>
-          <div style={{
-            background: 'rgba(255,215,0,0.1)',
-            borderRadius: '6px',
-            padding: '8px',
-            textAlign: 'center'
-          }}>
-            <div style={{
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              color: '#ffff00',
-              marginBottom: '4px',
-              fontFamily: 'Press Start 2P, cursive'
-            }}>
-              {selectedBook.title}
-            </div>
-            <div style={{
-              fontSize: '0.75rem',
-              color: '#666',
-              fontFamily: 'Orbitron, monospace'
-            }}>
-              {selectedBook.author}
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* 책 선택 */}
+      {/* 통계 요약 - 그리드 스타일 */}
       <div style={{
-        background: 'rgba(0,255,255,0.05)',
-        borderRadius: '8px',
-        padding: '12px',
-        marginBottom: '12px'
+        padding: '0 8px'
       }}>
         <div style={{
           fontSize: '0.9rem',
           color: '#ffffff',
-          marginBottom: '8px',
+          marginBottom: '12px',
           textAlign: 'center',
           fontWeight: 600,
-          fontFamily: 'Press Start 2P, cursive'
+          fontFamily: 'Press Start 2P, cursive',
+          textShadow: '0 0 8px rgba(153,0,255,0.6)'
+        }}>
+          통계
+        </div>
+        
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: '12px'
+        }}>
+          <div style={{
+            textAlign: 'center',
+            padding: '16px 8px',
+            cursor: 'pointer',
+            background: 'linear-gradient(135deg, rgba(153,0,255,0.1) 0%, rgba(153,0,255,0.05) 100%)',
+            borderRadius: '12px',
+            border: '1px solid rgba(153,0,255,0.2)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'radial-gradient(circle at 30% 30%, rgba(153,0,255,0.1) 0%, transparent 50%)',
+              opacity: 0.5
+            }} />
+            <div style={{fontSize: '1.4rem', marginBottom: '4px', position: 'relative', zIndex: 1}}>📝</div>
+            <div style={{
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              color: '#ffffff',
+              fontFamily: 'Press Start 2P, cursive',
+              position: 'relative',
+              zIndex: 1
+            }}>노트</div>
+            <div style={{
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              color: '#9900ff',
+              fontFamily: 'Press Start 2P, cursive',
+              textShadow: '0 0 10px rgba(153,0,255,0.6)',
+              position: 'relative',
+              zIndex: 1
+            }}>{totalNotes}</div>
+          </div>
+          
+          <div style={{
+            textAlign: 'center',
+            padding: '16px 8px',
+            cursor: 'pointer',
+            background: 'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)',
+            borderRadius: '12px',
+            border: '1px solid rgba(255,215,0,0.2)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'radial-gradient(circle at 70% 70%, rgba(255,215,0,0.1) 0%, transparent 50%)',
+              opacity: 0.5
+            }} />
+            <div style={{fontSize: '1.4rem', marginBottom: '4px', position: 'relative', zIndex: 1}}>📚</div>
+            <div style={{
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              color: '#ffffff',
+              fontFamily: 'Press Start 2P, cursive',
+              position: 'relative',
+              zIndex: 1
+            }}>책</div>
+            <div style={{
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              color: '#ffd700',
+              fontFamily: 'Press Start 2P, cursive',
+              textShadow: '0 0 10px rgba(255,215,0,0.6)',
+              position: 'relative',
+              zIndex: 1
+            }}>{totalBooks}</div>
+          </div>
+          
+
+        </div>
+      </div>
+
+      {/* 현재 랭크 표시 */}
+      {totalNotes > 0 && (
+        <div style={{
+          padding: '0 8px'
+        }}>
+          <div style={{
+            fontSize: '0.9rem',
+            color: '#ffffff',
+            marginBottom: '12px',
+            textAlign: 'center',
+            fontWeight: 600,
+            fontFamily: 'Press Start 2P, cursive',
+            textShadow: '0 0 8px rgba(153,0,255,0.6)'
+          }}>
+            누적 기록
+          </div>
+          
+          <div style={{
+            background: 'rgba(153,0,255,0.1)',
+            borderRadius: '8px',
+            padding: '12px',
+            border: '1px solid rgba(153,0,255,0.3)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'radial-gradient(circle at 70% 70%, rgba(153,0,255,0.1) 0%, transparent 50%)',
+              opacity: 0.5
+            }} />
+            
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '8px',
+              position: 'relative',
+              zIndex: 1
+            }}>
+              <span style={{
+                fontSize: '0.9rem',
+                fontWeight: 700,
+                color: '#9900ff',
+                fontFamily: 'Press Start 2P, cursive'
+              }}>{totalNotes}개</span>
+              <div style={{
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                padding: '2px 6px',
+                background: 'rgba(153,0,255,0.3)',
+                color: '#fff',
+                borderRadius: '6px',
+                fontFamily: 'Press Start 2P, cursive',
+                border: '1px solid rgba(153,0,255,0.5)'
+              }}>
+                {getRank(totalNotes)}
+              </div>
+            </div>
+            
+            {/* 프로그레스 바 */}
+            {(() => {
+              const progress = getProgressToNextRank(totalNotes);
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  <div style={{
+                    width: '100%',
+                    height: '4px',
+                    background: 'rgba(255,255,255,0.1)',
+                    borderRadius: '2px',
+                    overflow: 'hidden',
+                    border: '1px solid rgba(255,255,255,0.2)'
+                  }}>
+                    <div style={{
+                      width: `${progress.progress}%`,
+                      height: '100%',
+                      background: 'linear-gradient(90deg, #9900ff 0%, #cc66ff 100%)',
+                      borderRadius: '2px',
+                      transition: 'width 0.3s ease',
+                      boxShadow: '0 0 6px rgba(153,0,255,0.4)'
+                    }} />
+                  </div>
+                  <div style={{
+                    fontSize: '0.75rem',
+                    color: '#888',
+                    textAlign: 'right',
+                    fontFamily: 'Orbitron, monospace'
+                  }}>
+                    {progress.nextRank !== 'S' ? `${totalNotes}/${progress.nextThreshold}개` : '최고 등급'}
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
+
+
+      {/* 책 선택 */}
+      <div style={{
+        padding: '0 8px'
+      }}>
+        <div style={{
+          fontSize: '0.9rem',
+          color: '#ffffff',
+          marginBottom: '12px',
+          textAlign: 'center',
+          fontWeight: 600,
+          fontFamily: 'Press Start 2P, cursive',
+          textShadow: '0 0 8px rgba(0,255,255,0.6)'
         }}>
           책 선택
         </div>
@@ -358,7 +555,8 @@ function WisdomNotesPageContent() {
             borderRadius: '6px',
             color: '#ffffff',
             fontFamily: 'Orbitron, monospace',
-            fontSize: '0.75rem'
+            fontSize: '0.75rem',
+            marginBottom: '8px'
           }}
         >
           <option value="">전체 책</option>
@@ -368,65 +566,123 @@ function WisdomNotesPageContent() {
             </option>
           ))}
         </select>
+        
+        {/* 선택된 책 삭제 버튼 */}
+        {selectedBook && (
+          <button
+            onClick={() => handleDeleteBook(selectedBook.id)}
+            style={{
+              width: '100%',
+              padding: '12px',
+              background: 'rgba(255,0,0,0.2)',
+              border: '2px solid rgba(255,0,0,0.5)',
+              color: '#ff0000',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              fontSize: '0.9rem',
+              fontFamily: 'Press Start 2P, cursive',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 0 10px rgba(255,0,0,0.3)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255,0,0,0.3)';
+              e.currentTarget.style.boxShadow = '0 0 15px rgba(255,0,0,0.5)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255,0,0,0.2)';
+              e.currentTarget.style.boxShadow = '0 0 10px rgba(255,0,0,0.3)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            🗑️ 선택된 책 삭제
+          </button>
+        )}
       </div>
 
       {/* 초서 추가 */}
       <div style={{
-        background: 'rgba(153,0,255,0.05)',
-        borderRadius: '8px',
-        padding: '12px',
-        marginBottom: '12px'
+        padding: '0 8px'
       }}>
-        <button
-          onClick={() => setShowAddForm(true)}
-          style={{
-            width: '100%',
-            padding: '12px',
-            background: 'rgba(153,0,255,0.2)',
-            border: '2px solid rgba(153,0,255,0.5)',
-            color: '#9900ff',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-            fontSize: '0.9rem',
-            fontFamily: 'Press Start 2P, cursive',
-            marginBottom: '8px'
-          }}
-        >
-          📝 새 초서 추가
-        </button>
-        <button
-          onClick={() => setShowAddBookForm(true)}
-          style={{
-            width: '100%',
-            padding: '12px',
-            background: 'rgba(255,215,0,0.2)',
-            border: '2px solid rgba(255,215,0,0.5)',
-            color: '#ffd700',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-            fontSize: '0.9rem',
-            fontFamily: 'Press Start 2P, cursive'
-          }}
-        >
-          📚 새 책 추가
-        </button>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px'
+        }}>
+          <button
+            onClick={() => setShowAddForm(true)}
+            style={{
+              width: '100%',
+              padding: '12px',
+              background: 'rgba(153,0,255,0.2)',
+              border: '2px solid rgba(153,0,255,0.5)',
+              color: '#9900ff',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              fontSize: '0.9rem',
+              fontFamily: 'Press Start 2P, cursive',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 0 10px rgba(153,0,255,0.3)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(153,0,255,0.3)';
+              e.currentTarget.style.boxShadow = '0 0 15px rgba(153,0,255,0.5)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(153,0,255,0.2)';
+              e.currentTarget.style.boxShadow = '0 0 10px rgba(153,0,255,0.3)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            📝 새 초서 추가
+          </button>
+          <button
+            onClick={() => setShowAddBookForm(true)}
+            style={{
+              width: '100%',
+              padding: '12px',
+              background: 'rgba(255,215,0,0.2)',
+              border: '2px solid rgba(255,215,0,0.5)',
+              color: '#ffd700',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              fontSize: '0.9rem',
+              fontFamily: 'Press Start 2P, cursive',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 0 10px rgba(255,215,0,0.3)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255,215,0,0.3)';
+              e.currentTarget.style.boxShadow = '0 0 15px rgba(255,215,0,0.5)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255,215,0,0.2)';
+              e.currentTarget.style.boxShadow = '0 0 10px rgba(255,215,0,0.3)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            📚 새 책 추가
+          </button>
+        </div>
       </div>
 
       {/* 초서 목록 */}
       <div style={{
-        background: 'rgba(255,215,0,0.05)',
-        borderRadius: '8px',
-        padding: '12px'
+        padding: '0 8px'
       }}>
         <div style={{
           fontSize: '0.9rem',
           color: '#ffffff',
-          marginBottom: '8px',
+          marginBottom: '12px',
           textAlign: 'center',
           fontWeight: 600,
-          fontFamily: 'Press Start 2P, cursive'
+          fontFamily: 'Press Start 2P, cursive',
+          textShadow: '0 0 8px rgba(255,215,0,0.6)'
         }}>
           초서 목록
         </div>
@@ -437,7 +693,10 @@ function WisdomNotesPageContent() {
             color: '#666',
             fontSize: '0.75rem',
             padding: '12px',
-            fontFamily: 'Orbitron, monospace'
+            fontFamily: 'Orbitron, monospace',
+            background: 'rgba(255,255,255,0.05)',
+            borderRadius: '8px',
+            border: '1px solid rgba(255,255,255,0.1)'
           }}>
             초서가 없습니다
           </div>
@@ -446,11 +705,21 @@ function WisdomNotesPageContent() {
             {filteredNotes.map(note => (
               <div key={note.id} style={{
                 background: 'rgba(153,0,255,0.1)',
-                borderRadius: '6px',
+                borderRadius: '8px',
                 padding: '12px',
                 border: '1px solid rgba(153,0,255,0.3)',
-                transition: 'all 0.3s ease'
-              }}>
+                transition: 'all 0.3s ease',
+                cursor: 'pointer'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(153,0,255,0.15)';
+                e.currentTarget.style.boxShadow = '0 0 10px rgba(153,0,255,0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(153,0,255,0.1)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+              >
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -476,7 +745,10 @@ function WisdomNotesPageContent() {
                     </div>
                   </div>
                   <button
-                    onClick={() => handleDelete(note.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(note.id);
+                    }}
                     style={{
                       background: 'rgba(153,0,255,0.2)',
                       border: '1px solid rgba(153,0,255,0.3)',
@@ -484,12 +756,12 @@ function WisdomNotesPageContent() {
                       fontWeight: 600,
                       fontSize: '0.75rem',
                       cursor: 'pointer',
-                      padding: '2px 4px',
+                      padding: '4px 8px',
                       borderRadius: '4px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      minWidth: '32px',
+                      minWidth: '50px',
                       fontFamily: 'Press Start 2P, cursive',
                       transition: 'all 0.3s ease'
                     }}
@@ -512,7 +784,6 @@ function WisdomNotesPageContent() {
                   padding: '8px',
                   marginBottom: '6px'
                 }}>
-
                   <div style={{
                     fontSize: '0.75rem',
                     color: '#ffffff',
@@ -528,7 +799,6 @@ function WisdomNotesPageContent() {
                   borderRadius: '4px',
                   padding: '8px'
                 }}>
-
                   <div style={{
                     fontSize: '0.75rem',
                     color: '#ffffff',
@@ -563,6 +833,7 @@ function WisdomNotesPageContent() {
           </div>
         )}
       </div>
+      </div>
 
       {/* 초서 추가 모달 */}
       {showAddForm && (
@@ -582,12 +853,12 @@ function WisdomNotesPageContent() {
             background: '#1a1a1a',
             padding: '12px',
             borderRadius: '15px',
-            border: '2px solid rgba(0,255,255,0.3)',
+            border: '2px solid rgba(153,0,255,0.3)',
             width: '90%',
             maxWidth: '500px'
           }}>
             <h2 style={{ 
-              color: '#00ffff', 
+              color: '#9900ff', 
               marginTop: '16px',
               marginBottom: '16px',
               textAlign: 'center'
@@ -608,7 +879,7 @@ function WisdomNotesPageContent() {
                     width: '100%',
                     padding: '10px',
                     background: 'rgba(255,255,255,0.1)',
-                    border: '2px solid rgba(0,255,255,0.3)',
+                    border: '2px solid rgba(153,0,255,0.3)',
                     borderRadius: '6px',
                     color: '#ffffff'
                   }}
@@ -636,7 +907,7 @@ function WisdomNotesPageContent() {
                     width: '100%',
                     padding: '10px',
                     background: 'rgba(255,255,255,0.1)',
-                    border: '2px solid rgba(0,255,255,0.3)',
+                    border: '2px solid rgba(153,0,255,0.3)',
                     borderRadius: '6px',
                     color: '#ffffff',
                     resize: 'vertical'
@@ -658,7 +929,7 @@ function WisdomNotesPageContent() {
                     width: '100%',
                     padding: '10px',
                     background: 'rgba(255,255,255,0.1)',
-                    border: '2px solid rgba(0,255,255,0.3)',
+                    border: '2px solid rgba(153,0,255,0.3)',
                     borderRadius: '6px',
                     color: '#ffffff',
                     resize: 'vertical'
@@ -672,9 +943,9 @@ function WisdomNotesPageContent() {
                   style={{
                     flex: 1,
                     padding: '12px',
-                    background: 'rgba(0,255,255,0.2)',
-                    border: '2px solid rgba(0,255,255,0.5)',
-                    color: '#00ffff',
+                    background: 'rgba(153,0,255,0.2)',
+                    border: '2px solid rgba(153,0,255,0.5)',
+                    color: '#9900ff',
                     borderRadius: '6px',
                     cursor: 'pointer',
                     fontWeight: 'bold'
@@ -721,12 +992,12 @@ function WisdomNotesPageContent() {
             background: '#1a1a1a',
             padding: '12px',
             borderRadius: '15px',
-            border: '2px solid rgba(0,255,255,0.3)',
+            border: '2px solid rgba(255,215,0,0.3)',
             width: '90%',
             maxWidth: '500px'
           }}>
             <h2 style={{ 
-              color: '#00ffff', 
+              color: '#ffd700', 
               marginTop: '16px',
               marginBottom: '16px',
               textAlign: 'center'
@@ -748,7 +1019,7 @@ function WisdomNotesPageContent() {
                     width: '100%',
                     padding: '10px',
                     background: 'rgba(255,255,255,0.1)',
-                    border: '2px solid rgba(0,255,255,0.3)',
+                    border: '2px solid rgba(255,215,0,0.3)',
                     borderRadius: '6px',
                     color: '#ffffff'
                   }}
@@ -768,7 +1039,7 @@ function WisdomNotesPageContent() {
                     width: '100%',
                     padding: '10px',
                     background: 'rgba(255,255,255,0.1)',
-                    border: '2px solid rgba(0,255,255,0.3)',
+                    border: '2px solid rgba(255,215,0,0.3)',
                     borderRadius: '6px',
                     color: '#ffffff'
                   }}
@@ -781,9 +1052,9 @@ function WisdomNotesPageContent() {
                   style={{
                     flex: 1,
                     padding: '12px',
-                    background: 'rgba(0,255,255,0.2)',
-                    border: '2px solid rgba(0,255,255,0.5)',
-                    color: '#00ffff',
+                    background: 'rgba(255,215,0,0.2)',
+                    border: '2px solid rgba(255,215,0,0.5)',
+                    color: '#ffd700',
                     borderRadius: '6px',
                     cursor: 'pointer',
                     fontWeight: 'bold'
@@ -824,7 +1095,7 @@ export default function WisdomNotesPage() {
           justifyContent: 'center',
           minHeight: 'calc(100vh - 130px)',
           background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
-          color: '#00ffff',
+          color: '#9900ff',
           fontSize: '1rem',
           fontFamily: 'Press Start 2P, cursive'
         }}>

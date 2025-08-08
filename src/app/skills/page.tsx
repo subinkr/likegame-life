@@ -123,6 +123,12 @@ function SkillsPageContent() {
     return '유효';
   };
 
+  // 통계 계산
+  const totalSkills = skills.length;
+  const validSkills = skills.filter(s => !s.expiryDate || !isExpired(s.expiryDate)).length;
+  const expiredSkills = skills.filter(s => s.expiryDate && isExpired(s.expiryDate)).length;
+  const expiringSoonSkills = skills.filter(s => s.expiryDate && isExpiringSoon(s.expiryDate)).length;
+
   if (loading) {
     return (
       <div style={{
@@ -136,7 +142,7 @@ function SkillsPageContent() {
         justifyContent: 'center',
         flexDirection: 'column',
         gap: '24px',
-        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
         zIndex: 1000
       }}>
         <div style={{ 
@@ -162,249 +168,238 @@ function SkillsPageContent() {
       padding: '16px',
       display: 'flex',
       flexDirection: 'column',
-      gap: '16px',
-      minHeight: 'calc(100dvh - 120px)'
+      gap: '24px',
+      minHeight: 'calc(100dvh - 120px)',
+      height: '100%',
+      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%)'
     }}>
       {/* 스크롤 가능한 메인 콘텐츠 영역 */}
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '16px',
-        flex: 1
+        gap: '24px',
+        flex: 1,
+        overflow: 'auto',
+        WebkitOverflowScrolling: 'touch'
       }}>
-        {/* 스킬 통계 */}
-        <div style={{
-          background: 'rgba(0,255,255,0.05)',
-          borderRadius: '8px',
-          padding: '12px'
-        }}>
-          <div style={{
-            display: 'flex',
-            gap: '8px'
-          }}>
-            <div style={{
-              textAlign: 'center',
-              padding: '6px',
-              background: 'rgba(255,255,255,0.1)',
-              borderRadius: '4px',
-              flex: 1
-            }}>
-              <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>📚</div>
-              <div style={{
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                color: '#ffffff',
-                fontFamily: 'Press Start 2P, cursive'
-              }}>전체</div>
-              <div style={{
-                fontSize: '0.8rem',
-                fontWeight: 700,
-                color: '#00ffff',
-                fontFamily: 'Press Start 2P, cursive'
-              }}>{skills.length}</div>
-            </div>
-            
-            <div style={{
-              textAlign: 'center',
-              padding: '6px',
-              background: 'rgba(0,255,0,0.1)',
-              borderRadius: '4px',
-              flex: 1
-            }}>
-              <div style={{fontSize: '1.2rem', marginBottom: '2px'}}>✅</div>
-              <div style={{
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                color: '#ffffff',
-                fontFamily: 'Press Start 2P, cursive'
-              }}>유효</div>
-              <div style={{
-                fontSize: '0.8rem',
-                fontWeight: 700,
-                color: '#00ff00',
-                fontFamily: 'Press Start 2P, cursive'
-              }}>{skills.filter(s => !s.expiryDate || !isExpired(s.expiryDate)).length}</div>
-            </div>
-          </div>
-        </div>
+      
+      
 
-        {/* 자격증 등록 */}
-        <div style={{
-          background: 'rgba(0,255,255,0.05)',
-          borderRadius: '8px',
-          padding: '12px'
-        }}>
-          <div style={{
+      {/* 자격증 등록 */}
+      <div style={{
+        padding: '0 8px'
+      }}>
+                           <div style={{
             fontSize: '0.9rem',
             color: '#00ffff',
-            marginBottom: '8px',
+            marginBottom: '12px',
             textAlign: 'center',
             fontWeight: 600,
-            fontFamily: 'Press Start 2P, cursive'
+            fontFamily: 'Press Start 2P, cursive',
+            textShadow: '0 0 8px rgba(0,255,255,0.6)'
           }}>
-            스킬 추가
+            스킬 ({validSkills}/{totalSkills})
           </div>
-          <button
-            onClick={() => {
-              setShowSkillModal(true);
-              setModalError("");
-            }}
-            style={{
-              width: '100%',
-              padding: '12px',
-              background: 'rgba(0,255,255,0.2)',
-              border: '2px solid rgba(0,255,255,0.5)',
-              color: '#00ffff',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              fontSize: '0.9rem',
-              fontFamily: 'Press Start 2P, cursive'
-            }}
-          >
-            📝 새 스킬
-          </button>
-        </div>
-
-        {/* 자격증 목록 */}
-        <div style={{
-          background: 'rgba(255,255,0,0.05)',
-          borderRadius: '8px',
-          padding: '12px'
-        }}>
-          <div style={{
+        <button
+          onClick={() => {
+            setShowSkillModal(true);
+            setModalError("");
+          }}
+          style={{
+            width: '100%',
+            padding: '12px',
+            background: 'rgba(0,255,255,0.2)',
+            border: '2px solid rgba(0,255,255,0.5)',
+            color: '#00ffff',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
             fontSize: '0.9rem',
-            color: '#ffff00',
-            marginBottom: '8px',
+            fontFamily: 'Press Start 2P, cursive',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 0 10px rgba(0,255,255,0.3)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(0,255,255,0.3)';
+            e.currentTarget.style.boxShadow = '0 0 15px rgba(0,255,255,0.5)';
+            e.currentTarget.style.transform = 'translateY(-2px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(0,255,255,0.2)';
+            e.currentTarget.style.boxShadow = '0 0 10px rgba(0,255,255,0.3)';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          🪪 새 스킬
+        </button>
+      </div>
+
+      {/* 자격증 목록 */}
+      <div style={{
+        padding: '0 8px'
+      }}>
+        <div style={{
+          fontSize: '0.9rem',
+          color: '#ffff00',
+          marginBottom: '12px',
+          textAlign: 'center',
+          fontWeight: 600,
+          fontFamily: 'Press Start 2P, cursive',
+          textShadow: '0 0 8px rgba(255,255,0,0.6)'
+        }}>
+          스킬 목록
+        </div>
+        
+        {loading ? (
+          <div style={{
             textAlign: 'center',
-            fontWeight: 600,
-            fontFamily: 'Press Start 2P, cursive'
+            color: '#666',
+            fontSize: '0.75rem',
+            padding: '12px',
+            fontFamily: 'Orbitron, monospace',
+            background: 'rgba(255,255,255,0.05)',
+            borderRadius: '8px',
+            border: '1px solid rgba(255,255,255,0.1)'
+          }}>🪪 로딩 중...</div>
+        ) : skills.length === 0 ? (
+          <div style={{
+            textAlign: 'center',
+            color: '#666',
+            fontSize: '0.75rem',
+            padding: '12px',
+            fontFamily: 'Orbitron, monospace',
+            background: 'rgba(255,255,255,0.05)',
+            borderRadius: '8px',
+            border: '1px solid rgba(255,255,255,0.1)'
+          }}>등록된 스킬이 없습니다.</div>
+        ) : (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
           }}>
-            스킬 목록
-          </div>
-          
-          {loading ? (
-            <div style={{
-              textAlign: 'center',
-              color: '#666',
-              fontSize: '0.75rem',
-              padding: '12px',
-              fontFamily: 'Orbitron, monospace'
-            }}>LOADING...</div>
-          ) : skills.length === 0 ? (
-            <div style={{
-              textAlign: 'center',
-              color: '#666',
-              fontSize: '0.75rem',
-              padding: '12px',
-              fontFamily: 'Orbitron, monospace'
-            }}>등록된 스킬이 없습니다.</div>
-          ) : (
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px'
-            }}>
-              {skills.map((skill) => (
-                <div
-                  key={skill.id}
-                  style={{
-                    background: 'rgba(255,255,255,0.05)',
-                    borderRadius: '6px',
-                    padding: '12px',
-                    border: `2px solid ${getStatusColor(skill.expiryDate)}`,
-                    position: 'relative'
-                  }}
-                >
-                  <div style={{
-                    fontSize: '0.9rem',
-                    fontWeight: 600,
-                    color: '#ffffff',
-                    fontFamily: 'Press Start 2P, cursive',
-                    marginBottom: '8px'
-                  }}>
-                    {skill.name}
-                  </div>
-                  
-                  <div style={{
-                    fontSize: '0.8rem',
-                    color: '#cccccc',
-                    marginBottom: '8px',
-                    lineHeight: '1.4'
-                  }}>
-                    {skill.description}
-                  </div>
-                  
+            {skills.map((skill) => (
+              <div
+                key={skill.id}
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  border: `2px solid ${getStatusColor(skill.expiryDate)}`,
+                  position: 'relative',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                  e.currentTarget.style.boxShadow = '0 0 10px rgba(255,255,255,0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <div style={{
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  color: '#ffffff',
+                  fontFamily: 'Press Start 2P, cursive',
+                  marginBottom: '8px'
+                }}>
+                  {skill.name}
+                </div>
+                
+                <div style={{
+                  fontSize: '0.8rem',
+                  color: '#cccccc',
+                  marginBottom: '8px',
+                  lineHeight: '1.4'
+                }}>
+                  {skill.description}
+                </div>
+                
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  fontSize: '0.75rem',
+                  color: '#888888',
+                  fontFamily: 'Orbitron, monospace'
+                }}>
+                  <span>취득: {formatDate(skill.acquiredDate)}</span>
                   <div style={{
                     display: 'flex',
-                    justifyContent: 'space-between',
                     alignItems: 'center',
-                    fontSize: '0.7rem',
-                    color: '#888888',
-                    fontFamily: 'Orbitron, monospace'
+                    gap: '8px'
                   }}>
-                    <span>취득: {formatDate(skill.acquiredDate)}</span>
+                    {skill.expiryDate && (
+                      <span>만료: {formatDate(skill.expiryDate)}</span>
+                    )}
                     <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
+                      fontSize: '0.75rem',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      background: `${getStatusColor(skill.expiryDate)}20`,
+                      color: getStatusColor(skill.expiryDate),
+                      fontFamily: 'Press Start 2P, cursive',
+                      fontWeight: 600
                     }}>
-                      {skill.expiryDate && (
-                        <span>만료: {formatDate(skill.expiryDate)}</span>
-                      )}
-                      <div style={{
-                        fontSize: '0.7rem',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        background: `${getStatusColor(skill.expiryDate)}20`,
-                        color: getStatusColor(skill.expiryDate),
-                        fontFamily: 'Press Start 2P, cursive',
-                        fontWeight: 600
-                      }}>
-                        {getStatusText(skill.expiryDate)}
-                      </div>
+                      {getStatusText(skill.expiryDate)}
                     </div>
                   </div>
-                  
-                  <button
-                    onClick={() => deleteSkillHandler(skill.id)}
-                    style={{
-                      position: 'absolute',
-                      top: '8px',
-                      right: '8px',
-                      background: 'rgba(255,0,0,0.2)',
-                      border: '1px solid rgba(255,0,0,0.3)',
-                      borderRadius: '4px',
-                      color: '#ff0000',
-                      fontSize: '0.75rem',
-                      padding: '6px 10px',
-                      cursor: 'pointer',
-                      fontFamily: 'Press Start 2P, cursive',
-                      minWidth: '50px'
-                    }}
-                  >
-                    삭제
-                  </button>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* 에러 메시지 */}
-        {error && (
-          <div style={{
-            background: 'rgba(255,0,102,0.1)',
-            borderRadius: '8px',
-            padding: '8px',
-            marginTop: '8px',
-            color: '#ff0066',
-            fontSize: '0.75rem',
-            fontFamily: 'Press Start 2P, cursive'
-          }}>
-            {error}
+                
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteSkillHandler(skill.id);
+                  }}
+                  style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    background: 'rgba(255,0,0,0.2)',
+                    border: '1px solid rgba(255,0,0,0.3)',
+                    borderRadius: '4px',
+                    color: '#ff0000',
+                    fontSize: '0.75rem',
+                    padding: '6px 10px',
+                    cursor: 'pointer',
+                    fontFamily: 'Press Start 2P, cursive',
+                    minWidth: '50px',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(255,0,0,0.3)';
+                    e.currentTarget.style.boxShadow = '0 0 5px rgba(255,0,0,0.5)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(255,0,0,0.2)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  삭제
+                </button>
+              </div>
+            ))}
           </div>
         )}
+      </div>
+
+      {/* 에러 메시지 */}
+      {error && (
+        <div style={{
+          background: 'rgba(255,0,102,0.1)',
+          borderRadius: '8px',
+          padding: '8px',
+          marginTop: '8px',
+          color: '#ff0066',
+          fontSize: '0.75rem',
+          fontFamily: 'Press Start 2P, cursive'
+        }}>
+          {error}
+        </div>
+      )}
       </div>
 
       {/* 스킬 추가 모달 */}

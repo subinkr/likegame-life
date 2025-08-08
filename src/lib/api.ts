@@ -25,8 +25,15 @@ export const apiRequest = async (endpoint: string, options: RequestInit = {}) =>
   })
 
   if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'API 요청에 실패했습니다.')
+    let errorMessage = 'API 요청에 실패했습니다.'
+    try {
+      const error = await response.json()
+      errorMessage = error.error || errorMessage
+    } catch {
+      // JSON 파싱 실패 시 기본 에러 메시지 사용
+      errorMessage = `HTTP ${response.status}: ${response.statusText}`
+    }
+    throw new Error(errorMessage)
   }
 
   return response.json()

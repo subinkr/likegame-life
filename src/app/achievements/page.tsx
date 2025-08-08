@@ -77,8 +77,6 @@ function AchievementsPageContent() {
     await toggleBadge(id);
   };
 
-
-
   const selectTitleForDisplay = async (id: string) => {
     // 이미 처리 중인 칭호인지 확인
     if (optimisticUpdates.has(id)) {
@@ -114,8 +112,6 @@ function AchievementsPageContent() {
       setError(err.message || '칭호 선택에 실패했습니다.');
     }
   };
-
-
 
   const getRarityColor = (rarity: string) => {
     switch (rarity) {
@@ -307,115 +303,157 @@ function AchievementsPageContent() {
   return (
     <div style={{
       padding: '16px',
-      color: '#ffffff',
-      minHeight: 'calc(100dvh - 120px)'
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '24px',
+      minHeight: 'calc(100dvh - 120px)',
+      height: '100%',
+      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%)'
     }}>
       {/* 스크롤 가능한 메인 콘텐츠 영역 */}
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '16px',
-        flex: 1
+        gap: '24px',
+        flex: 1,
+        overflow: 'auto',
+        WebkitOverflowScrolling: 'touch'
       }}>
-        {/* 탭 선택 */}
+      
+
+
+
+
+
+      {/* 탭 선택 */}
+      <div style={{
+        padding: '0 8px',
+        marginBottom: '16px'
+      }}>
         <div style={{
-          background: 'rgba(0,255,255,0.05)',
-          borderRadius: '8px',
-          padding: '8px',
-          marginBottom: '8px'
+          display: 'flex',
+          gap: '8px'
         }}>
-          <div style={{
-            fontSize: '0.9rem',
-            color: '#00ffff',
-            marginBottom: '8px',
-            textAlign: 'center',
-            fontWeight: 600,
-            fontFamily: 'Press Start 2P, cursive'
-          }}>
-            {activeTab === 'titles' ? '칭호' : '뱃지'} ({activeTab === 'titles' ? titleStats.achieved : badgeStats.achieved}/{activeTab === 'titles' ? titleStats.total : badgeStats.total})
-          </div>
-          
+          <button
+            onClick={() => handleTabChange('titles')}
+            style={{
+              flex: 1,
+              padding: '12px',
+              background: activeTab === 'titles' 
+                ? 'rgba(255,215,0,0.2)' 
+                : 'rgba(255,215,0,0.1)',
+              border: activeTab === 'titles' 
+                ? '2px solid rgba(255,215,0,0.5)' 
+                : '2px solid rgba(255,215,0,0.3)',
+              color: '#ffd700',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              fontSize: '0.9rem',
+              fontFamily: 'Press Start 2P, cursive',
+              transition: 'all 0.3s ease',
+              boxShadow: activeTab === 'titles' 
+                ? '0 0 10px rgba(255,215,0,0.3)' 
+                : 'none'
+            }}
+            onMouseEnter={(e) => {
+              if (activeTab !== 'titles') {
+                e.currentTarget.style.background = 'rgba(255,215,0,0.2)';
+                e.currentTarget.style.boxShadow = '0 0 15px rgba(255,215,0,0.5)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== 'titles') {
+                e.currentTarget.style.background = 'rgba(255,215,0,0.1)';
+                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }
+            }}
+          >
+            👑 칭호
+          </button>
+
+          <button
+            onClick={() => handleTabChange('badges')}
+            style={{
+              flex: 1,
+              padding: '12px',
+              background: activeTab === 'badges' 
+                ? 'rgba(255,0,102,0.2)' 
+                : 'rgba(255,0,102,0.1)',
+              border: activeTab === 'badges' 
+                ? '2px solid rgba(255,0,102,0.5)' 
+                : '2px solid rgba(255,0,102,0.3)',
+              color: '#ff0066',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              fontSize: '0.9rem',
+              fontFamily: 'Press Start 2P, cursive',
+              transition: 'all 0.3s ease',
+              boxShadow: activeTab === 'badges' 
+                ? '0 0 10px rgba(255,0,102,0.3)' 
+                : 'none'
+            }}
+            onMouseEnter={(e) => {
+              if (activeTab !== 'badges') {
+                e.currentTarget.style.background = 'rgba(255,0,102,0.2)';
+                e.currentTarget.style.boxShadow = '0 0 15px rgba(255,0,102,0.5)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== 'badges') {
+                e.currentTarget.style.background = 'rgba(255,0,102,0.1)';
+                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }
+            }}
+          >
+            🎖️ 뱃지
+          </button>
+        </div>
+
+        {/* 검색 및 필터 */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          marginBottom: '12px',
+          marginTop: '16px'
+        }}>
+          {/* 검색창 */}
+          <input
+            type="text"
+            placeholder="검색..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '8px',
+              background: 'rgba(255,255,255,0.1)',
+              border: '1px solid rgba(0,255,255,0.3)',
+              borderRadius: '6px',
+              color: '#ffffff',
+              fontSize: '0.75rem',
+              fontFamily: 'Press Start 2P, cursive'
+            }}
+          />
+
+          {/* 필터 버튼들 */}
           <div style={{
             display: 'flex',
             gap: '8px',
-            marginBottom: '8px'
+            flexWrap: 'wrap'
           }}>
-            <button
+            {/* 희귀도 필터 */}
+            <select
+              value={rarityFilter}
+              onChange={(e) => setRarityFilter(e.target.value)}
               style={{
                 flex: 1,
-                padding: '6px',
-                background: activeTab === 'titles' ? 'rgba(255,215,0,0.2)' : 'rgba(255,215,0,0.1)',
-                border: activeTab === 'titles' ? '2px solid #ffd700' : '1px solid rgba(255,215,0,0.3)',
-                borderRadius: '4px',
-                color: '#ffd700',
-                fontSize: '0.75rem',
-                fontFamily: 'Press Start 2P, cursive',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
-              onClick={() => handleTabChange('titles')}
-              onMouseEnter={(e) => {
-                if (activeTab !== 'titles') {
-                  e.currentTarget.style.background = 'rgba(255,215,0,0.2)';
-                  e.currentTarget.style.boxShadow = '0 0 10px rgba(255,215,0,0.5)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeTab !== 'titles') {
-                  e.currentTarget.style.background = 'rgba(255,215,0,0.1)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }
-              }}
-            >
-              칭호 ({titleStats.achieved}/{titleStats.total})
-            </button>
-
-            <button
-              style={{
-                flex: 1,
-                padding: '6px',
-                background: activeTab === 'badges' ? 'rgba(255,0,102,0.2)' : 'rgba(255,0,102,0.1)',
-                border: activeTab === 'badges' ? '2px solid #ff0066' : '1px solid rgba(255,0,102,0.3)',
-                borderRadius: '4px',
-                color: '#ff0066',
-                fontSize: '0.75rem',
-                fontFamily: 'Press Start 2P, cursive',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
-              onClick={() => handleTabChange('badges')}
-              onMouseEnter={(e) => {
-                if (activeTab !== 'badges') {
-                  e.currentTarget.style.background = 'rgba(255,0,102,0.2)';
-                  e.currentTarget.style.boxShadow = '0 0 10px rgba(255,0,102,0.5)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeTab !== 'badges') {
-                  e.currentTarget.style.background = 'rgba(255,0,102,0.1)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }
-              }}
-            >
-              뱃지 ({badgeStats.achieved}/{badgeStats.total})
-            </button>
-          </div>
-
-          {/* 검색 및 필터 */}
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-            marginBottom: '8px'
-          }}>
-            {/* 검색창 */}
-            <input
-              type="text"
-              placeholder="검색..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                width: '100%',
+                minWidth: '60px',
                 padding: '6px',
                 background: 'rgba(255,255,255,0.1)',
                 border: '1px solid rgba(0,255,255,0.3)',
@@ -424,501 +462,482 @@ function AchievementsPageContent() {
                 fontSize: '0.75rem',
                 fontFamily: 'Press Start 2P, cursive'
               }}
-            />
+            >
+              <option value="all">희귀도</option>
+              <option value="common">C</option>
+              <option value="uncommon">UC</option>
+              <option value="rare">R</option>
+              <option value="epic">SR</option>
+              <option value="legendary">SSR</option>
+            </select>
 
-            {/* 필터 버튼들 */}
-            <div style={{
-              display: 'flex',
-              gap: '8px',
-              flexWrap: 'wrap'
-            }}>
-              {/* 희귀도 필터 */}
-              <select
-                value={rarityFilter}
-                onChange={(e) => setRarityFilter(e.target.value)}
-                style={{
-                  flex: 1,
-                  minWidth: '60px',
-                  padding: '6px',
-                  background: 'rgba(255,255,255,0.1)',
-                  border: '1px solid rgba(0,255,255,0.3)',
-                  borderRadius: '4px',
-                  color: '#ffffff',
-                  fontSize: '0.75rem',
-                  fontFamily: 'Press Start 2P, cursive'
-                }}
-              >
-                <option value="all">희귀도</option>
-                <option value="common">C</option>
-                <option value="uncommon">UC</option>
-                <option value="rare">R</option>
-                <option value="epic">SR</option>
-                <option value="legendary">SSR</option>
-              </select>
+            {/* 상태 필터 */}
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              style={{
+                flex: 1,
+                minWidth: '60px',
+                padding: '6px',
+                background: 'rgba(255,255,255,0.1)',
+                border: '1px solid rgba(0,255,255,0.3)',
+                borderRadius: '4px',
+                color: '#ffffff',
+                fontSize: '0.75rem',
+                fontFamily: 'Press Start 2P, cursive'
+              }}
+            >
+              <option value="all">상태</option>
+              <option value="achieved">달성</option>
+              <option value="not-achieved">미달성</option>
+            </select>
 
-              {/* 상태 필터 */}
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                style={{
-                  flex: 1,
-                  minWidth: '60px',
-                  padding: '6px',
-                  background: 'rgba(255,255,255,0.1)',
-                  border: '1px solid rgba(0,255,255,0.3)',
-                  borderRadius: '4px',
-                  color: '#ffffff',
-                  fontSize: '0.75rem',
-                  fontFamily: 'Press Start 2P, cursive'
-                }}
-              >
-                <option value="all">상태</option>
-                <option value="achieved">달성</option>
-                <option value="not-achieved">미달성</option>
-              </select>
-
-              {/* 필터 초기화 버튼 */}
-              <button
-                onClick={resetFilters}
-                style={{
-                  padding: '6px 8px',
-                  background: 'rgba(255,0,102,0.2)',
-                  border: '1px solid rgba(255,0,102,0.3)',
-                  borderRadius: '4px',
-                  color: '#ff0066',
-                  fontSize: '0.75rem',
-                  fontFamily: 'Press Start 2P, cursive',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  minWidth: '60px'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,0,102,0.3)';
-                  e.currentTarget.style.boxShadow = '0 0 5px rgba(255,0,102,0.5)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,0,102,0.2)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                초기화
-              </button>
-            </div>
-          </div>
-
-          {/* 결과 개수 표시 */}
-          <div style={{
-            fontSize: '0.75rem',
-            color: '#666',
-            textAlign: 'center',
-            fontFamily: 'Orbitron, monospace'
-          }}>
-            {activeTab === 'titles' 
-              ? `칭호 ${filteredTitles.length}/${titles.length}개 표시`
-              : `뱃지 ${filteredBadges.length}/${badges.length}개 표시`
-            }
+            {/* 필터 초기화 버튼 */}
+            <button
+              onClick={resetFilters}
+              style={{
+                padding: '6px 8px',
+                background: 'rgba(255,0,102,0.2)',
+                border: '1px solid rgba(255,0,102,0.3)',
+                borderRadius: '4px',
+                color: '#ff0066',
+                fontSize: '0.75rem',
+                fontFamily: 'Press Start 2P, cursive',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                minWidth: '60px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255,0,102,0.3)';
+                e.currentTarget.style.boxShadow = '0 0 5px rgba(255,0,102,0.5)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255,0,102,0.2)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              초기화
+            </button>
           </div>
         </div>
 
-        {/* 칭호 목록 */}
-        {activeTab === 'titles' && (
+        {/* 결과 개수 표시 */}
+        <div style={{
+          fontSize: '0.75rem',
+          color: '#666',
+          textAlign: 'center',
+          fontFamily: 'Orbitron, monospace'
+        }}>
+          {activeTab === 'titles' 
+            ? `칭호 ${filteredTitles.length}/${titles.length}개 표시`
+            : `뱃지 ${filteredBadges.length}/${badges.length}개 표시`
+          }
+        </div>
+      </div>
+
+      {/* 칭호 목록 */}
+      {activeTab === 'titles' && (
+        <div style={{
+          padding: '0 8px'
+        }}>
           <div style={{
-            background: 'rgba(255,215,0,0.05)',
-            borderRadius: '8px',
-            padding: '8px'
+            fontSize: '0.9rem',
+            color: '#ffffff',
+            marginBottom: '12px',
+            textAlign: 'center',
+            fontWeight: 600,
+            fontFamily: 'Press Start 2P, cursive',
+            textShadow: '0 0 8px rgba(255,215,0,0.6)'
           }}>
+            칭호 목록
+          </div>
+          {filteredTitles.length === 0 ? (
             <div style={{
-              fontSize: '0.9rem',
-              color: '#ffffff',
-              marginBottom: '8px',
               textAlign: 'center',
-              fontWeight: 600,
-              fontFamily: 'Press Start 2P, cursive'
+              color: '#666',
+              fontSize: '0.75rem',
+              padding: '8px',
+              fontFamily: 'Orbitron, monospace',
+              background: 'rgba(255,255,255,0.05)',
+              borderRadius: '8px',
+              border: '1px solid rgba(255,255,255,0.1)'
             }}>
-              칭호 목록
+              조건에 맞는 칭호가 없습니다
             </div>
-            {filteredTitles.length === 0 ? (
-              <div style={{
-                textAlign: 'center',
-                color: '#666',
-                fontSize: '0.75rem',
-                padding: '8px',
-                fontFamily: 'Orbitron, monospace'
-              }}>
-                조건에 맞는 칭호가 없습니다
-              </div>
-            ) : (
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
-                gap: '2px',
-                padding: '1px',
-                justifyContent: 'center'
-              }}>
-                {filteredTitles.map(title => {
-                  const rarityColor = getRarityColor(title.rarity);
-                  
-                  // 칭호의 achieved 상태를 실시간으로 계산
-                  const hasRequiredBadges = title.required_badges?.length > 0 && 
-                    title.required_badges.every(badgeName => {
-                      const badge = badges.find(b => b.name === badgeName);
-                      return badge && badge.achieved;
-                    });
-                  const isAchieved = title.required_badges?.length === 0 || hasRequiredBadges;
-                  
-                  return (
-                    <div key={title.id} style={{
-                      background: isAchieved ? 'rgba(255,215,0,0.15)' : 'rgba(255,215,0,0.05)',
-                      borderRadius: '3px',
-                      padding: '4px',
-                      border: isAchieved ? '2px solid rgba(255,215,0,0.5)' : '1px solid rgba(255,215,0,0.2)',
-                      cursor: isAchieved && !optimisticUpdates.has(title.id) ? 'pointer' : 'not-allowed',
-                      transition: 'all 0.3s ease',
-                      minHeight: '100px',
+          ) : (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
+              gap: '8px',
+              padding: '4px',
+              justifyContent: 'center'
+            }}>
+              {filteredTitles.map(title => {
+                const rarityColor = getRarityColor(title.rarity);
+                
+                // 칭호의 achieved 상태를 실시간으로 계산
+                const hasRequiredBadges = title.required_badges?.length > 0 && 
+                  title.required_badges.every(badgeName => {
+                    const badge = badges.find(b => b.name === badgeName);
+                    return badge && badge.achieved;
+                  });
+                const isAchieved = title.required_badges?.length === 0 || hasRequiredBadges;
+                
+                return (
+                  <div key={title.id} style={{
+                    background: isAchieved ? 'rgba(255,215,0,0.15)' : 'rgba(255,215,0,0.05)',
+                    borderRadius: '8px',
+                    padding: '8px',
+                    border: isAchieved ? '2px solid rgba(255,215,0,0.5)' : '1px solid rgba(255,215,0,0.2)',
+                    cursor: isAchieved && !optimisticUpdates.has(title.id) ? 'pointer' : 'not-allowed',
+                    transition: 'all 0.3s ease',
+                    minHeight: '120px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    position: 'relative',
+                    opacity: isAchieved ? (optimisticUpdates.has(title.id) ? 0.7 : 1) : 0.6
+                  }}
+                  onClick={() => isAchieved ? selectTitleForDisplay(title.id) : null}
+                  onMouseEnter={e => {
+                    if (isAchieved) {
+                      e.currentTarget.style.background = 'rgba(255,215,0,0.25)';
+                      e.currentTarget.style.boxShadow = '0 0 10px rgba(255,215,0,0.3)';
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (isAchieved) {
+                      e.currentTarget.style.background = 'rgba(255,215,0,0.15)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }
+                  }}
+                  >
+                    {/* 선택됨 표시 */}
+                    {title.selected && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '-8px',
+                        right: '-8px',
+                        background: '#00ff00',
+                        color: '#000',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        padding: '2px 6px',
+                        borderRadius: '12px',
+                        fontFamily: 'Press Start 2P, cursive',
+                        boxShadow: '0 0 8px rgba(0,255,0,0.5)',
+                        zIndex: 1
+                      }}>
+                        선택됨
+                      </div>
+                    )}
+                    {/* 상단: 아이콘과 이름 */}
+                    <div style={{
                       display: 'flex',
                       flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      position: 'relative',
-                      opacity: isAchieved ? (optimisticUpdates.has(title.id) ? 0.7 : 1) : 0.6
-                    }}
-                    onClick={() => isAchieved ? selectTitleForDisplay(title.id) : null}
-                    onMouseEnter={e => {
-                      if (isAchieved) {
-                        e.currentTarget.style.background = 'rgba(255,215,0,0.25)';
-                        e.currentTarget.style.boxShadow = '0 0 10px rgba(255,215,0,0.3)';
-                      }
-                    }}
-                    onMouseLeave={e => {
-                      if (isAchieved) {
-                        e.currentTarget.style.background = 'rgba(255,215,0,0.15)';
-                        e.currentTarget.style.boxShadow = 'none';
-                      }
-                    }}
-                    >
-                      {/* 선택됨 표시 */}
-                      {title.selected && (
+                      alignItems: 'center',
+                      gap: '4px',
+                      marginBottom: '6px',
+                      textAlign: 'center',
+                      position: 'relative'
+                    }}>
+                      <div style={{fontSize: '1.6rem'}}>👑</div>
+                      
+                      {/* 처리 중인 칭호에 로딩 표시 */}
+                      {optimisticUpdates.has(title.id) && (
                         <div style={{
                           position: 'absolute',
-                          top: '-8px',
-                          right: '-8px',
-                          background: '#00ff00',
-                          color: '#000',
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          padding: '2px 6px',
-                          borderRadius: '12px',
-                          fontFamily: 'Press Start 2P, cursive',
-                          boxShadow: '0 0 8px rgba(0,255,0,0.5)',
+                          top: '-2px',
+                          right: '-2px',
+                          width: '12px',
+                          height: '12px',
+                          borderRadius: '50%',
+                          border: '2px solid rgba(0,255,255,0.3)',
+                          borderTop: '2px solid #00ffff',
+                          animation: 'spin 1s linear infinite',
                           zIndex: 1
-                        }}>
-                          선택됨
-                        </div>
+                        }} />
                       )}
-                      {/* 상단: 아이콘과 이름 */}
                       <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '1px',
-                        marginBottom: '3px',
-                        textAlign: 'center',
-                        position: 'relative'
-                      }}>
-                        <div style={{fontSize: '1.6rem'}}>👑</div>
-                        
-                        {/* 처리 중인 칭호에 로딩 표시 */}
-                        {optimisticUpdates.has(title.id) && (
-                          <div style={{
-                            position: 'absolute',
-                            top: '-2px',
-                            right: '-2px',
-                            width: '12px',
-                            height: '12px',
-                            borderRadius: '50%',
-                            border: '2px solid rgba(0,255,255,0.3)',
-                            borderTop: '2px solid #00ffff',
-                            animation: 'spin 1s linear infinite',
-                            zIndex: 1
-                          }} />
-                        )}
-                        <div style={{
-                          fontWeight: 700,
-                          color: '#ffff00',
-                          fontSize: '0.75rem',
-                          fontFamily: 'Press Start 2P, cursive',
-                          lineHeight: '1.1',
-                          wordBreak: 'break-word'
-                        }}>
-                          {title.name}
-                        </div>
-                      </div>
-
-                      {/* 중간: 설명 */}
-                      <div style={{
+                        fontWeight: 700,
+                        color: '#ffff00',
                         fontSize: '0.75rem',
-                        color: '#999',
-                        marginBottom: '3px',
-                        fontFamily: 'Orbitron, monospace',
-                        lineHeight: '1.2',
-                        flex: 1,
-                        textAlign: 'center',
+                        fontFamily: 'Press Start 2P, cursive',
+                        lineHeight: '1.1',
                         wordBreak: 'break-word'
                       }}>
-                        {title.description}
+                        {title.name}
                       </div>
-
-                      {/* 하단: 등급과 획득여부 (한 줄) */}
-                      <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        gap: '4px',
-                        marginBottom: '2px'
-                      }}>
-                        <div style={{
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          padding: '1px 3px',
-                          background: `rgba(${hexToRgb(rarityColor)},0.3)`,
-                          color: rarityColor,
-                          borderRadius: '2px',
-                          fontFamily: 'Press Start 2P, cursive'
-                        }}>
-                          {getRarityText(title.rarity)}
-                        </div>
-
-                        <div style={{
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          padding: '1px 3px',
-                          background: isAchieved ? 'rgba(0,255,0,0.3)' : 'rgba(255,0,102,0.3)',
-                          color: isAchieved ? '#00ff00' : '#ff0066',
-                          borderRadius: '2px',
-                          fontFamily: 'Press Start 2P, cursive'
-                        }}>
-                          {isAchieved ? '획득' : '미획득'}
-                        </div>
-                      </div>
-                      
-                      {/* 활성화된 경우에만 획득 날짜 표시 */}
-                      {isAchieved && (
-                        <div style={{
-                          fontSize: '0.75rem',
-                          color: '#666',
-                          fontFamily: 'Orbitron, monospace',
-                          textAlign: 'center'
-                        }}>
-                          {formatDate(title.achieved_date)}
-                        </div>
-                      )}
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
 
-        {/* 뱃지 목록 */}
-        {activeTab === 'badges' && (
-          <div style={{
-            background: 'rgba(255,0,102,0.05)',
-            borderRadius: '8px',
-            padding: '8px'
-          }}>
-            <div style={{
-              fontSize: '0.9rem',
-              color: '#ffffff',
-              marginBottom: '8px',
-              textAlign: 'center',
-              fontWeight: 600,
-              fontFamily: 'Press Start 2P, cursive'
-            }}>
-              뱃지 목록
+                    {/* 중간: 설명 */}
+                    <div style={{
+                      fontSize: '0.75rem',
+                      color: '#999',
+                      marginBottom: '6px',
+                      fontFamily: 'Orbitron, monospace',
+                      lineHeight: '1.2',
+                      flex: 1,
+                      textAlign: 'center',
+                      wordBreak: 'break-word'
+                    }}>
+                      {title.description}
+                    </div>
+
+                    {/* 하단: 등급과 획득여부 (한 줄) */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: '4px',
+                      marginBottom: '4px'
+                    }}>
+                      <div style={{
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        padding: '1px 3px',
+                        background: `rgba(${hexToRgb(rarityColor)},0.3)`,
+                        color: rarityColor,
+                        borderRadius: '2px',
+                        fontFamily: 'Press Start 2P, cursive'
+                      }}>
+                        {getRarityText(title.rarity)}
+                      </div>
+
+                      <div style={{
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        padding: '1px 3px',
+                        background: isAchieved ? 'rgba(0,255,0,0.3)' : 'rgba(255,0,102,0.3)',
+                        color: isAchieved ? '#00ff00' : '#ff0066',
+                        borderRadius: '2px',
+                        fontFamily: 'Press Start 2P, cursive'
+                      }}>
+                        {isAchieved ? '획득' : '미획득'}
+                      </div>
+                    </div>
+                    
+                    {/* 활성화된 경우에만 획득 날짜 표시 */}
+                    {isAchieved && (
+                      <div style={{
+                        fontSize: '0.75rem',
+                        color: '#666',
+                        fontFamily: 'Orbitron, monospace',
+                        textAlign: 'center'
+                      }}>
+                        {formatDate(title.achieved_date)}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-            
-            {filteredBadges.length === 0 ? (
-              <div style={{
-                textAlign: 'center',
-                color: '#666',
-                fontSize: '0.75rem',
-                padding: '8px',
-                fontFamily: 'Orbitron, monospace'
-              }}>
-                조건에 맞는 뱃지가 없습니다
-              </div>
-            ) : (
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
-                gap: '2px',
-                padding: '1px',
-                justifyContent: 'center'
-              }}>
-                {filteredBadges.map(badge => {
-                  const rarityColor = getRarityColor(badge.rarity);
-                  return (
-                    <div key={badge.id} style={{
-                      background: badge.achieved ? 'rgba(255,0,102,0.15)' : 'rgba(255,0,102,0.05)',
-                      borderRadius: '3px',
-                      padding: '4px',
-                      border: badge.achieved ? '2px solid rgba(255,0,102,0.5)' : '1px solid rgba(255,0,102,0.2)',
-                      cursor: optimisticUpdates.has(badge.id) ? 'not-allowed' : 'pointer',
-                      transition: 'all 0.3s ease',
+          )}
+        </div>
+      )}
+
+      {/* 뱃지 목록 */}
+      {activeTab === 'badges' && (
+        <div style={{
+          padding: '0 8px'
+        }}>
+          <div style={{
+            fontSize: '0.9rem',
+            color: '#ffffff',
+            marginBottom: '12px',
+            textAlign: 'center',
+            fontWeight: 600,
+            fontFamily: 'Press Start 2P, cursive',
+            textShadow: '0 0 8px rgba(255,0,102,0.6)'
+          }}>
+            뱃지 목록
+          </div>
+          
+          {filteredBadges.length === 0 ? (
+            <div style={{
+              textAlign: 'center',
+              color: '#666',
+              fontSize: '0.75rem',
+              padding: '8px',
+              fontFamily: 'Orbitron, monospace',
+              background: 'rgba(255,255,255,0.05)',
+              borderRadius: '8px',
+              border: '1px solid rgba(255,255,255,0.1)'
+            }}>
+              조건에 맞는 뱃지가 없습니다
+            </div>
+          ) : (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
+              gap: '8px',
+              padding: '4px',
+              justifyContent: 'center'
+            }}>
+              {filteredBadges.map(badge => {
+                const rarityColor = getRarityColor(badge.rarity);
+                return (
+                  <div key={badge.id} style={{
+                    background: badge.achieved ? 'rgba(255,0,102,0.15)' : 'rgba(255,0,102,0.05)',
+                    borderRadius: '8px',
+                    padding: '8px',
+                    border: badge.achieved ? '2px solid rgba(255,0,102,0.5)' : '1px solid rgba(255,0,102,0.2)',
+                    cursor: optimisticUpdates.has(badge.id) ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.3s ease',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    minWidth: '0',
+                    minHeight: '120px',
+                    opacity: optimisticUpdates.has(badge.id) ? 0.7 : 1,
+                    position: 'relative'
+                  }}
+                  onClick={() => toggleBadgeAchievement(badge.id)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = badge.achieved ? 'rgba(255,0,102,0.25)' : 'rgba(255,0,102,0.1)';
+                    e.currentTarget.style.boxShadow = '0 0 10px rgba(255,0,102,0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = badge.achieved ? 'rgba(255,0,102,0.15)' : 'rgba(255,0,102,0.05)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                    {/* 상단: 아이콘과 이름 */}
+                    <div style={{
                       display: 'flex',
                       flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      minWidth: '0',
-                      minHeight: '100px',
-                      opacity: optimisticUpdates.has(badge.id) ? 0.7 : 1,
+                      alignItems: 'center',
+                      gap: '4px',
+                      marginBottom: '6px',
+                      textAlign: 'center',
                       position: 'relative'
-                    }}
-                    onClick={() => toggleBadgeAchievement(badge.id)}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = badge.achieved ? 'rgba(255,0,102,0.25)' : 'rgba(255,0,102,0.1)';
-                      e.currentTarget.style.boxShadow = '0 0 10px rgba(255,0,102,0.3)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = badge.achieved ? 'rgba(255,0,102,0.15)' : 'rgba(255,0,102,0.05)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
-                  >
-                      {/* 상단: 아이콘과 이름 */}
-                      <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '1px',
-                        marginBottom: '3px',
-                        textAlign: 'center',
-                        position: 'relative'
-                      }}>
-                        <div style={{fontSize: '1.6rem'}}>{badge.icon}</div>
-                        
-                        {/* 처리 중인 뱃지에 로딩 표시 */}
-                        {optimisticUpdates.has(badge.id) && (
-                          <div style={{
-                            position: 'absolute',
-                            top: '-2px',
-                            right: '-2px',
-                            width: '12px',
-                            height: '12px',
-                            borderRadius: '50%',
-                            border: '2px solid rgba(0,255,255,0.3)',
-                            borderTop: '2px solid #00ffff',
-                            animation: 'spin 1s linear infinite',
-                            zIndex: 1
-                          }} />
-                        )}
+                    }}>
+                      <div style={{fontSize: '1.6rem'}}>{badge.icon}</div>
+                      
+                      {/* 처리 중인 뱃지에 로딩 표시 */}
+                      {optimisticUpdates.has(badge.id) && (
                         <div style={{
-                          fontWeight: 700,
-                          color: '#ff0066',
-                          fontSize: '0.75rem',
-                          fontFamily: 'Press Start 2P, cursive',
-                          lineHeight: '1.1',
-                          wordBreak: 'break-word'
-                        }}>
-                          {badge.name}
-                        </div>
-                      </div>
-
-                      {/* 중간: 설명 */}
+                          position: 'absolute',
+                          top: '-2px',
+                          right: '-2px',
+                          width: '12px',
+                          height: '12px',
+                          borderRadius: '50%',
+                          border: '2px solid rgba(0,255,255,0.3)',
+                          borderTop: '2px solid #00ffff',
+                          animation: 'spin 1s linear infinite',
+                          zIndex: 1
+                        }} />
+                      )}
                       <div style={{
+                        fontWeight: 700,
+                        color: '#ff0066',
                         fontSize: '0.75rem',
-                        color: '#999',
-                        marginBottom: '3px',
-                        fontFamily: 'Orbitron, monospace',
-                        lineHeight: '1.2',
-                        flex: 1,
-                        textAlign: 'center',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
+                        fontFamily: 'Press Start 2P, cursive',
+                        lineHeight: '1.1',
                         wordBreak: 'break-word'
                       }}>
-                        {badge.description}
+                        {badge.name}
                       </div>
-
-                      {/* 하단: 등급과 획득여부 (한 줄) */}
-                      <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        gap: '4px',
-                        marginBottom: '2px'
-                      }}>
-                        <div style={{
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          padding: '1px 3px',
-                          background: `rgba(${hexToRgb(rarityColor)},0.3)`,
-                          color: rarityColor,
-                          borderRadius: '2px',
-                          fontFamily: 'Press Start 2P, cursive'
-                        }}>
-                          {getRarityText(badge.rarity)}
-                        </div>
-
-                        <div style={{
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          padding: '1px 3px',
-                          background: badge.achieved ? 'rgba(0,255,0,0.3)' : 'rgba(255,0,102,0.3)',
-                          color: badge.achieved ? '#00ff00' : '#ff0066',
-                          borderRadius: '2px',
-                          fontFamily: 'Press Start 2P, cursive'
-                        }}>
-                          {badge.achieved ? '획득' : '미획득'}
-                        </div>
-                      </div>
-                      
-                      {/* 획득한 경우에만 날짜 표시 */}
-                      {badge.achieved && (
-                        <div style={{
-                          fontSize: '0.75rem',
-                          color: '#666',
-                          fontFamily: 'Orbitron, monospace',
-                          textAlign: 'center'
-                        }}>
-                          {formatDate(badge.achieved_date)}
-                        </div>
-                      )}
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
 
-        {/* 에러 메시지 */}
-        {error && (
-          <div style={{
-            background: 'rgba(255,0,102,0.1)',
-            borderRadius: '8px',
-            padding: '8px',
-            marginTop: '8px',
-            color: '#ff0066',
-            fontSize: '0.75rem',
-            fontFamily: 'Press Start 2P, cursive'
-          }}>
-            {error}
-          </div>
-        )}
+                    {/* 중간: 설명 */}
+                    <div style={{
+                      fontSize: '0.75rem',
+                      color: '#999',
+                      marginBottom: '6px',
+                      fontFamily: 'Orbitron, monospace',
+                      lineHeight: '1.2',
+                      flex: 1,
+                      textAlign: 'center',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      wordBreak: 'break-word'
+                    }}>
+                      {badge.description}
+                    </div>
 
-        {/* 로딩 메시지 */}
-        {loading && (
-          <div style={{
-            textAlign: 'center',
-            padding: '8px',
-            color: '#00ffff',
-            fontSize: '0.75rem',
-            fontFamily: 'Press Start 2P, cursive'
-          }}>
-            로딩 중...
-          </div>
-        )}
+                    {/* 하단: 등급과 획득여부 (한 줄) */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: '4px',
+                      marginBottom: '4px'
+                    }}>
+                      <div style={{
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        padding: '1px 3px',
+                        background: `rgba(${hexToRgb(rarityColor)},0.3)`,
+                        color: rarityColor,
+                        borderRadius: '2px',
+                        fontFamily: 'Press Start 2P, cursive'
+                      }}>
+                        {getRarityText(badge.rarity)}
+                      </div>
+
+                      <div style={{
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        padding: '1px 3px',
+                        background: badge.achieved ? 'rgba(0,255,0,0.3)' : 'rgba(255,0,102,0.3)',
+                        color: badge.achieved ? '#00ff00' : '#ff0066',
+                        borderRadius: '2px',
+                        fontFamily: 'Press Start 2P, cursive'
+                      }}>
+                        {badge.achieved ? '획득' : '미획득'}
+                      </div>
+                    </div>
+                    
+                    {/* 획득한 경우에만 날짜 표시 */}
+                    {badge.achieved && (
+                      <div style={{
+                        fontSize: '0.75rem',
+                        color: '#666',
+                        fontFamily: 'Orbitron, monospace',
+                        textAlign: 'center'
+                      }}>
+                        {formatDate(badge.achieved_date)}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 에러 메시지 */}
+      {error && (
+        <div style={{
+          background: 'rgba(255,0,102,0.1)',
+          borderRadius: '8px',
+          padding: '8px',
+          marginTop: '8px',
+          color: '#ff0066',
+          fontSize: '0.75rem',
+          fontFamily: 'Press Start 2P, cursive'
+        }}>
+          {error}
+        </div>
+      )}
+
+      {/* 로딩 메시지 */}
+      {loading && (
+        <div style={{
+          textAlign: 'center',
+          padding: '8px',
+          color: '#00ffff',
+          fontSize: '0.75rem',
+          fontFamily: 'Press Start 2P, cursive'
+        }}>
+          로딩 중...
+        </div>
+      )}
       </div>
     </div>
   );

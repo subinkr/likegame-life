@@ -51,15 +51,18 @@ export async function POST(
       return NextResponse.json({ error: '퀘스트 거절에 실패했습니다' }, { status: 500 });
     }
 
-    // 채팅방이 있다면 삭제
+    // 채팅방에 포기 메시지 추가
     if (quest.chat_room) {
-      const { error: chatRoomDeleteError } = await supabaseAdmin
-        .from('chat_rooms')
-        .delete()
-        .eq('id', quest.chat_room.id);
+      const { error: messageError } = await supabaseAdmin
+        .from('chat_messages')
+        .insert({
+          chat_room_id: quest.chat_room.id,
+          user_id: user.id,
+          content: `${user.nickname || user.email?.split('@')[0]}님이 퀘스트를 포기했습니다.`,
+        });
 
-      if (chatRoomDeleteError) {
-        // 채팅방 삭제 에러 무시
+      if (messageError) {
+        // 시스템 메시지 생성 에러 무시
       }
     }
 

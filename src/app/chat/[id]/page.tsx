@@ -72,11 +72,10 @@ function ChatRoomPageContent() {
         id: msg.id,
         content: msg.content,
         user: {
-          name: msg.user?.nickname || 'Unknown User'
+          name: msg.user?.name || 'Unknown User'
         },
-        createdAt: msg.created_at,
-        isSystemMessage: msg.is_system_message || false,
-        systemType: msg.system_type || undefined
+        createdAt: msg.createdAt,
+        systemType: msg.systemType || undefined
       }));
       
       if (beforeId) {
@@ -155,51 +154,32 @@ function ChatRoomPageContent() {
   if (loading) {
     return (
       <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         display: 'flex',
-        justifyContent: 'center',
         alignItems: 'center',
-        height: '100dvh',
-        background: '#f8fafc',
-        color: '#64748b'
-      }}>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '16px'
-        }}>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            border: '3px solid #e2e8f0',
-            borderTop: '3px solid #3b82f6',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }}></div>
-          <div style={{ fontSize: '14px', fontWeight: 500 }}>채팅방 로딩 중...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!chatRoom) {
-    return (
-      <div style={{
-        display: 'flex',
         justifyContent: 'center',
-        alignItems: 'center',
-        height: '100dvh',
-        background: '#f8fafc',
-        color: '#64748b'
+        flexDirection: 'column',
+        gap: '24px',
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
+        zIndex: 1000
       }}>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '16px'
+        <div style={{ 
+          fontSize: '3rem',
+          animation: 'pulse 2s ease-in-out infinite',
+          filter: 'drop-shadow(0 0 15px rgba(0, 255, 255, 0.8))'
+        }}>💬</div>
+        <div style={{ 
+          color: '#00ffff', 
+          fontSize: '1rem',
+          fontFamily: 'Press Start 2P, cursive',
+          textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
+          textAlign: 'center'
         }}>
-          <div style={{ fontSize: '48px' }}>💬</div>
-          <div style={{ fontSize: '16px', fontWeight: 600 }}>채팅방을 찾을 수 없습니다</div>
+          채팅방 로딩 중...
         </div>
       </div>
     );
@@ -210,118 +190,127 @@ function ChatRoomPageContent() {
       display: 'flex',
       flexDirection: 'column',
       height: '100dvh',
-      background: '#ffffff'
+      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%)',
+      position: 'relative'
     }}>
-      {/* Fixed Header */}
+      {/* 헤더 */}
       <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '16px 20px',
-        background: '#ffffff',
-        borderBottom: '1px solid #e2e8f0',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 10
+        padding: '12px 16px',
+        background: 'rgba(0,255,255,0.05)',
+        borderBottom: '2px solid rgba(0,255,255,0.3)',
+        position: 'relative',
+        zIndex: 10,
+        boxShadow: '0 2px 10px rgba(0,255,255,0.2)'
       }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'space-between',
           gap: '12px'
         }}>
+          {/* 뒤로가기 버튼 */}
           <button
             onClick={handleGoBack}
             style={{
-              background: 'none',
-              border: 'none',
-              color: '#64748b',
-              fontSize: '20px',
-              cursor: 'pointer',
-              padding: '8px',
+              background: 'rgba(0,255,255,0.2)',
+              border: '2px solid rgba(0,255,255,0.5)',
               borderRadius: '8px',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#f1f5f9';
-              e.currentTarget.style.color = '#475569';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'none';
-              e.currentTarget.style.color = '#64748b';
-            }}
-          >
-            ←
-          </button>
-          <div>
-            <div style={{
-              fontSize: '18px',
-              fontWeight: 600,
-              color: '#1e293b',
-              marginBottom: '4px'
-            }}>
-              {chatRoom.name}
-            </div>
-            <div style={{
+              padding: '8px 12px',
+              color: '#00ffff',
+              fontSize: '0.8rem',
+              fontFamily: 'Press Start 2P, cursive',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px'
+              gap: '6px',
+              boxShadow: '0 0 10px rgba(0,255,255,0.3)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(0,255,255,0.3)';
+              e.currentTarget.style.boxShadow = '0 0 15px rgba(0,255,255,0.5)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(0,255,255,0.2)';
+              e.currentTarget.style.boxShadow = '0 0 10px rgba(0,255,255,0.3)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            <span style={{fontSize: '1rem'}}>←</span>
+            뒤로
+          </button>
+
+          {/* 채팅방 정보 */}
+          <div style={{
+            flex: 1,
+            textAlign: 'center'
+          }}>
+            <div style={{
+              color: '#ffffff',
+              fontSize: '1rem',
+              fontWeight: 700,
+              fontFamily: 'Press Start 2P, cursive',
+              textShadow: '0 0 10px rgba(0,255,255,0.6)',
+              marginBottom: '4px'
             }}>
-              <span style={{
-                padding: '4px 8px',
-                background: chatRoom.type === 'PARTY' ? '#dcfce7' : '#fef3c7',
-                color: chatRoom.type === 'PARTY' ? '#166534' : '#92400e',
-                borderRadius: '12px',
-                fontSize: '12px',
-                fontWeight: 500
-              }}>
-                {chatRoom.type === 'PARTY' ? '👥 파티' : '⚔️ 퀘스트'}
-              </span>
-              {party && (
-                <span style={{
-                  fontSize: '12px',
-                  color: '#64748b'
-                }}>
-                  파티: {party.name}
-                </span>
-              )}
+              {chatRoom?.name || '채팅방'}
             </div>
+            {party && (
+              <div style={{
+                color: '#00ffff',
+                fontSize: '0.75rem',
+                fontFamily: 'Orbitron, monospace',
+                opacity: 0.8
+              }}>
+                파티: {party.name}
+              </div>
+            )}
           </div>
+
+          {/* 나가기 버튼 */}
+          <button
+            onClick={handleLeaveRoom}
+            style={{
+              background: 'rgba(255,0,102,0.2)',
+              border: '2px solid rgba(255,0,102,0.5)',
+              borderRadius: '8px',
+              padding: '8px 12px',
+              color: '#ff0066',
+              fontSize: '0.8rem',
+              fontFamily: 'Press Start 2P, cursive',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 0 10px rgba(255,0,102,0.3)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255,0,102,0.3)';
+              e.currentTarget.style.boxShadow = '0 0 15px rgba(255,0,102,0.5)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255,0,102,0.2)';
+              e.currentTarget.style.boxShadow = '0 0 10px rgba(255,0,102,0.3)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            나가기
+          </button>
         </div>
-        <button
-          onClick={handleLeaveRoom}
-          style={{
-            padding: '8px 16px',
-            background: '#ef4444',
-            color: '#ffffff',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '14px',
-            fontWeight: 500,
-            cursor: 'pointer',
-            transition: 'all 0.2s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#dc2626';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#ef4444';
-          }}
-        >
-          나가기
-        </button>
       </div>
 
-      {/* Chat Component with Fixed Layout */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      {/* 실시간 채팅 컴포넌트 */}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: 0
+      }}>
         <RealtimeChat
           roomName={id as string}
-          username={user?.user_metadata?.nickname || user?.email?.split('@')[0] || '나'}
+          username={user?.user_metadata?.nickname || user?.email?.split('@')[0] || 'Unknown'}
           participants={chatRoom?.participants || []}
           messages={initialMessages}
-          onMessage={(messages) => {
-            // Messages updated
-          }}
           onLoadMore={handleLoadMore}
           hasMore={hasMoreMessages}
           loadingMore={loadingMore}

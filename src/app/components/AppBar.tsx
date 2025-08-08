@@ -61,8 +61,6 @@ function AppBarContent() {
       case '/strength': return '힘';
       case '/agility': return '민첩';
       case '/wisdom': return '지혜';
-      case '/wisdom/new': return '지혜 기록';
-      case '/books': return '도서';
       case '/admin': return '관리';
       default:
         if (pathname.startsWith('/chat/')) { return '채팅방'; }
@@ -73,7 +71,7 @@ function AppBarContent() {
   const getPageIcon = () => {
     switch (pathname) {
       case '/': return '📈';
-      case '/skills': return '📜';
+              case '/skills': return '🪪';
       case '/achievements': 
         // URL 파라미터 확인하여 탭 구분
         const tab = searchParams.get('tab');
@@ -84,8 +82,6 @@ function AppBarContent() {
       case '/strength': return '💪';
       case '/agility': return '🏃';
       case '/wisdom': return '🧠';
-      case '/wisdom/new': return '✍️';
-      case '/books': return '📚';
       case '/admin': return '⚙️';
       default:
         if (pathname.startsWith('/chat/')) { return '💬'; }
@@ -95,23 +91,21 @@ function AppBarContent() {
 
   const getPageDescription = () => {
     switch (pathname) {
-      case '/': return '내 능력과 성취를 한눈에 확인하세요.';
+      case '/': return '내 능력을 한눈에 확인하세요.';
       case '/skills': return '자격증을 등록하세요.';
       case '/achievements': 
         const tab = searchParams.get('tab');
-        return tab === 'badges' ? '뱃지별 행동을 완료하고 칭호를 활성화하세요.' : '뱃지를 활성화하고 칭호를 획득하세요.';
-      case '/guild': return '다른 사람들과 상호작용하세요.';
-      case '/chat': return '관련된 사람들과 대화를 나누세요.';
+        return tab === 'badges' ? '뱃지별 행동을 완료하세요.' : '뱃지를 활성화하세요.';
+      case '/guild': return '사람들과 상호작용하세요.';
+      case '/chat': return '사람들과 대화를 나누세요.';
       case '/shop': return '아이템을 구매하세요.';
-      case '/strength': return '3대 운동 최고 기록으로 랭크를 올리세요.';
-      case '/agility': return '걷기, 달리기 누적 거리로 랭크를 올리세요.';
-      case '/wisdom': return '초서 누적 개수로 랭크를 올리세요.';
-      case '/wisdom/new': return '새로운 지혜 기록을 작성하세요.';
-      case '/books': return '도서를 관리하세요.';
+      case '/strength': return '3대 운동을 기록하세요.';
+      case '/agility': return '걷기, 달리기 거리를 기록하세요.';
+      case '/wisdom': return '인상 깊은 글을 기록하세요.';
       case '/admin': return '관리자 기능을 사용하세요.';
       default:
         if (pathname.startsWith('/chat/')) { return '채팅방에서 대화를 나누세요.'; }
-        return '라이크게임을 즐기세요.';
+        return '인생을 게임처럼';
     }
   };
 
@@ -164,7 +158,7 @@ function AppBarContent() {
             {getPageTitle()}
           </div>
           <div style={{
-            fontSize: '0.65rem',
+            fontSize: '0.75rem',
             color: '#00ffff',
             fontFamily: 'Orbitron, monospace',
             whiteSpace: 'nowrap',
@@ -271,7 +265,7 @@ export default function AppBar() {
               로딩...
             </div>
             <div style={{
-              fontSize: '0.65rem',
+              fontSize: '0.75rem',
               color: '#00ffff',
               fontFamily: 'Orbitron, monospace',
               whiteSpace: 'nowrap',

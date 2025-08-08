@@ -27,10 +27,11 @@ export async function GET(
       .single();
 
     if (error || !chatRoom) {
-      return NextResponse.json({ error: '채팅방을 찾을 수 없습니다' }, { status: 404 });
+      return NextResponse.json({ roomId: null });
     }
 
     const formattedChatRoom = {
+      roomId: chatRoom.id,
       id: chatRoom.id,
       name: chatRoom.name,
       type: chatRoom.type,

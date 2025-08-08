@@ -39,7 +39,6 @@ export async function GET(
     const offset = parseInt(searchParams.get('offset') || '0');
     const before = searchParams.get('before'); // 특정 메시지 ID 이전의 메시지들
 
-    // 먼저 메시지만 가져오기
     let query = supabaseAdmin
       .from('chat_messages')
       .select(`
@@ -48,7 +47,8 @@ export async function GET(
         user_id,
         content,
         system_type,
-        created_at
+        created_at,
+        users!inner(nickname)
       `)
       .eq('chat_room_id', id)
       .order('created_at', { ascending: false })
@@ -80,61 +80,25 @@ export async function GET(
       );
     }
 
-    console.log('Raw messages from DB:', messages);
-
-    // 각 메시지의 필드별 상태 확인
-    if (messages && messages.length > 0) {
-      console.log('First message structure:', JSON.stringify(messages[0], null, 2));
-      console.log('All created_at values:', messages.map(m => ({ id: m.id, created_at: m.created_at, type: typeof m.created_at })));
-    }
-
-    // 사용자 정보 별도로 조회
-    const userIds = messages?.map(m => m.user_id) || [];
-    console.log('User IDs to fetch:', userIds);
-    
-    const { data: users, error: usersError } = await supabaseAdmin
-      .from('users')
-      .select('id, nickname')
-      .in('id', userIds);
-
-    if (usersError) {
-      console.error('Error fetching users:', usersError);
-    }
-
-    console.log('Fetched users:', users);
-    const userMap = new Map(users?.map(u => [u.id, u.nickname]) || []);
-    console.log('User map:', Array.from(userMap.entries()));
-
     const formattedMessages = (messages || []).map((message: any) => {
       // 안전한 날짜 변환
       let createdAt: string;
       try {
-        console.log('Original created_at:', message.created_at, typeof message.created_at);
+        // Supabase에서 반환되는 날짜 형식 처리
+        let dateValue = message.created_at;
         
-        // 데이터베이스에서 가져온 날짜가 이미 문자열인 경우
-        if (typeof message.created_at === 'string') {
-          const date = new Date(message.created_at);
-          if (isNaN(date.getTime())) {
-            console.error('Invalid date string:', message.created_at);
-            createdAt = new Date().toISOString();
-          } else {
-            createdAt = date.toISOString();
-          }
-        } else if (message.created_at instanceof Date) {
-          // 이미 Date 객체인 경우
-          createdAt = message.created_at.toISOString();
-        } else {
-          // 기타 경우 (숫자 등)
-          const date = new Date(message.created_at);
-          if (isNaN(date.getTime())) {
-            console.error('Invalid date value:', message.created_at);
-            createdAt = new Date().toISOString();
-          } else {
-            createdAt = date.toISOString();
-          }
+        // 객체인 경우 ISO 문자열로 변환
+        if (typeof dateValue === 'object' && dateValue !== null && dateValue.toISOString) {
+          dateValue = dateValue.toISOString();
         }
         
-        console.log('Converted createdAt:', createdAt);
+        const date = new Date(dateValue);
+        if (isNaN(date.getTime())) {
+          console.error('Invalid date detected:', message.created_at);
+          createdAt = new Date().toISOString();
+        } else {
+          createdAt = date.toISOString();
+        }
       } catch (error) {
         console.error('Error converting date:', error, message.created_at);
         createdAt = new Date().toISOString();
@@ -144,10 +108,9 @@ export async function GET(
         id: message.id,
         content: message.content,
         user: {
-          name: userMap.get(message.user_id) || 'Unknown User'
+          name: Array.isArray(message.users) ? message.users[0]?.nickname || 'Unknown User' : (message.users as any)?.nickname || 'Unknown User'
         },
         createdAt,
-        isSystemMessage: !!message.system_type,
         systemType: message.system_type || undefined
       };
     });
@@ -224,7 +187,8 @@ export async function POST(
         user_id,
         content,
         system_type,
-        created_at
+        created_at,
+        users!inner(nickname)
       `)
       .single();
 
@@ -236,50 +200,41 @@ export async function POST(
       );
     }
 
-    // 사용자 정보 조회
-    const { data: userData, error: userError } = await supabaseAdmin
-      .from('users')
-      .select('nickname')
-      .eq('id', user.id)
-      .single();
 
-    if (userError) {
-      console.error('Error fetching user data:', userError);
-    }
 
     const formattedMessage = {
       id: message.id,
       content: message.content,
       user: {
-        name: userData?.nickname || 'Unknown User'
+        name: Array.isArray(message.users) ? message.users[0]?.nickname || 'Unknown User' : (message.users as any)?.nickname || 'Unknown User'
       },
       createdAt: (() => {
         try {
-          console.log('POST - Original created_at:', message.created_at, typeof message.created_at);
+          // Supabase에서 반환되는 날짜 형식 처리
+          let dateValue = message.created_at;
           
-          if (typeof message.created_at === 'string') {
-            const date = new Date(message.created_at);
-            if (isNaN(date.getTime())) {
-              console.error('POST - Invalid date string:', message.created_at);
-              return new Date().toISOString();
+          // 문자열인 경우 그대로 사용, 객체인 경우 ISO 문자열로 변환
+          if (typeof dateValue === 'object' && dateValue !== null) {
+            // PostgreSQL timestamp 객체인 경우
+            if (dateValue.toISOString) {
+              dateValue = dateValue.toISOString();
+            } else {
+              // 다른 객체 형식인 경우
+              dateValue = JSON.stringify(dateValue);
             }
-            return date.toISOString();
-          } else if (message.created_at instanceof Date) {
-            return message.created_at.toISOString();
-          } else {
-            const date = new Date(message.created_at);
-            if (isNaN(date.getTime())) {
-              console.error('POST - Invalid date value:', message.created_at);
-              return new Date().toISOString();
-            }
-            return date.toISOString();
           }
+          
+          const date = new Date(dateValue);
+          if (isNaN(date.getTime())) {
+            console.error('POST - Invalid date detected:', message.created_at, 'processed as:', dateValue);
+            return new Date().toISOString();
+          }
+          return date.toISOString();
         } catch (error) {
           console.error('Error converting date in POST:', error, message.created_at);
           return new Date().toISOString();
         }
       })(),
-      isSystemMessage: !!message.system_type,
       systemType: message.system_type || undefined
     };
 
