@@ -196,12 +196,9 @@ function HomeContent() {
 
   return (
     <div style={{
-      padding: '16px',
       display: 'flex',
       flexDirection: 'column',
-      gap: '24px',
-      minHeight: 'calc(100dvh - 120px)',
-      height: '100%',
+      height: '100dvh',
       background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%)'
     }}>
       {/* 스크롤 가능한 메인 콘텐츠 영역 */}
@@ -211,22 +208,28 @@ function HomeContent() {
         gap: '24px',
         flex: 1,
         overflow: 'auto',
-        WebkitOverflowScrolling: 'touch'
+        WebkitOverflowScrolling: 'touch',
+        padding: '16px 8px'
       }}>
       
-      {/* 헤더 섹션 - 컴팩트 디자인 */}
+      {/* 헤더 섹션 - 고정 높이 */}
       <div style={{
         textAlign: 'center',
         padding: '12px 16px',
         position: 'relative',
         overflow: 'hidden',
         borderRadius: '8px',
-        margin: '0 4px',
+        margin: '0 8px',
         background: 'rgba(0,255,255,0.05)',
-        border: '1px solid rgba(0,255,255,0.1)'
+        border: '1px solid rgba(0,255,255,0.1)',
+        minHeight: '80px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center'
       }}>
         {user && (
-          <div style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{ position: 'relative', zIndex: 1, width: '100%' }}>
             {/* 칭호 */}
             {selectedTitle ? (
               <div style={{
@@ -272,12 +275,11 @@ function HomeContent() {
               textShadow: '0 0 10px rgba(0,255,255,0.6)',
               marginBottom: '6px',
               wordBreak: 'break-word',
-              maxWidth: '100%'
+              maxWidth: '100%',
+              lineHeight: '1.2'
             }}>
               {user.user_metadata?.nickname || user.email?.split('@')[0] || '플레이어'}
             </div>
-            
-
           </div>
         )}
       </div>
