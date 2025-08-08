@@ -47,7 +47,8 @@ export default function BottomNavigation() {
       alignItems: 'center',
       justifyContent: 'space-around',
       zIndex: 9999,
-      padding: '0 4px'
+      padding: '0 4px',
+      paddingBottom: 'env(safe-area-inset-bottom, 0px)'
     }}>
       {navItems.map((item) => {
         // 활성 상태 판단을 더 정확하게 처리

@@ -30,14 +30,13 @@ export default function ClientLayout({
     }
   }, [isChatPage, pathname, user?.id, setCurrentRoom]);
 
-
-
   return (
     <div style={{ 
       position: 'relative',
       display: 'flex',
       flexDirection: 'column',
-      minHeight: '100vh'
+      minHeight: '100dvh',
+      height: '100dvh'
     }}>
       {!isAuthPage && !isChatPage && <AppBar />}
       <main style={{ 
@@ -47,7 +46,9 @@ export default function ClientLayout({
         marginBottom: (isAuthPage || isChatPage) ? '0' : '60px',
         display: 'flex',
         flexDirection: 'column',
-        minHeight: isChatPage ? '100dvh' : 'auto'
+        minHeight: isChatPage ? '100dvh' : 'auto',
+        overflow: 'auto',
+        WebkitOverflowScrolling: 'touch'
       }}>
         {children}
       </main>

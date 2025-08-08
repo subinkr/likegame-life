@@ -7,7 +7,7 @@ import ClientLayout from "./ClientLayout";
 export const metadata: Metadata = {
   title: "Like Game",
   description: "인생을 게임처럼",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
+  viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
 };
 
 export default function RootLayout({

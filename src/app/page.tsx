@@ -200,14 +200,17 @@ function HomeContent() {
       display: 'flex',
       flexDirection: 'column',
       gap: '16px',
-      minHeight: 'calc(100dvh - 120px)'
+      minHeight: 'calc(100dvh - 120px)',
+      height: '100%'
     }}>
       {/* 스크롤 가능한 메인 콘텐츠 영역 */}
       <div style={{
         display: 'flex',
         flexDirection: 'column',
         gap: '16px',
-        flex: 1
+        flex: 1,
+        overflow: 'auto',
+        WebkitOverflowScrolling: 'touch'
       }}>
       {/* 핵심 상태 요약 - 미니멀하게 */}
       <div style={{
